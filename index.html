@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin Project Module · Mockup Deck</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #3a3a3a;
+    --muted: #6b6e72;
+    --muted-2: #9a9da0;
+    --line: #e5e7eb;
+    --line-2: #ececec;
+    --bg: #f3f4f6;
+    --bg-2: #f7f8fa;
+    --blue: #1d62d3;
+    --blue-soft: #e8f0fc;
+    --blue-dark: #134298;
+    --red: #ed1c24;
+    --red-soft: #fee9ea;
+    --green: #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber: #d99316;
+    --amber-soft: #fdf2dd;
+    --purple: #5d2a99;
+    --purple-soft: #ece7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+
+  /* Hero header */
+  .page-head { background: linear-gradient(135deg, #0d1b3d 0%, #1a1240 60%, #2a1a4d 100%); color: white; padding: 56px 40px 44px; position: relative; overflow: hidden; }
+  .page-head::before { content: ''; position: absolute; top: -10%; left: 20%; width: 120%; height: 120%; background-image: repeating-linear-gradient(95deg, transparent 0 22px, rgba(180, 140, 220, 0.06) 22px 23px); pointer-events: none; }
+  .page-head-content { position: relative; max-width: 1280px; margin: 0 auto; }
+  .page-head-eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.7; margin-bottom: 12px; }
+  .page-head h1 { font-size: 40px; font-weight: 700; line-height: 1.1; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .page-head .sub { font-size: 17px; opacity: 0.85; }
+  .page-head .meta { font-size: 13px; opacity: 0.7; margin-top: 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .page-head .meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .page-head .meta svg { width: 13px; height: 13px; opacity: 0.6; }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 44px 40px 80px; }
+
+  /* Spec link (top, prominent) */
+  .spec-link { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; display: flex; align-items: center; gap: 20px; text-decoration: none; color: inherit; margin-bottom: 44px; transition: all 0.15s ease; }
+  .spec-link:hover { border-color: var(--ink); box-shadow: 0 10px 28px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .spec-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--ink); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .spec-icon svg { width: 26px; height: 26px; }
+  .spec-info { flex: 1; }
+  .spec-info h3 { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+  .spec-info p { font-size: 14px; color: var(--muted); }
+  .spec-arrow { color: var(--muted-2); flex-shrink: 0; }
+  .spec-arrow svg { width: 20px; height: 20px; }
+  .spec-link:hover .spec-arrow { color: var(--ink); transform: translateX(4px); transition: all 0.15s ease; }
+
+  /* Readme card (lighter than spec) */
+  .readme-link { background: white; border: 1px dashed var(--muted-2); border-radius: 12px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; margin-bottom: 44px; transition: all 0.15s ease; margin-top: -28px; }
+  .readme-link:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .readme-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--amber-soft); color: var(--amber); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .readme-icon svg { width: 18px; height: 18px; }
+  .readme-info h3 { font-size: 14.5px; font-weight: 700; margin-bottom: 2px; }
+  .readme-info p { font-size: 12.5px; color: var(--muted); }
+  .readme-arrow { color: var(--muted-2); flex-shrink: 0; margin-left: auto; }
+  .readme-arrow svg { width: 16px; height: 16px; }
+
+  /* Section */
+  .section { margin-bottom: 56px; }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; padding-bottom: 16px; border-bottom: 2px solid var(--line); }
+  .section-num { font-size: 12px; font-weight: 700; color: var(--blue); letter-spacing: 1.2px; }
+  .section-title { font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
+  .section-count { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: auto; }
+  .section-desc { font-size: 14.5px; color: var(--ink-light); margin: 16px 0 26px; line-height: 1.65; max-width: 760px; }
+  .section-desc code { background: var(--bg); padding: 2px 7px; border-radius: 4px; font-size: 13px; font-family: 'IBM Plex Mono', Menlo, monospace; color: var(--blue-dark); }
+
+  /* Card grid */
+  .grid { display: grid; gap: 14px; }
+  .grid.three { grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
+  .grid.four { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  /* Card */
+  .card { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 0; cursor: pointer; transition: all 0.15s ease; position: relative; min-height: 180px; }
+  .card:hover { border-color: var(--ink); box-shadow: 0 8px 22px rgba(0,0,0,0.07); transform: translateY(-2px); }
+  .card-row1 { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .card-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-icon svg { width: 17px; height: 17px; }
+  .card-icon.overview { background: var(--blue-soft); color: var(--blue); }
+  .card-icon.tasks { background: #e0f2f5; color: #0e7a8a; }
+  .card-icon.logs { background: var(--amber-soft); color: var(--amber); }
+  .card-icon.activity { background: var(--purple-soft); color: var(--purple); }
+  .card-icon.notices { background: var(--red-soft); color: var(--red); }
+  .card-icon.assets { background: #e8f5ec; color: var(--green); }
+  .card-icon.reports { background: var(--blue-soft); color: var(--blue); }
+  .card-icon.tech-home { background: #f0e8fa; color: var(--purple); }
+  .card-icon.tech-project { background: var(--blue-soft); color: var(--blue); }
+  .card-icon.tech-picker { background: var(--bg-2); color: var(--ink-light); }
+  .card-icon.tech-logs { background: var(--amber-soft); color: var(--amber); }
+  .card-icon.tech-tasks { background: var(--green-soft); color: var(--green); }
+  .card-icon.tech-photos { background: #fce8ee; color: var(--red); }
+  .card-icon.tech-time { background: var(--blue-soft); color: var(--blue); }
+
+  .card-section { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; flex: 1; padding-top: 9px; }
+  .card-platform-pill { font-size: 9.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.5px; text-transform: uppercase; flex-shrink: 0; margin-top: 7px; }
+  .card-platform-pill.admin { background: var(--ink); color: white; }
+  .card-platform-pill.mobile { background: var(--blue-soft); color: var(--blue-dark); }
+
+  .card-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.25; letter-spacing: -0.2px; }
+  .card-desc { font-size: 13.5px; color: var(--ink-light); line-height: 1.5; flex: 1; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-2); }
+  .card-file { font-size: 11px; color: var(--muted-2); font-family: 'IBM Plex Mono', Menlo, monospace; }
+  .card-open { font-size: 12px; color: var(--blue); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .card-open svg { width: 11px; height: 11px; }
+
+  /* Footer note */
+  .footer-note { background: white; border-radius: 12px; padding: 22px 28px; margin-top: 40px; border: 1px solid var(--line); font-size: 13.5px; color: var(--ink-light); line-height: 1.65; }
+  .footer-note h4 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px; }
+  .footer-note p { margin-bottom: 10px; }
+  .footer-note p:last-child { margin-bottom: 0; }
+  .footer-note strong { color: var(--ink); font-weight: 600; }
+  .footer-note code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; font-family: 'IBM Plex Mono', Menlo, monospace; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-head-content">
+    <div class="page-head-eyebrow">Web Wizards · Odin · Thor Plumbing &amp; Heating</div>
+    <h1>Project Module</h1>
+    <div class="sub">Specification &amp; mockup deck</div>
+    <div class="meta">
+      <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Mike Bayes</span>
+      <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Target: June 15, 2026</span>
+      <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>28 mockups</span>
+      <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>1 spec doc</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SPEC LINK -->
+  <a href="PROJECT-MODULE-SPEC.md" class="spec-link" target="_blank">
+    <div class="spec-icon">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>
+    </div>
+    <div class="spec-info">
+      <h3>Project Module Specification</h3>
+      <p>Full spec: module entry point, tab structure, data model, access model, phasing, open decisions. Start here.</p>
+    </div>
+    <div class="spec-arrow">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </a>
+
+  <!-- MODULE ENTRY & PROJECT SETUP -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">PART 1</span>
+      <span class="section-title">Module entry &amp; project setup</span>
+      <span class="section-count">3 mockups</span>
+    </div>
+    <div class="section-desc">
+      The first screens an admin sees in the Projects module: the company-wide Project List, the New Project Wizard for setting up a project, and the Edit Project screen for editing an existing one.
+    </div>
+
+    <div class="grid three">
+
+      <a href="odin-projects-list.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon overview">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span class="card-section">Module entry</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Project List View</div>
+        <div class="card-desc">Company-wide projects entry point: 4 big KPI tiles (Total / Active / On Hold / Completed), Status donut, and the projects table with status pills + progress bars</div>
+        <div class="card-foot">
+          <span class="card-file">odin-projects-list.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-projects-new-wizard.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon overview">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <span class="card-section">Section 4.6.1</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">New Project Wizard</div>
+        <div class="card-desc">Three-step setup: Project basics + Dates + Labor budget, Team, External contacts. Replaces Mandeep's existing 4-step wizard. All three steps shown stacked plus the Step 3 empty state.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-projects-new-wizard.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-projects-edit.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon overview">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <span class="card-section">Section 4.6.2</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Edit Project</div>
+        <div class="card-desc">Single-page sectioned form with section-anchor nav, live labor-budget status, sticky save bar, and the tiered Project Actions section (On Hold / Mark Complete / Cancel with typed-confirmation modal)</div>
+        <div class="card-foot">
+          <span class="card-file">odin-projects-edit.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- PER-PROJECT ADMIN TABS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">PART 2</span>
+      <span class="section-title">Per-project admin tabs</span>
+      <span class="section-count">12 mockups</span>
+    </div>
+    <div class="section-desc">
+      The Project Module as it appears inside an individual project at <code>odin/projects/[project-id]</code>. Eight tabs covering the project lifecycle from setup through client communication. Change Notices has five mockups (register, two intake modals, two detail panels) because that surface is genuinely rich.
+    </div>
+
+    <div class="grid three">
+
+      <a href="odin-overview-current-brand.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon overview">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span class="card-section">Tab 1 · Overview</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Overview</div>
+        <div class="card-desc">Command center with primary and secondary KPIs, milestones, team, and recent activity feed</div>
+        <div class="card-foot">
+          <span class="card-file">odin-overview-current-brand.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tasks.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tasks">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <span class="card-section">Tab 2 · Tasks</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Tasks (full rework)</div>
+        <div class="card-desc">Project labor budget strip, Original Scope vs Approved PCNs clusters, est-vs-act bars per task, Draft Tasks review inbox for tech-created drafts, Blocked state. New build per Justin's May 27 confirmation.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tasks.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-daily-logs.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon logs">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>
+          </div>
+          <span class="card-section">Tab 4 · Daily Logs</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Daily Logs</div>
+        <div class="card-desc">Tech-submitted field reports with photo gallery, hours, and admin review state</div>
+        <div class="card-foot">
+          <span class="card-file">odin-daily-logs.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-activity.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon activity">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <span class="card-section">Tab 5 · Activity</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Activity</div>
+        <div class="card-desc">Chronological audit timeline mixing human posts with system events from every tab</div>
+        <div class="card-foot">
+          <span class="card-file">odin-activity.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-change-notices-list.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon notices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <span class="card-section">Tab 6 · Change Notices</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Change Notices (register list)</div>
+        <div class="card-desc">Canonical register view, no modal overlay. Draft Inbox above the table, ten example rows covering every lifecycle state, outcome badges on closed RFIs, "From RFI-XXX" back-references on PCNs spawned from RFIs.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-change-notices-list.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-change-notices.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon notices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <span class="card-section">Tab 6 · Change Notices</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">PCN ingest modal</div>
+        <div class="card-desc">Register with the "Ingest PCN from GC" modal: PCNs are inbound signed documents from the General Contractor, admin-only ingest. Eight fields, "Record PCN as Approved" primary action, "Create work tasks" checkbox + inline composer.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-change-notices.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-change-notices-rfi.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon notices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <span class="card-section">Tab 6 · Change Notices</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">RFI intake modal</div>
+        <div class="card-desc">Same register with the casual RFI intake modal: outbound from Thor, five fields only (photo, subject, description, linked task). Formal compose-and-send is a separate later step on the detail panel.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-change-notices-rfi.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-change-notices-rfi-detail.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon notices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <span class="card-section">Tab 6 · Change Notices</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">RFI detail panel (3 states)</div>
+        <div class="card-desc">Three states stacked: Open (intake done, awaiting send), Compose &amp; Send (PDF generation + Outlook handoff with 4-step workflow indicator), Answered (with response box and "What does this answer require?" outcome radio).</div>
+        <div class="card-foot">
+          <span class="card-file">odin-change-notices-rfi-detail.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-change-notices-pcn-detail.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon notices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <span class="card-section">Tab 6 · Change Notices</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">PCN detail panel (2 states)</div>
+        <div class="card-desc">Two states stacked: Approved (with linked tasks list, est-vs-act bars, rollup, signed doc as source of truth, "From RFI-XXX" back-reference); Rejected (red rejection box, cancelled tasks banner, audit trail).</div>
+        <div class="card-foot">
+          <span class="card-file">odin-change-notices-pcn-detail.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-assets-current-brand.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon assets">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <span class="card-section">Tab 7 · Assets</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Assets</div>
+        <div class="card-desc">Per-project DAM with 7 default folders (drawings, site photos, permits, etc), sidebar nav, file grid</div>
+        <div class="card-foot">
+          <span class="card-file">odin-assets-current-brand.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-assets-trash.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon assets">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6"/></svg>
+          </div>
+          <span class="card-section">Tab 7 · Assets</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Assets (Trash variant)</div>
+        <div class="card-desc">Trash view with 30-day auto-purge countdown, Restore and Delete Forever affordances</div>
+        <div class="card-foot">
+          <span class="card-file">odin-assets-trash.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-client-reports.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon reports">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>
+          </div>
+          <span class="card-section">Tab 8 · Client Reports</span>
+          <span class="card-platform-pill admin">Admin</span>
+        </div>
+        <div class="card-title">Client Reports</div>
+        <div class="card-desc">AI-generated reports with non-bypassable approval gate and scheduled cadence settings</div>
+        <div class="card-foot">
+          <span class="card-file">odin-client-reports.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- TECH MOBILE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-num">PART 3</span>
+      <span class="section-title">Tech mobile surfaces</span>
+      <span class="section-count">13 mockups</span>
+    </div>
+    <div class="section-desc">
+      The tech-facing mobile layer added on top of the existing Odin mobile app. Thirteen screens covering navigation, time entry, daily logging, task management, photo handling, RFI raising, and the task picker used across multiple flows. All in current production brand.
+    </div>
+
+    <div class="grid four">
+
+      <a href="odin-tech-home.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-home">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>
+          </div>
+          <span class="card-section">Section 7.2</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Tech home</div>
+        <div class="card-desc">Existing home with new "My Projects" widget below Work Orders</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-home.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-project.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-project">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span class="card-section">Section 7.3</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Per-project view</div>
+        <div class="card-desc">Two big primary actions (Submit Time, Write Daily Log) and my-scoped lists</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-project.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-picker.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-picker">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <span class="card-section">Section 7.4</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Project picker</div>
+        <div class="card-desc">Two-section sort: Assigned to me at top, all active projects below. Open access model.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-picker.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-log-composer.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-logs">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          </div>
+          <span class="card-section">Section 7.5</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Daily Log composer</div>
+        <div class="card-desc">Photos-first form: capture, summary, hours stepper, optional task links</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-log-composer.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-log-detail.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-logs">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <span class="card-section">Section 7.6</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Daily Log detail</div>
+        <div class="card-desc">Read view with retroactive Add Photos affordance, status pill, Edit access</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-log-detail.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-log-list.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-logs">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <span class="card-section">Section 7.7</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">My Daily Logs list</div>
+        <div class="card-desc">Project-scoped list with filter chips, stats strip, big date-block rows</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-log-list.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-task-list.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-tasks">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <span class="card-section">Section 7.8</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">My Tasks list</div>
+        <div class="card-desc">Grouped by status priority (Blocked first), filter chips, red border on blocked</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-task-list.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-task-detail.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-tasks">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <span class="card-section">Section 7.9</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Task detail</div>
+        <div class="card-desc">Status pill, description, Mark Complete and Mark Blocked actions, activity history</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-task-detail.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-photos.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-photos">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <span class="card-section">Section 7.10</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">My Photos grid</div>
+        <div class="card-desc">3-column grid grouped by date, scoped to this tech's uploads on this project</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-photos.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-photo-upload.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-photos">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <span class="card-section">Section 7.11</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Photo upload (Step 2)</div>
+        <div class="card-desc">Confirmation with destination radio (Site Photos default, or attach to today's log)</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-photo-upload.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-time-submit.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-time">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <span class="card-section">Section 7.12</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Submit Timesheet (project)</div>
+        <div class="card-desc">Existing form with Work Order swapped to Project and a new optional Task field</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-time-submit.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-rfi-composer.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-time">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          </div>
+          <span class="card-section">Section 7.13</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Raise RFI composer</div>
+        <div class="card-desc">Five-field casual capture surface for field-tech RFIs: photo-first, subject, description, optional linked task. Submits as Draft for PM review on desktop.</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-rfi-composer.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+      <a href="odin-tech-task-picker.html" class="card" target="_blank">
+        <div class="card-row1">
+          <div class="card-icon tech-time">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <span class="card-section">Section 7.12 / 7.13</span>
+          <span class="card-platform-pill mobile">Mobile</span>
+        </div>
+        <div class="card-title">Task picker (bottom sheet)</div>
+        <div class="card-desc">Two states: picker list (tasks grouped by status, Mine / All filter, est-vs-act bars, pinned Create New affordance at bottom) and Create New composer (single-field draft task creation that lands in the PM's review inbox).</div>
+        <div class="card-foot">
+          <span class="card-file">odin-tech-task-picker.html</span>
+          <span class="card-open">Open <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="footer-note">
+    <h4>About this deck</h4>
+    <p>Twenty-eight mockups for the Project Module, organized in three parts: module entry and project setup (Project List, New Project Wizard, Edit Project), per-project admin tabs (Overview, Tasks, Daily Logs, Activity, Change Notices, Assets, Client Reports), and tech mobile surfaces. Built in current production Odin brand: white cards, blue accents (<code>#1d62d3</code>), dark gradient hero, pink-red gradient action buttons (<code>#f86077</code> to <code>#ed1c24</code>), lowercase "odin" wordmark with red dot. Type: Inter (UI), IBM Plex Mono (IDs).</p>
+    <p><strong>To navigate:</strong> click any card to open the full mockup in a new tab. Each mockup has annotations on the right side explaining design decisions, state variants, and what's intentionally excluded. Read the specification document first for context, decisions, data model, phasing, and open questions.</p>
+    <p><strong>For dev handoff:</strong> mockup filenames shown in monospace match the files in this package. The spec document references each mockup by filename. The Time tab doesn't have a dedicated mockup because it mirrors the existing Timesheets module pattern with project scoping.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
