@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Per-project view (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+  .nav-item.active { color: var(--ink); font-weight: 600; }
+  .nav-item.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -16px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  /* Nav dropdown (Timesheets, Projects) */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu a, .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); text-decoration: none; cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1320px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* ===== Project header (gradient hero) ===== */
+  .proj-header {
+    border-radius: 18px;
+    padding: 24px 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+    background:
+      radial-gradient(ellipse 700px 350px at 80% 30%, rgba(120, 70, 200, 0.55) 0%, transparent 60%),
+      radial-gradient(ellipse 600px 380px at 12% 80%, rgba(60, 100, 200, 0.5) 0%, transparent 65%),
+      radial-gradient(circle 180px at 50% 50%, rgba(180, 100, 230, 0.16) 0%, transparent 70%),
+      linear-gradient(135deg, #0d1b3d 0%, #1a1240 55%, #2a1a4d 100%);
+  }
+  .proj-header::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px),
+      radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+    background-size: 380px 380px, 220px 220px;
+    background-position: 100px 60px, 50px 180px;
+    opacity: 0.25;
+  }
+  .proj-header-inner { position: relative; z-index: 1; }
+  .proj-header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; backdrop-filter: blur(8px); }
+  .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+  .id-pill { background: rgba(255,255,255,0.12); padding: 4px 11px; border-radius: 999px; font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.3px; border: 1px solid rgba(255,255,255,0.2); }
+  .proj-header-name { font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .proj-header-sub { font-size: 13.5px; opacity: 0.85; margin-bottom: 0; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .proj-header-sub svg { width: 13px; height: 13px; opacity: 0.7; vertical-align: -2px; margin-right: 5px; }
+  .proj-header-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; max-width: 800px; }
+  .proj-header-stat .lbl { font-size: 10px; font-weight: 600; opacity: 0.72; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px; }
+  .proj-header-stat .val { font-size: 24px; font-weight: 700; line-height: 1.1; font-feature-settings: 'tnum'; }
+  .proj-header-stat .val .small { font-size: 14px; font-weight: 500; opacity: 0.7; margin-left: 4px; }
+  .proj-header-stat .sub { font-size: 11px; opacity: 0.7; margin-top: 2px; font-feature-settings: 'tnum'; }
+  .proj-header-stat .sub.amber { color: #fbbf24; opacity: 1; font-weight: 600; }
+  .proj-header-stat .sub.green { color: #4ade80; opacity: 1; font-weight: 600; }
+
+  /* ===== Actions ===== */
+  .actions-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .action-btn { display: flex; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 14px; cursor: pointer; transition: transform 0.08s, box-shadow 0.12s; border: none; text-align: left; width: 100%; }
+  .action-btn .a-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .action-btn .a-icon svg { width: 22px; height: 22px; }
+  .action-btn .a-text { flex: 1; min-width: 0; }
+  .action-btn .a-title { font-size: 16px; font-weight: 700; line-height: 1.2; margin-bottom: 3px; }
+  .action-btn .a-sub { font-size: 12.5px; opacity: 0.85; line-height: 1.3; }
+  .action-btn .a-chev { width: 18px; height: 18px; opacity: 0.6; flex-shrink: 0; }
+
+  .action-btn.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 4px 18px rgba(237, 28, 36, 0.28); }
+  .action-btn.primary .a-icon { background: rgba(255,255,255,0.18); }
+  .action-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(237, 28, 36, 0.35); }
+
+  .action-btn.secondary { background: var(--white); color: var(--ink); border: 1px solid var(--line); padding: 16px 24px; }
+  .action-btn.secondary .a-icon { background: var(--blue-soft); color: var(--blue); width: 40px; height: 40px; }
+  .action-btn.secondary .a-icon svg { width: 18px; height: 18px; }
+  .action-btn.secondary .a-title { font-size: 14.5px; }
+  .action-btn.secondary .a-sub { color: var(--muted); }
+  .action-btn.secondary:hover { border-color: var(--blue); }
+
+  /* ===== Body grid ===== */
+  .body-grid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.3fr); gap: 16px; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--white); border-radius: 14px; padding: 22px 24px; border: 1px solid var(--line); position: relative; transition: box-shadow 0.2s, transform 0.2s; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-head .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .card-head .view-all { color: var(--blue); font-size: 12.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .card-head .view-all:hover { text-decoration: underline; }
+
+  /* Widget focus / spotlight system */
+  .widget-backdrop { position: fixed; inset: 0; background: rgba(15, 15, 26, 0.6); backdrop-filter: blur(2px); z-index: 55; opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }
+  .widget-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .widget-close { display: none; position: absolute; top: 16px; right: 16px; width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg-2); color: var(--ink-light); align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+  .widget-close svg { width: 15px; height: 15px; }
+  .widget-close:hover { background: var(--line); }
+
+  .card.is-focused {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(640px, 92vw); max-height: 82vh; overflow-y: auto;
+    z-index: 60; box-shadow: 0 28px 64px rgba(10, 10, 20, 0.4); border-color: var(--line);
+  }
+  .card.is-focused .widget-close { display: flex; }
+  body.widget-open { overflow: hidden; }
+
+  /* Task rows */
+  .task-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-2); cursor: pointer; transition: background 0.1s; }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:hover { background: var(--bg-2); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 8px; }
+  .task-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .task-dot.not-started { background: var(--muted-2); }
+  .task-dot.in-progress { background: var(--blue); }
+  .task-dot.blocked { background: var(--red); }
+  .task-dot.complete { background: var(--green); }
+  .task-info { flex: 1; min-width: 0; }
+  .task-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .task-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .task-meta .sep { color: var(--muted-2); }
+  .task-meta.blocked { color: var(--red); font-weight: 500; }
+  .task-hours { text-align: right; font-size: 12px; color: var(--ink-light); font-feature-settings: 'tnum'; }
+  .task-hours .h { font-weight: 700; color: var(--ink); }
+  .task-hours .e { color: var(--muted); }
+
+  /* Activity rows */
+  .activity-row { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+  .activity-dot.log { background: var(--amber); }
+  .activity-dot.task { background: var(--green); }
+  .activity-dot.milestone { background: var(--muted-2); }
+  .activity-dot.pcn { background: var(--blue); }
+  .activity-dot.rfi { background: #a855f7; }
+  .activity-content { flex: 1; min-width: 0; }
+  .activity-title { font-size: 13.5px; color: var(--ink); margin-bottom: 3px; line-height: 1.4; }
+  .activity-title strong { font-weight: 600; }
+  .activity-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .activity-meta .avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; flex-shrink: 0; }
+  .activity-meta .avatar.a1 { background: var(--blue); }
+  .activity-meta .avatar.a2 { background: #7c3aed; }
+  .activity-meta .avatar.a3 { background: #ea580c; }
+  .activity-meta .avatar.a4 { background: #0891b2; }
+  .activity-meta .sep { color: var(--muted-2); }
+
+  /* Log rows (with date block) */
+  .log-row { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line-2); cursor: pointer; transition: background 0.1s; }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--bg-2); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 8px; }
+  .log-date { background: var(--bg-2); border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 54px; flex-shrink: 0; }
+  .log-date .d { font-size: 18px; font-weight: 700; line-height: 1; }
+  .log-date .m { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-top: 3px; }
+  .log-info { flex: 1; min-width: 0; }
+  .log-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .log-meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .log-meta .avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; flex-shrink: 0; }
+  .log-meta .avatar.a1 { background: var(--blue); }
+  .log-meta .avatar.a2 { background: #7c3aed; }
+  .log-meta .avatar.a3 { background: #ea580c; }
+  .log-meta .hours-pill { background: var(--blue-soft); color: var(--blue-dark); font-weight: 600; padding: 1px 8px; border-radius: 999px; font-size: 11px; }
+  .log-meta .photo-count { display: flex; align-items: center; gap: 3px; }
+  .log-meta .photo-count svg { width: 11px; height: 11px; }
+
+  /* Photos strip */
+  .photos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .photo-tile { aspect-ratio: 1; border-radius: 10px; background: linear-gradient(135deg, #cbd5e1, #94a3b8); position: relative; cursor: pointer; overflow: hidden; }
+  .photo-tile.t2 { background: linear-gradient(135deg, #fda4af, #f97316); }
+  .photo-tile.t3 { background: linear-gradient(135deg, #86efac, #22c55e); }
+  .photo-tile.t4 { background: linear-gradient(135deg, #93c5fd, #3b82f6); }
+  .photo-tile.t5 { background: linear-gradient(135deg, #d8b4fe, #a855f7); }
+  .photo-tile.t6 { background: linear-gradient(135deg, #fde68a, #f59e0b); }
+  .photo-tile.t7 { background: linear-gradient(135deg, #67e8f9, #06b6d4); }
+  .photo-tile.t8 { background: linear-gradient(135deg, #f9a8d4, #ec4899); }
+  .photo-tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.2), transparent 50%); }
+  .photo-tile.more { background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--ink-light); font-weight: 700; font-size: 14px; }
+  .photo-tile.more::after { display: none; }
+
+  /* Add Photos button — prominent, sits at the top of the Photos card per spec line 1082 */
+  .add-photos-btn { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 12px; border: 1.5px dashed var(--muted-2); background: var(--bg-2); color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 12px; transition: border-color 0.12s, background 0.12s; }
+  .add-photos-btn:hover { border-color: var(--blue); background: var(--blue-soft); color: var(--blue-dark); }
+  .add-photos-btn .ap-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--white); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .add-photos-btn .ap-icon svg { width: 16px; height: 16px; color: var(--blue); }
+  .add-photos-btn .ap-text { flex: 1; text-align: left; }
+  .add-photos-btn .ap-sub { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+  .annot-col h3 { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 18px; line-height: 1.3; }
+  .annot { background: var(--annot-bg); border-left: 3px solid var(--annot-border); border-radius: 4px; padding: 13px 15px; margin-bottom: 12px; color: var(--annot-ink); font-size: 12.5px; line-height: 1.55; }
+  .annot strong { color: #422006; font-weight: 700; }
+  .annot .annot-title { font-weight: 700; color: #422006; margin-bottom: 4px; display: block; font-size: 12.5px; }
+  .annot code { background: #fde68a; padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, 'SF Mono', Menlo, Monaco, monospace; font-size: 11px; color: #422006; }
+  .changed-pill { display: inline-block; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item active">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Home</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="current">Maple Ridge Civic Centre Plumbing</span>
+      </div>
+
+      <!-- Project header (compact — no KPIs per spec line 1086) -->
+      <div class="proj-header">
+        <div class="proj-header-inner">
+          <div class="proj-header-top">
+            <span class="status-pill"><span class="dot"></span>Active</span>
+            <span class="id-pill">PRJ-0138</span>
+          </div>
+          <div class="proj-header-name">Maple Ridge Civic Centre Plumbing</div>
+          <div class="proj-header-sub">
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>22050 Dewdney Trunk Rd, Maple Ridge, BC</span>
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>Maple Ridge Civic Authority</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions: single primary (Write Daily Tech Log), secondary (Raise RFI) below — per D-040 -->
+      <div class="actions-stack">
+        <button class="action-btn primary">
+          <div class="a-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="a-text">
+            <div class="a-title">Write Daily Tech Log</div>
+            <div class="a-sub">Captures your time, allocation, narrative, and photos for today on this project</div>
+          </div>
+          <svg class="a-chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="action-btn secondary">
+          <div class="a-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="a-text">
+            <div class="a-title">Raise RFI</div>
+            <div class="a-sub">Flag a question for the PM to email to the GC</div>
+          </div>
+          <svg class="a-chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Body grid -->
+      <div class="body-grid">
+
+        <!-- LEFT COLUMN -->
+        <div class="col">
+
+          <!-- Project Tasks -->
+          <div class="card" id="tasksCard">
+            <button class="widget-close" onclick="closeWidget()" aria-label="Close">
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="card-head">
+              <div class="section-label">Project Tasks</div>
+              <a class="view-all" onclick="focusWidget('tasksCard')">View all 24 →</a>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot in-progress"></span>
+              <div class="task-info">
+                <div class="task-name">Rough-in fixtures, north wing L2</div>
+                <div class="task-meta">In Progress <span class="sep">·</span> Due Jun 30 <span class="sep">·</span> Original Scope</div>
+              </div>
+              <div class="task-hours"><span class="h">42</span> <span class="e">/ 56h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot blocked"></span>
+              <div class="task-info">
+                <div class="task-name">Install booster pump assembly</div>
+                <div class="task-meta blocked">Blocked · awaiting delivery of pump skid</div>
+              </div>
+              <div class="task-hours"><span class="h">8</span> <span class="e">/ 24h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot in-progress"></span>
+              <div class="task-info">
+                <div class="task-name">Pressure test main loop, basement</div>
+                <div class="task-meta">In Progress <span class="sep">·</span> Due Jul 4 <span class="sep">·</span> Original Scope</div>
+              </div>
+              <div class="task-hours"><span class="h">14</span> <span class="e">/ 20h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot not-started"></span>
+              <div class="task-info">
+                <div class="task-name">Relocate utility room access door</div>
+                <div class="task-meta">Not Started <span class="sep">·</span> Due Jul 10 <span class="sep">·</span> PCN-003</div>
+              </div>
+              <div class="task-hours"><span class="h">0</span> <span class="e">/ 18h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot in-progress"></span>
+              <div class="task-info">
+                <div class="task-name">Mechanical room ventilation rework</div>
+                <div class="task-meta">In Progress <span class="sep">·</span> Due Jul 15 <span class="sep">·</span> PCN-004</div>
+              </div>
+              <div class="task-hours"><span class="h">22</span> <span class="e">/ 40h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot complete"></span>
+              <div class="task-info">
+                <div class="task-name">Stack out basement risers</div>
+                <div class="task-meta">Complete <span class="sep">·</span> Closed Jun 26 <span class="sep">·</span> Original Scope</div>
+              </div>
+              <div class="task-hours"><span class="h">16</span> <span class="e">/ 16h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot not-started"></span>
+              <div class="task-info">
+                <div class="task-name">Rough-in fixtures, south wing L1</div>
+                <div class="task-meta">Not Started <span class="sep">·</span> Due Jul 18 <span class="sep">·</span> Original Scope</div>
+              </div>
+              <div class="task-hours"><span class="h">0</span> <span class="e">/ 48h</span></div>
+            </div>
+
+            <div class="task-row">
+              <span class="task-dot in-progress"></span>
+              <div class="task-info">
+                <div class="task-name">Domestic hot water loop tie-in</div>
+                <div class="task-meta">In Progress <span class="sep">·</span> Due Jul 21 <span class="sep">·</span> Original Scope</div>
+              </div>
+              <div class="task-hours"><span class="h">6</span> <span class="e">/ 30h</span></div>
+            </div>
+
+          </div>
+
+          <!-- Project Logs -->
+          <div class="card" id="logsCard">
+            <button class="widget-close" onclick="closeWidget()" aria-label="Close">
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="card-head">
+              <div class="section-label">Project Logs</div>
+              <a class="view-all" onclick="focusWidget('logsCard')">View all →</a>
+            </div>
+
+            <div class="log-row">
+              <div class="log-date">
+                <div class="d">29</div>
+                <div class="m">Jun</div>
+              </div>
+              <div class="log-info">
+                <div class="log-name">Booster pump skid late, basement run delayed</div>
+                <div class="log-meta">
+                  <span class="avatar a1">SR</span>
+                  <span>Shrikant Rathi</span>
+                  <span class="sep">·</span>
+                  <span class="hours-pill">6.5h</span>
+                  <span class="photo-count"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>4</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-row">
+              <div class="log-date">
+                <div class="d">28</div>
+                <div class="m">Jun</div>
+              </div>
+              <div class="log-info">
+                <div class="log-name">L2 north wing rough-in progressing on plan</div>
+                <div class="log-meta">
+                  <span class="avatar a2">JC</span>
+                  <span>Jamie Chen</span>
+                  <span class="sep">·</span>
+                  <span class="hours-pill">8.0h</span>
+                  <span class="photo-count"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>6</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-row">
+              <div class="log-date">
+                <div class="d">27</div>
+                <div class="m">Jun</div>
+              </div>
+              <div class="log-info">
+                <div class="log-name">Pressure test prep complete, ready for test Monday</div>
+                <div class="log-meta">
+                  <span class="avatar a3">DM</span>
+                  <span>Dev Mehta</span>
+                  <span class="sep">·</span>
+                  <span class="hours-pill">7.5h</span>
+                  <span class="photo-count"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-row">
+              <div class="log-date">
+                <div class="d">26</div>
+                <div class="m">Jun</div>
+              </div>
+              <div class="log-info">
+                <div class="log-name">Stack out basement risers complete, closed out</div>
+                <div class="log-meta">
+                  <span class="avatar a2">JC</span>
+                  <span>Jamie Chen</span>
+                  <span class="sep">·</span>
+                  <span class="hours-pill">6.0h</span>
+                  <span class="photo-count"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>3</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="log-row">
+              <div class="log-date">
+                <div class="d">25</div>
+                <div class="m">Jun</div>
+              </div>
+              <div class="log-info">
+                <div class="log-name">Delivery delay on booster pump skid flagged to GC</div>
+                <div class="log-meta">
+                  <span class="avatar a1">SR</span>
+                  <span>Shrikant Rathi</span>
+                  <span class="sep">·</span>
+                  <span class="hours-pill">3.0h</span>
+                  <span class="photo-count"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>1</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Photos -->
+          <div class="card" id="photosCard">
+            <button class="widget-close" onclick="closeWidget()" aria-label="Close">
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="card-head">
+              <div class="section-label">Project Photos</div>
+              <a class="view-all" onclick="focusWidget('photosCard')">View all 86 →</a>
+            </div>
+            <button class="add-photos-btn">
+              <span class="ap-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/><line x1="12" y1="10" x2="12" y2="16"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+              </span>
+              <span class="ap-text">
+                Add Photos
+                <div class="ap-sub">Upload directly without writing a log · drag &amp; drop or click</div>
+              </span>
+            </button>
+            <div class="photos-grid">
+              <div class="photo-tile"></div>
+              <div class="photo-tile t2"></div>
+              <div class="photo-tile t3"></div>
+              <div class="photo-tile t4"></div>
+              <div class="photo-tile t5"></div>
+              <div class="photo-tile t6"></div>
+              <div class="photo-tile t7"></div>
+              <div class="photo-tile more">+78</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Activity feed -->
+        <div class="col">
+          <div class="card" id="activityCard" style="flex: 1;">
+            <button class="widget-close" onclick="closeWidget()" aria-label="Close">
+              <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="card-head">
+              <div class="section-label">Recent Project Activity</div>
+              <a class="view-all" onclick="focusWidget('activityCard')">View all →</a>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot log"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Tech log submitted</strong> — booster pump skid late, basement run delayed (6.5 hrs)</div>
+                <div class="activity-meta">
+                  <span class="avatar a1">SR</span>
+                  <span>Shrikant Rathi</span>
+                  <span class="sep">·</span>
+                  <span>2h ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot task"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Task marked Blocked</strong> — Install booster pump assembly · awaiting delivery of pump skid</div>
+                <div class="activity-meta">
+                  <span class="avatar a1">SR</span>
+                  <span>Shrikant Rathi</span>
+                  <span class="sep">·</span>
+                  <span>3h ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot pcn"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>PCN-004 approved</strong> — Mechanical room ventilation rework · +40 hrs, +$8,200 cost impact</div>
+                <div class="activity-meta">
+                  <span class="avatar a4">PT</span>
+                  <span>Priya Tran</span>
+                  <span class="sep">·</span>
+                  <span>5h ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot log"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Tech log submitted</strong> — L2 north wing rough-in progressing on plan (8.0 hrs)</div>
+                <div class="activity-meta">
+                  <span class="avatar a2">JC</span>
+                  <span>Jamie Chen</span>
+                  <span class="sep">·</span>
+                  <span>Yesterday</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot rfi"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>RFI-007 answered</strong> — Vent stack conflict with HVAC duct in mechanical room · resolution: relocate access door (see PCN-003)</div>
+                <div class="activity-meta">
+                  <span class="avatar a4">PT</span>
+                  <span>Priya Tran</span>
+                  <span class="sep">·</span>
+                  <span>Yesterday</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot log"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Tech log submitted</strong> — Pressure test prep complete, ready for test Monday (7.5 hrs)</div>
+                <div class="activity-meta">
+                  <span class="avatar a3">DM</span>
+                  <span>Dev Mehta</span>
+                  <span class="sep">·</span>
+                  <span>2 days ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot milestone"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Milestone reached</strong> — "Basement rough-in complete" marked as complete</div>
+                <div class="activity-meta">
+                  <span class="avatar a4">PT</span>
+                  <span>Priya Tran</span>
+                  <span class="sep">·</span>
+                  <span>3 days ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot task"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>Task completed</strong> — Stack out basement risers</div>
+                <div class="activity-meta">
+                  <span class="avatar a2">JC</span>
+                  <span>Jamie Chen</span>
+                  <span class="sep">·</span>
+                  <span>3 days ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="activity-row">
+              <span class="activity-dot pcn"></span>
+              <div class="activity-content">
+                <div class="activity-title"><strong>PCN-003 ingested</strong> — Relocate utility room access door · +18 hrs, +$3,600 cost impact</div>
+                <div class="activity-meta">
+                  <span class="avatar a4">PT</span>
+                  <span>Priya Tran</span>
+                  <span class="sep">·</span>
+                  <span>4 days ago</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.3 · Per-project tech view</h2>
+    <h3>Tech project view — desktop<span class="changed-pill">v3</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Corrected vs. v2 — spec audit</span>
+      The v2 missed several things flagged by direct read of spec section 7.3 + D-036 + D-040: single primary action (was two), Raise RFI as secondary (was co-equal primary), no KPIs in header (was four stat blocks), prominent Add Photos button (was missing), 8 photos in grid (was 5+1).
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Action structure — single primary</span>
+      Per D-040: techs do <strong>not</strong> get a separate Submit Time button on the per-project view. Time entry is captured inside the Daily Tech Log composer. So this view shows <strong>one full-width primary</strong> (Write Daily Tech Log, pink-red gradient), with <strong>Raise RFI as a secondary card below</strong> (lighter visual weight — white card, blue-tinted icon, smaller padding). Spec lines 1248, 1284, and 1350 are all consistent on this.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Compact header — no KPIs</span>
+      Spec line 1086 is explicit: "What's intentionally NOT on this view: team list, project KPIs, hours-to-date, milestones, change notices register, assets folder browser, client reports." The header carries identification only — status pill, ID pill, name, location, client. KPIs and milestones live on the admin Overview tab; if a tech needs them, that's one tab strip click away.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Add Photos — prominent at top of Photos card</span>
+      Per spec line 1082: "prominent 'Add Photos' button at the top." It's a standalone upload affordance for when a tech took photos but didn't write a log (or wants to add photos to Site Photos folder without going through a log). Styled as a dashed-border dropzone-style button — desktop affords drag &amp; drop, so the button hints at that.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">8 photos in the grid</span>
+      Spec specifies "photo grid (8 most recent)." Laid out as 4×2 on desktop with the 8th tile showing the overflow count.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Stale spec language flagged</span>
+      Section 7.3 lines 1080 and 1084 still describe Logs and Photos as "scoped to this tech" (the old "my" framing). That's stale — D-030 dropped the "my" concept and D-026 made everything open access. Same drift as section 7.4. The design here uses project-scoped framing; the spec language needs a rewrite. Same pattern as the section 7.4 / section 8.1 follow-up.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Activity feed — multi-tech visible</span>
+      Per D-026, all activity visible — tech logs from Jamie Chen and Dev Mehta show up alongside Shrikant's. PCN-004 approval shows the $8,200 cost impact (no information hiding). RFI-007 answer shows the resolution and back-reference to PCN-003. Event-type dots match the color model from spec section 7.3 line 1076 (logs amber, tasks green/blue, milestones grey, PCNs blue, RFIs purple).
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Foreman / Supervisor variants — not shown here</span>
+      Per spec line 1350: Foreman or Supervisor role on this project gets a Submit Time card plus their report composer card, layered on top of the base tech view. Worth designing as a separate variant once this base is signed off.
+    </div>
+
+  </div>
+</div>
+<div class="widget-backdrop" id="widgetBackdrop" onclick="closeWidget()"></div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+
+  function focusWidget(id) {
+    document.querySelectorAll('.card.is-focused').forEach(function(el) { el.classList.remove('is-focused'); });
+    var target = document.getElementById(id);
+    target.classList.add('is-focused');
+    target.scrollTop = 0;
+    document.getElementById('widgetBackdrop').classList.add('show');
+    document.body.classList.add('widget-open');
+  }
+  function closeWidget() {
+    document.querySelectorAll('.card.is-focused').forEach(function(el) { el.classList.remove('is-focused'); });
+    document.getElementById('widgetBackdrop').classList.remove('show');
+    document.body.classList.remove('widget-open');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeWidget();
+  });
+</script>
+</body>
+</html>

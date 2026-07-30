@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Project View (mobile)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; position: relative; }
+
+  /* App bar with Back */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .hamburger { width: 36px; height: 36px; border-radius: 8px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .hamburger svg { width: 16px; height: 16px; }
+
+  /* Project header */
+  .project-header { 
+    margin: 0 16px 14px; 
+    border-radius: 14px; 
+    padding: 20px 20px; 
+    color: white; 
+    position: relative; 
+    overflow: hidden;
+    background: 
+      radial-gradient(ellipse at 70% 40%, rgba(120, 70, 200, 0.55) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 80%, rgba(60, 100, 200, 0.45) 0%, transparent 60%),
+      linear-gradient(135deg, #0d1b3d 0%, #1a1240 60%, #2a1a4d 100%);
+  }
+  .project-header::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 20%;
+    width: 120%;
+    height: 120%;
+    background-image: 
+      repeating-linear-gradient(95deg, transparent 0 22px, rgba(180, 140, 220, 0.08) 22px 23px),
+      repeating-linear-gradient(75deg, transparent 0 18px, rgba(140, 180, 220, 0.06) 18px 19px);
+    pointer-events: none;
+  }
+  .project-header-content { position: relative; z-index: 1; }
+  .project-header-label { font-size: 11px; font-weight: 600; opacity: 0.75; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px; }
+  .project-header-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+  .project-header-meta { display: flex; gap: 14px; font-size: 12px; opacity: 0.85; flex-wrap: wrap; align-items: center; }
+  .project-header-meta .pill-id { background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 999px; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; }
+  .project-header-meta .meta-item { display: flex; align-items: center; gap: 5px; }
+  .project-header-meta svg { width: 11px; height: 11px; opacity: 0.8; }
+
+  /* Primary action grid (two big buttons) */
+  .primary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 14px; }
+  .pa-btn { background: white; border-radius: 12px; padding: 18px 14px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--line); }
+  .pa-btn:hover { border-color: var(--blue); }
+  .pa-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .pa-icon.time { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; }
+  .pa-icon.log { background: var(--blue); color: white; }
+  .pa-icon svg { width: 22px; height: 22px; }
+  .pa-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .pa-sub { font-size: 11px; color: var(--muted); }
+
+  /* Card wrapper */
+  .card { background: white; border-radius: 12px; margin: 0 16px 14px; padding: 16px 18px; }
+
+  /* Section header */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .section-action { font-size: 12px; color: var(--blue); font-weight: 600; cursor: pointer; }
+
+  /* Task list */
+  .task-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; cursor: pointer; }
+  .task-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .task-status-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--muted-2); }
+  .task-status-icon.in-progress { background: white; border-color: var(--blue); position: relative; }
+  .task-status-icon.in-progress::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--blue); }
+  .task-status-icon.blocked { background: var(--red); border-color: var(--red); position: relative; }
+  .task-status-icon.blocked::after { content: ''; position: absolute; inset: 4px 2px; background: white; transform: rotate(-45deg); height: 2px; top: 50%; margin-top: -1px; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-name { font-size: 13.5px; color: var(--ink); font-weight: 500; line-height: 1.3; }
+  .task-meta { font-size: 11px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .task-meta .dot { color: var(--muted-2); }
+  .task-meta .blocked-label { color: var(--red); font-weight: 600; }
+
+  /* Recent log row */
+  .log-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; cursor: pointer; }
+  .log-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .log-date-block { width: 44px; text-align: center; flex-shrink: 0; padding-top: 2px; }
+  .log-date-day { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .log-date-month { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--red); margin-top: 2px; }
+  .log-content { flex: 1; min-width: 0; }
+  .log-summary { font-size: 13px; color: var(--ink); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .log-meta-row { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+  .log-meta-row svg { width: 10px; height: 10px; }
+  .log-thumbs { display: flex; gap: 3px; flex-shrink: 0; padding-top: 2px; }
+  .log-thumb { width: 32px; height: 32px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+  .log-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .log-thumb-more { width: 32px; height: 32px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--ink-light); font-weight: 700; }
+
+  /* Photo strip */
+  .photo-action-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .photo-quick-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; border-radius: 999px; background: var(--ink); color: white; font-size: 12.5px; font-weight: 600; cursor: pointer; flex: 1; }
+  .photo-quick-btn svg { width: 13px; height: 13px; }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .photo-tile { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; cursor: pointer; }
+  .photo-tile svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-tile-more { display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--ink-light); font-size: 13px; font-weight: 700; }
+
+  /* Footer space */
+  .device-frame { padding-bottom: 6px; }
+
+  /* Annotation block */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <!-- App bar -->
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </div>
+      <div class="hamburger">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+    </div>
+
+    <!-- Project header -->
+    <div class="project-header">
+      <div class="project-header-content">
+        <div class="project-header-label">Project</div>
+        <div class="project-header-name">Fairmont Hotel Renovation</div>
+        <div class="project-header-meta">
+          <span class="pill-id">9059</span>
+          <span class="meta-item">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Winnipeg, MB
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two big primary actions -->
+    <div class="primary-actions">
+      <div class="pa-btn">
+        <div class="pa-icon time">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="pa-label">Submit Time</div>
+        <div class="pa-sub">to this project</div>
+      </div>
+      <div class="pa-btn">
+        <div class="pa-icon log">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        </div>
+        <div class="pa-label">Write Daily Log</div>
+        <div class="pa-sub">for today</div>
+      </div>
+    </div>
+
+    <!-- My open tasks -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-label">My Open Tasks</div>
+        <span class="section-action">View all</span>
+      </div>
+
+      <div class="task-row">
+        <div class="task-status-icon in-progress"></div>
+        <div class="task-info">
+          <div class="task-name">West wall rough-in</div>
+          <div class="task-meta">
+            <span>In Progress</span>
+            <span class="dot">·</span>
+            <span>Due May 22</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-row">
+        <div class="task-status-icon"></div>
+        <div class="task-info">
+          <div class="task-name">Pressure testing supply lines</div>
+          <div class="task-meta">
+            <span>Not Started</span>
+            <span class="dot">·</span>
+            <span>Due May 24</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-row">
+        <div class="task-status-icon blocked"></div>
+        <div class="task-info">
+          <div class="task-name">Install main supply line</div>
+          <div class="task-meta">
+            <span class="blocked-label">Blocked</span>
+            <span class="dot">·</span>
+            <span>Waiting on P&amp;ID drawings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent daily logs (mine) -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-label">My Recent Daily Logs</div>
+        <span class="section-action">View all</span>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">20</div>
+          <div class="log-date-month">May</div>
+        </div>
+        <div class="log-content">
+          <div class="log-summary">Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop.</div>
+          <div class="log-meta-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            6.5 hrs
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#cfd5db"/>
+              <rect y="32" width="48" height="16" fill="#a89580"/>
+              <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+            </svg>
+          </div>
+          <div class="log-thumb-more">+4</div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">19</div>
+          <div class="log-date-month">May</div>
+        </div>
+        <div class="log-content">
+          <div class="log-summary">Continued rough-in on west wall. Installed manifold and shut-off valves.</div>
+          <div class="log-meta-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            7.0 hrs
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#c0c5cc"/>
+              <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+              <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+              <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+              <rect x="34" y="28" width="4" height="14" fill="#c98551"/>
+            </svg>
+          </div>
+          <div class="log-thumb-more">+2</div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">18</div>
+          <div class="log-date-month">May</div>
+        </div>
+        <div class="log-content">
+          <div class="log-summary">Started west wall rough-in. Snap lines, installed first 3 vertical risers.</div>
+          <div class="log-meta-row">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            8.0 hrs
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- My recent photos + quick upload -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-label">My Recent Photos</div>
+        <span class="section-action">View all</span>
+      </div>
+
+      <div class="photo-action-row">
+        <div class="photo-quick-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Add Photos
+        </div>
+      </div>
+
+      <div class="photo-grid">
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#cfd5db"/>
+            <rect y="32" width="48" height="16" fill="#a89580"/>
+            <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+            <rect x="6" y="26" width="32" height="3" fill="#c98551"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#3a4148"/>
+            <circle cx="24" cy="22" r="14" fill="#e8e4dc"/>
+            <circle cx="24" cy="22" r="11" fill="#fff"/>
+            <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+            <circle cx="24" cy="22" r="1.5" fill="#222"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#c0c5cc"/>
+            <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+            <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="34" y="28" width="4" height="14" fill="#c98551"/>
+            <circle cx="12" cy="18" r="2.5" fill="#c92020"/>
+            <circle cx="24" cy="18" r="2.5" fill="#c92020"/>
+            <circle cx="36" cy="18" r="2.5" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#d8c9b0"/>
+            <rect width="48" height="22" fill="#e8dcc4"/>
+            <rect x="6" y="28" width="3" height="20" fill="#888"/>
+            <rect x="20" y="28" width="3" height="20" fill="#888"/>
+            <rect x="34" y="28" width="3" height="20" fill="#888"/>
+            <circle cx="7.5" cy="32" r="3" fill="#c92020"/>
+            <circle cx="21.5" cy="32" r="3" fill="#2050c9"/>
+            <circle cx="35.5" cy="32" r="3" fill="#888"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#5a6068"/>
+            <rect y="32" width="48" height="16" fill="#3a3f45"/>
+            <g transform="translate(8 14) rotate(35 16 12)">
+              <rect x="0" y="9" width="22" height="6" rx="1" fill="#b8b8b8"/>
+            </g>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#3a4148"/>
+            <rect x="10" y="14" width="28" height="22" rx="2" fill="#5a6068"/>
+            <circle cx="24" cy="25" r="8" fill="#1a1d20"/>
+            <circle cx="24" cy="25" r="6" fill="#3a3f45"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#a8c4d8"/>
+            <rect y="30" width="48" height="18" fill="#7a8a96"/>
+            <rect x="14" y="14" width="20" height="20" fill="#d8c9b0"/>
+          </svg>
+        </div>
+        <div class="photo-tile photo-tile-more">+8</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="annotations">
+    <h3>Per-project tech view notes</h3>
+    <ul>
+      <li><strong>Lands here from "My Projects" widget</strong> on the homepage. Tap a project row, this opens.</li>
+      <li><strong>Project header mirrors the home hero treatment</strong> visually (dark gradient) for continuity, but is more compact since the tech already knows who they are. Shows project name, ID, location.</li>
+      <li><strong>Two big primary actions at top</strong>: Submit Time and Write Daily Log. Side-by-side cards with colored icon, label, and tiny sub-label clarifying scope ("to this project", "for today"). These are the two things the tech does dozens of times a week. They earn the prime real estate.</li>
+      <li><strong>"Submit Time" pre-fills the project</strong> on the existing TimeTracker form. The tech doesn't have to pick the work type or project again.</li>
+      <li><strong>"Write Daily Log" opens the log composer</strong> with project pre-filled and today's date selected.</li>
+      <li><strong>"My Open Tasks" section</strong> shows only this tech's own tasks on this project. Status dot, name, status label, due date. Blocked task gets red treatment and surfaces the blocking reason inline. Tap to view task detail.</li>
+      <li><strong>"My Recent Daily Logs" section</strong> shows the 3 most recent logs this tech submitted to this project. Tap to view full log. Photo thumbs visible inline. This answers the "did I already document that?" question.</li>
+      <li><strong>"My Recent Photos" section</strong> shows the photo grid (8 most recent), plus the prominent <strong>"Add Photos"</strong> button at the top of the section. This is the standalone photo upload affordance you asked about: photos drop straight into the project's Site Photos folder without requiring a daily log to be open.</li>
+      <li><strong>Everything scoped to "mine."</strong> Tech only sees their own tasks, logs, photos. Other techs' work is invisible. Reduces noise and protects privacy.</li>
+    </ul>
+
+    <h4>What's intentionally NOT here</h4>
+    <ul>
+      <li>No team list (techs don't need to see who's on the project)</li>
+      <li>No project KPIs, hours-to-date, milestones, change notices</li>
+      <li>No activity feed, no other techs' content</li>
+      <li>No assets folder browser (just their own recent photos)</li>
+      <li>No activity feed, change notices, or client reports surfaces</li>
+    </ul>
+
+    <h4>The two paths a tech uses</h4>
+    <ul>
+      <li><strong>For time:</strong> Home → My Projects → tap project → Submit Time (project pre-filled). OR Home → Submit a timesheet → pick Projects work type → pick project. Both paths work.</li>
+      <li><strong>For daily logs:</strong> Home → Quick Actions: Write Daily Log → pick project. OR Home → My Projects → tap project → Write Daily Log (project pre-filled). Both paths work.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

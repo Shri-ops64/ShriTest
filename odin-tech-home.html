@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Home (mobile)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame {
+    width: 390px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    border: 1px solid #c8cdd4;
+    position: relative;
+  }
+
+  /* Top bar with logo + hamburger */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .app-logo svg { height: 22px; width: auto; }
+  .hamburger { width: 36px; height: 36px; border-radius: 8px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .hamburger svg { width: 16px; height: 16px; }
+
+  /* Hero (greeting + counter) */
+  .hero { 
+    margin: 0 16px 14px; 
+    border-radius: 14px; 
+    padding: 22px 20px; 
+    color: white; 
+    position: relative; 
+    overflow: hidden;
+    background: 
+      radial-gradient(ellipse at 70% 40%, rgba(120, 70, 200, 0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 80%, rgba(60, 100, 200, 0.5) 0%, transparent 60%),
+      linear-gradient(135deg, #0d1b3d 0%, #1a1240 60%, #2a1a4d 100%);
+  }
+  /* Subtle starburst lines */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 20%;
+    width: 120%;
+    height: 120%;
+    background-image: 
+      repeating-linear-gradient(95deg, transparent 0 22px, rgba(180, 140, 220, 0.08) 22px 23px),
+      repeating-linear-gradient(75deg, transparent 0 18px, rgba(140, 180, 220, 0.06) 18px 19px);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .hero-left { min-width: 0; flex: 1; }
+  .hero-hello { font-size: 13px; font-weight: 500; opacity: 0.85; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 2px; }
+  .hero-name { font-size: 26px; font-weight: 700; line-height: 1.1; margin-bottom: 18px; }
+  .hero-date { font-size: 12.5px; opacity: 0.85; display: flex; align-items: center; gap: 6px; }
+  .hero-date svg { width: 12px; height: 12px; opacity: 0.7; }
+  .hero-right { text-align: right; flex-shrink: 0; }
+  .hero-signoff { display: inline-block; padding: 9px 18px; border-radius: 999px; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; cursor: pointer; margin-bottom: 30px; box-shadow: 0 3px 12px rgba(237, 28, 36, 0.35); }
+  .hero-hours-block { font-size: 12.5px; opacity: 0.85; line-height: 1.1; }
+  .hero-hours-block .hours-num { font-size: 36px; font-weight: 700; line-height: 1; margin-top: 2px; color: white; opacity: 1; }
+
+  /* Card wrapper */
+  .card { background: white; border-radius: 12px; margin: 0 16px 14px; padding: 16px 18px; }
+
+  /* Section label */
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px; }
+
+  /* Action buttons (Quick Actions) */
+  .qa-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; border: 1px solid transparent; margin-bottom: 8px; }
+  .qa-btn:last-child { margin-bottom: 0; }
+  .qa-btn.primary { background: var(--ink); color: white; }
+  .qa-btn.primary svg { color: white; }
+  .qa-btn.secondary { background: white; color: var(--blue); border: 1.5px solid var(--blue); }
+  .qa-btn.secondary svg { color: var(--blue); }
+  .qa-btn.tertiary { background: white; color: var(--ink); border: 1.5px solid var(--line); }
+  .qa-btn.tertiary svg { color: var(--ink-light); }
+  .qa-btn svg { width: 15px; height: 15px; }
+
+  /* Projects widget */
+  .widget-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .widget-head .section-label { margin-bottom: 0; }
+  .widget-head .view-all { font-size: 12px; color: var(--blue); font-weight: 600; text-decoration: none; cursor: pointer; }
+
+  /* Search inside card */
+  .field-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; }
+  .field-search input { border: none; background: transparent; outline: none; flex: 1; font-size: 13px; color: var(--ink); }
+  .field-search svg { width: 14px; height: 14px; color: var(--muted); }
+
+  /* Project list row */
+  .project-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; cursor: pointer; }
+  .project-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .project-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--blue-soft); color: var(--blue); }
+  .project-icon svg { width: 16px; height: 16px; }
+  .project-info { flex: 1; min-width: 0; }
+  .project-name { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .project-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .project-meta .dot { color: var(--muted-2); }
+  .project-meta .task-pill { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 999px; background: var(--bg); color: var(--ink-light); font-weight: 600; font-size: 10.5px; }
+  .project-meta .task-pill svg { width: 9px; height: 9px; }
+  .project-meta .task-pill.blocked { background: var(--red-soft); color: var(--red); }
+  .project-chevron { color: var(--muted-2); flex-shrink: 0; }
+  .project-chevron svg { width: 14px; height: 14px; }
+
+  /* Work Orders widget (existing pattern) */
+  .wo-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line-2); margin-bottom: 4px; }
+  .wo-tab { padding: 10px 0; font-size: 13px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-right: 18px; display: flex; align-items: center; gap: 6px; }
+  .wo-tab.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+  .wo-tab .count-badge { display: inline-block; padding: 1px 7px; border-radius: 999px; background: var(--ink); color: white; font-size: 10.5px; font-weight: 700; min-width: 16px; text-align: center; }
+  .wo-tab:not(.active) .count-badge { background: var(--bg); color: var(--ink-light); }
+  .wo-empty { padding: 20px 0; text-align: center; font-size: 13px; color: var(--muted); }
+
+  /* Annotation block off to the side */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { 
+    width: 360px; 
+    background: #fffde8; 
+    border: 1px dashed #c4b04a; 
+    border-radius: 8px; 
+    padding: 18px 22px; 
+    margin-top: 40px;
+  }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <!-- App bar -->
+    <div class="app-bar">
+      <div class="app-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="hamburger">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-left">
+          <div class="hero-hello">Hello</div>
+          <div class="hero-name">Mike</div>
+          <div class="hero-date">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            20-May-26
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-signoff">SIGN OFF</div>
+          <div class="hero-hours-block">
+            <div>Hours today</div>
+            <div class="hours-num">0.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions card -->
+    <div class="card">
+      <div class="section-label">Quick Actions</div>
+      <div class="qa-btn primary">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Submit a timesheet
+      </div>
+      <div class="qa-btn secondary">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Global Search
+      </div>
+    </div>
+
+    <!-- Work Orders card (existing) -->
+    <div class="card">
+      <div class="section-label">Work Orders</div>
+      <div class="field-search">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search WO # or client…">
+      </div>
+      <div class="wo-tabs">
+        <div class="wo-tab active">My Dept WO <span class="count-badge">0</span></div>
+        <div class="wo-tab">Open WO <span class="count-badge">431</span></div>
+      </div>
+      <div class="wo-empty">No work orders found.</div>
+    </div>
+
+    <!-- My Projects card -->
+    <div class="card">
+      <div class="widget-head">
+        <div class="section-label">My Projects</div>
+        <span class="view-all">View all</span>
+      </div>
+      <div class="field-search">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search projects…">
+      </div>
+
+      <div class="project-row">
+        <div class="project-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="project-info">
+          <div class="project-name">Fairmont Hotel Renovation</div>
+          <div class="project-meta">
+            <span>9059</span>
+            <span class="dot">·</span>
+            <span>Winnipeg, MB</span>
+            <span class="dot">·</span>
+            <span class="task-pill">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              3 tasks
+            </span>
+          </div>
+        </div>
+        <div class="project-chevron">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+
+      <div class="project-row">
+        <div class="project-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="project-info">
+          <div class="project-name">Ashley Home Store · Ellice Ave</div>
+          <div class="project-meta">
+            <span>9061</span>
+            <span class="dot">·</span>
+            <span>Winnipeg, MB</span>
+            <span class="dot">·</span>
+            <span class="task-pill">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              2 tasks
+            </span>
+          </div>
+        </div>
+        <div class="project-chevron">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+
+      <div class="project-row">
+        <div class="project-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="project-info">
+          <div class="project-name">Henderson Industrial Park</div>
+          <div class="project-meta">
+            <span>9058</span>
+            <span class="dot">·</span>
+            <span>Selkirk, MB</span>
+            <span class="dot">·</span>
+            <span class="task-pill blocked">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              1 blocked
+            </span>
+          </div>
+        </div>
+        <div class="project-chevron">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="annotations">
+    <h3>Tech homepage notes</h3>
+    <ul>
+      <li><strong>Quick Actions unchanged from production.</strong> "Submit a timesheet" (primary) and "Global Search" (secondary). Both are universal actions that apply to service AND project techs. Nothing project-specific lives here. This avoids confusing service techs who would otherwise see "Write Daily Log" and wonder if it applies to them.</li>
+      <li><strong>Work Orders widget stays in its existing position</strong> directly below Quick Actions. Service is the dominant business line, so it gets the prime real estate below Quick Actions. Same widget Thor uses today.</li>
+      <li><strong>New "My Projects" widget sits below Work Orders.</strong> For techs assigned to projects, this is their entry point. For pure service techs, it's empty or hidden.</li>
+      <li><strong>Scoped to "My Projects" only.</strong> Filtered by team membership on the project. Shows projects the tech is actively assigned to. "View all" link in header for when they need to search beyond their assigned set.</li>
+      <li><strong>Search field inside the widget</strong> lets them filter their list or find a project by name/ID.</li>
+      <li><strong>Each project row shows</strong>: name, project ID, location, and a task pill summary (3 tasks, 2 tasks, etc). Blocked tasks bubble up with a red pill so the tech sees them at a glance.</li>
+      <li><strong>Tap a project row</strong> opens the per-project tech view, where Write Daily Log and Submit Time live as big primary actions.</li>
+    </ul>
+
+    <h4>Why Daily Log is NOT in Quick Actions</h4>
+    <ul>
+      <li>Daily logs are project-specific by definition. They cannot exist without a project context.</li>
+      <li>Putting it in Quick Actions would create confusion: service techs would wonder if they need to write one, project techs would have two entry paths and need to figure out which to use.</li>
+      <li>Inside-project is the right home: tech taps project → sees Write Daily Log and Submit Time as the two big primary action cards. Total cost: 2 taps from home to log composer. Acceptable.</li>
+      <li>Service techs see exactly the screen they see today, just with a Projects widget added below Work Orders.</li>
+    </ul>
+
+    <h4>What's intentionally NOT here</h4>
+    <ul>
+      <li>No equipment-first navigation (that's elsewhere in app, unchanged)</li>
+      <li>No mascot character</li>
+      <li>No lime green</li>
+      <li>No project KPIs, milestones, change notices, or admin info</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

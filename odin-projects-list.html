@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Projects · List View</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --sidebar-bg: #ffffff;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 600; }
+  .nav-item.parent-open { background: var(--bg); font-weight: 600; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .nav-chevron.open { transform: rotate(180deg); }
+  .nav-subgroup { display: flex; flex-direction: column; gap: 2px; padding-left: 14px; margin: 4px 0 8px; }
+  .nav-subitem { padding: 8px 14px 8px 22px; border-radius: 4px; font-size: 13.5px; color: var(--ink-light); cursor: pointer; border-left: 2px solid transparent; }
+  .nav-subitem:hover { background: var(--bg-2); }
+  .nav-subitem.active { background: var(--bg); color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  /* Topbar */
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  /* Page title bar */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+
+  /* Top actions row (search + add project) */
+  .top-actions { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-bottom: 18px; }
+  .search-input { width: 320px; padding: 8px 12px 8px 36px; border: 1px solid var(--line); border-radius: 999px; background: white url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23828487' stroke-width='2'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>") no-repeat left 13px center; font-size: 13.5px; outline: none; font-family: inherit; }
+  .search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn svg { width: 14px; height: 14px; }
+
+  /* KPI section header (column titles row) */
+  .kpi-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 14px 4px; }
+
+  /* Primary KPI row: 4 big cards */
+  .kpi-primary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .kpi-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; position: relative; overflow: hidden; transition: box-shadow 0.15s ease; }
+  .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .kpi-card-band { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, var(--blue-dark) 0%, var(--blue) 50%, #5ea0ed 100%); }
+  .kpi-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .kpi-card-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .kpi-card-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .kpi-card-icon svg { width: 15px; height: 15px; }
+  .kpi-card-icon.neutral { background: var(--bg); color: var(--ink-light); }
+  .kpi-card-icon.blue { background: var(--blue-soft); color: var(--blue); }
+  .kpi-card-icon.amber { background: var(--amber-soft); color: var(--amber); }
+  .kpi-card-icon.green { background: var(--green-soft); color: var(--green); }
+  .kpi-card-icon.purple { background: var(--purple-soft); color: var(--purple); }
+  .kpi-card-icon.red { background: var(--red-soft); color: var(--red); }
+  .kpi-card-value { font-size: 36px; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+  .kpi-card-value.amber { color: var(--amber); }
+  .kpi-card-value.green { color: var(--green); }
+  .kpi-card-value.red { color: var(--red); }
+  .kpi-card-value.blue { color: var(--blue); }
+  .kpi-card-sub { font-size: 12px; color: var(--muted); }
+  .kpi-card-sub strong { color: var(--ink-light); font-weight: 600; }
+
+  /* Secondary row: 2 small cards + donut spanning 2 */
+  .kpi-secondary-row { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 16px; margin-bottom: 22px; align-items: stretch; }
+  .kpi-card-sm { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; transition: box-shadow 0.15s ease; }
+  .kpi-card-sm:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .kpi-card-sm-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .kpi-card-sm-label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .kpi-card-sm-value { font-size: 30px; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+  .kpi-card-sm-sub { font-size: 11.5px; color: var(--muted); }
+
+  /* Status donut card (spans 2 columns in secondary row) */
+  .donut-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; gap: 24px; transition: box-shadow 0.15s ease; }
+  .donut-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .donut-text-col { flex: 1; display: flex; flex-direction: column; }
+  .donut-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .donut-title { font-size: 13.5px; color: var(--ink); font-weight: 700; }
+  .donut-icon { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); color: var(--ink-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .donut-icon svg { width: 14px; height: 14px; }
+  .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin-bottom: 12px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.active { background: var(--green); }
+  .legend-dot.onhold { background: var(--amber); }
+  .legend-dot.completed { background: var(--purple); }
+  .legend-dot.cancelled { background: var(--red); }
+  .legend-count { font-weight: 700; color: var(--ink); min-width: 14px; }
+  .legend-label { color: var(--ink-light); }
+  .donut-foot { font-size: 11.5px; color: var(--muted); padding-top: 10px; border-top: 1px dashed var(--line); }
+  .donut-svg { width: 130px; height: 130px; flex-shrink: 0; }
+
+  /* Projects table */
+  .projects-card { background: white; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .projects-card-head { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .projects-card-head h3 { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .projects-table { width: 100%; border-collapse: collapse; }
+  .projects-table thead th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); background: var(--bg-2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .projects-table tbody td { padding: 14px 16px; font-size: 13.5px; color: var(--ink); border-bottom: 1px solid var(--line-2); vertical-align: middle; }
+  .projects-table tbody tr:last-child td { border-bottom: none; }
+  .projects-table tbody tr:hover { background: var(--bg-2); }
+  .project-name { font-weight: 600; color: var(--blue); cursor: pointer; }
+  .project-name:hover { text-decoration: underline; }
+  .project-code { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12.5px; color: var(--ink-light); }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .status-pill.active { background: var(--green-soft); color: var(--green); }
+  .status-pill.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .status-pill.onhold { background: var(--amber-soft); color: var(--amber); }
+  .status-pill.onhold::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+  .status-pill.completed { background: var(--purple-soft); color: var(--purple); }
+  .status-pill.completed::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--purple); }
+  .team-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-dark); font-size: 12px; font-weight: 700; }
+  .progress-cell { display: flex; align-items: center; gap: 10px; min-width: 130px; }
+  .progress-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--blue); border-radius: 999px; }
+  .progress-bar-fill.zero { background: var(--muted-2); }
+  .progress-label { font-size: 12px; color: var(--ink-light); font-weight: 600; min-width: 36px; text-align: right; }
+  .row-actions { display: flex; gap: 6px; }
+  .row-action-btn { width: 28px; height: 28px; border-radius: 6px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+  .row-action-btn:hover { background: var(--bg-2); color: var(--ink); }
+  .row-action-btn.danger:hover { background: var(--red-soft); color: var(--red); border-color: var(--red); }
+  .row-action-btn svg { width: 14px; height: 14px; }
+  .row-date { color: var(--ink-light); font-size: 12.5px; white-space: nowrap; }
+  .row-manager { font-size: 13px; color: var(--ink); }
+  .row-client { font-size: 13px; color: var(--ink-light); }
+
+  /* Pagination */
+  .pagination { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--ink-light); background: var(--bg-2); }
+  .pagination-left { display: flex; align-items: center; gap: 10px; }
+  .pagination-select { padding: 4px 24px 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 12.5px; cursor: pointer; font-family: inherit; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23828487' stroke-width='2.5'><polyline points='6 9 12 15 18 9'/></svg>"); background-position: right 6px center; background-repeat: no-repeat; }
+  .pagination-right { display: flex; align-items: center; gap: 12px; }
+  .pagination-arrow { width: 30px; height: 30px; border-radius: 6px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-light); }
+  .pagination-arrow:hover { background: white; color: var(--ink); }
+  .pagination-arrow.disabled { opacity: 0.4; cursor: default; }
+  .pagination-arrow svg { width: 13px; height: 13px; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item parent-open"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron open" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-subgroup">
+        <div class="nav-subitem active">Projects</div>
+        <div class="nav-subitem">Add project</div>
+        <div class="nav-subitem">Image Library</div>
+      </div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Expenses<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">Projects</div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- Page title bar -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Projects</h2>
+          <div class="pt-sub">All company projects, statistics, and default project setup</div>
+        </div>
+        <div class="pt-counter"><strong>1</strong> active · <strong>1</strong> total</div>
+      </div>
+
+      <!-- Top actions row -->
+      <div class="top-actions">
+        <input type="text" class="search-input" placeholder="Search projects...">
+        <button class="btn btn-primary">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Project
+        </button>
+      </div>
+
+      <!-- KPI section label -->
+      <div class="kpi-section-label">Company-wide statistics</div>
+
+      <!-- Primary KPI row: 4 big cards -->
+      <div class="kpi-primary-row">
+
+        <div class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-card-label">Total Projects</span>
+            <div class="kpi-card-icon neutral">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card-value">1</div>
+          <div class="kpi-card-sub">All projects in the system</div>
+          <div class="kpi-card-band"></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-card-label">Active</span>
+            <div class="kpi-card-icon blue">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card-value blue">1</div>
+          <div class="kpi-card-sub">Currently in progress</div>
+          <div class="kpi-card-band"></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-card-label">On Hold</span>
+            <div class="kpi-card-icon amber">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card-value">0</div>
+          <div class="kpi-card-sub">Paused or blocked</div>
+          <div class="kpi-card-band"></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-card-label">Completed</span>
+            <div class="kpi-card-icon green">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card-value">0</div>
+          <div class="kpi-card-sub">Finished this year</div>
+          <div class="kpi-card-band"></div>
+        </div>
+
+      </div>
+
+      <!-- Secondary row: task counts + Status donut -->
+      <div class="kpi-secondary-row">
+
+        <div class="kpi-card-sm">
+          <div class="kpi-card-sm-head">
+            <span class="kpi-card-sm-label">Total Tasks</span>
+            <div class="kpi-card-icon neutral">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="kpi-card-sm-value">3</div>
+            <div class="kpi-card-sm-sub">Across all active projects</div>
+          </div>
+        </div>
+
+        <div class="kpi-card-sm">
+          <div class="kpi-card-sm-head">
+            <span class="kpi-card-sm-label">Completed Tasks</span>
+            <div class="kpi-card-icon green">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="kpi-card-sm-value">0</div>
+            <div class="kpi-card-sm-sub">0% completion rate</div>
+          </div>
+        </div>
+
+        <!-- Status donut card -->
+        <div class="donut-card">
+          <div class="donut-text-col">
+            <div class="donut-head">
+              <div class="donut-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+              </div>
+              <span class="donut-title">Status breakdown</span>
+            </div>
+            <div class="legend-grid">
+              <div class="legend-row"><span class="legend-dot active"></span><span class="legend-count">1</span><span class="legend-label">Active</span></div>
+              <div class="legend-row"><span class="legend-dot completed"></span><span class="legend-count">0</span><span class="legend-label">Completed</span></div>
+              <div class="legend-row"><span class="legend-dot onhold"></span><span class="legend-count">0</span><span class="legend-label">On Hold</span></div>
+              <div class="legend-row"><span class="legend-dot cancelled"></span><span class="legend-count">0</span><span class="legend-label">Cancelled</span></div>
+            </div>
+            <div class="donut-foot">3 tasks across 1 active project</div>
+          </div>
+          <svg class="donut-svg" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+            <!-- background ring -->
+            <circle cx="21" cy="21" r="15.91549430918954" fill="white" stroke="#f3f4f6" stroke-width="6"/>
+            <!-- 100% Active (green) -->
+            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#1f9e4a" stroke-width="6" stroke-dasharray="100 0" stroke-dashoffset="25" transform="rotate(0 21 21)"/>
+            <!-- center text -->
+            <text x="21" y="20" text-anchor="middle" font-size="6" font-weight="700" fill="#2a2a2a" font-family="Inter, sans-serif">1</text>
+            <text x="21" y="26" text-anchor="middle" font-size="3" fill="#828487" font-family="Inter, sans-serif">project</text>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- PROJECTS TABLE -->
+      <div class="projects-card">
+        <div class="projects-card-head">
+          <h3>Projects</h3>
+        </div>
+        <table class="projects-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Code</th>
+              <th>Client</th>
+              <th>Manager</th>
+              <th>Status</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Team</th>
+              <th>Progress</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="project-name">Demo</span></td>
+              <td><span class="project-code">1234</span></td>
+              <td><span class="row-client">Test</span></td>
+              <td><span class="row-manager">Brent Warkentin</span></td>
+              <td><span class="status-pill active">Active</span></td>
+              <td><span class="row-date">3/24/2026</span></td>
+              <td><span class="row-date">5/25/2026</span></td>
+              <td><span class="team-badge">2</span></td>
+              <td>
+                <div class="progress-cell">
+                  <div class="progress-bar"><div class="progress-bar-fill zero" style="width: 0%;"></div></div>
+                  <span class="progress-label">0%</span>
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-action-btn" title="View">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="row-action-btn danger" title="Delete">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="pagination-left">
+            <span>Per page:</span>
+            <select class="pagination-select">
+              <option>25</option>
+              <option>50</option>
+              <option>100</option>
+            </select>
+          </div>
+          <div class="pagination-right">
+            <span>1 - 1 of 1 items</span>
+            <button class="pagination-arrow disabled" title="Previous">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="pagination-arrow disabled" title="Next">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <h3>Project List View notes</h3>
+        <ul>
+          <li><strong>Entry point of the Projects module.</strong> This is the first screen the admin sees when clicking Projects in the sidebar. From here, they see company-wide statistics and click into individual projects (which loads the per-project view with the 8 tabs).</li>
+          <li><strong>Brand converted from the lime-green alternate</strong> to the current Odin production brand. White sidebar with logo, dark topbar, blue accents, white cards with light borders. Same brand conventions as Overview, Daily Logs, Activity, etc.</li>
+          <li><strong>NO 8-tab row here.</strong> The tab row only appears INSIDE an individual project. This is the parent page, so it shows the page title bar directly under the topbar.</li>
+          <li><strong>Sidebar Projects item is expanded</strong> showing its three sub-items: Projects (active), Add project, Image Library. Matches the original alternate-brand version exactly.</li>
+          <li><strong>Search and Add Project</strong> sit at the top right. Search is a rounded pill input with a search icon. Add Project is a blue primary button.</li>
+        </ul>
+
+        <h4>KPI section</h4>
+        <ul>
+          <li><strong>Primary KPI row (4 big tiles).</strong> The four most important company-wide numbers: Total Projects (neutral, with grid icon), Active (blue tint with clock icon), On Hold (amber tint with pause icon), Completed (green tint with checkmark icon). Each tile has a category icon top-right, big 36px value, sub-label below, and a thin blue gradient band at the bottom. Hover: subtle shadow lift.</li>
+          <li><strong>Secondary row (2 small task tiles + Status donut).</strong> Total Tasks and Completed Tasks shown as smaller tiles. The Status donut card spans the remaining two columns of the row, getting substantially more space than before. The donut is now 130px (was 110px) and the legend uses a 2-column grid for tighter layout.</li>
+          <li><strong>Donut card upgraded.</strong> Header has a category icon and "Status breakdown" title. Legend reorganized into 2 columns (Active + Completed in row 1, On Hold + Cancelled in row 2) so all four states fit horizontally. Center of the donut shows the active count and "project" label. Foot line: "3 tasks across 1 active project".</li>
+          <li><strong>Default Team Members and Default Project Folders cards removed</strong> from this screen. Those settings are handled elsewhere in Odin (likely in account settings or admin config). Removing them gave the KPI tiles room to breathe.</li>
+        </ul>
+
+        <h4>Projects table</h4>
+        <ul>
+          <li><strong>Standard columns</strong>: Project (clickable, navigates to per-project Overview), Code (monospace), Client, Manager, Status (pill), Start Date, End Date, Team (badge with count), Progress (bar + percentage), Actions (view + delete).</li>
+          <li><strong>Project name is clickable</strong> in blue, hover underline. Clicking takes the admin to the per-project Overview tab.</li>
+          <li><strong>Status pill</strong> color-coded by state: Active (green), On Hold (amber), Completed (purple), Cancelled (red with no example shown).</li>
+          <li><strong>Progress bar with percentage</strong> on the right. Zero progress uses muted grey; positive progress uses blue.</li>
+          <li><strong>Actions column</strong>: eye icon (view, navigates to project Overview), trash icon (delete, with confirmation modal not shown here).</li>
+          <li><strong>Pagination</strong>: Per page dropdown (25 default, 50, 100 options), "X - Y of Z items" counter, prev/next arrows.</li>
+        </ul>
+
+        <h4>What's intentionally NOT here</h4>
+        <ul>
+          <li>No alternate brand colors. No lime green anywhere.</li>
+          <li>No Default Team Members or Default Project Folders cards (moved elsewhere in Odin).</li>
+          <li>No 8-tab row.</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

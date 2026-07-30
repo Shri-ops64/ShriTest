@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Home (desktop, KPI scoreboard)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+  .nav-item.active { color: var(--ink); font-weight: 600; }
+  .nav-item.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -16px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1320px; margin: 0 auto; }
+
+  /* Hero */
+  .hero { border-radius: 16px; padding: 28px 32px; color: white; position: relative; overflow: hidden; margin-bottom: 18px;
+    background: radial-gradient(ellipse at 70% 40%, rgba(120, 70, 200, 0.6) 0%, transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(60, 100, 200, 0.5) 0%, transparent 60%), linear-gradient(135deg, #0d1b3d 0%, #1a1240 60%, #2a1a4d 100%); }
+  .hero-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+  .hero-left { min-width: 0; flex: 1; }
+  .hero-hello { font-size: 13px; font-weight: 500; opacity: 0.85; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .hero-name { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 10px; }
+  .hero-date { font-size: 13px; opacity: 0.85; display: flex; align-items: center; gap: 6px; }
+  .hero-date svg { width: 13px; height: 13px; opacity: 0.7; }
+  .hero-right { display: flex; align-items: center; gap: 28px; flex-shrink: 0; }
+  .hero-hours-block { text-align: right; font-size: 12.5px; opacity: 0.85; line-height: 1.1; }
+  .hero-hours-block .hours-num { font-size: 40px; font-weight: 700; line-height: 1; margin-top: 4px; color: white; opacity: 1; }
+  .hero-signoff { display: inline-flex; align-items: center; padding: 12px 26px; border-radius: 999px; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; cursor: pointer; box-shadow: 0 3px 12px rgba(237, 28, 36, 0.35); flex-shrink: 0; }
+  .hero-signoff:hover { box-shadow: 0 5px 16px rgba(237, 28, 36, 0.42); }
+
+  /* Row layout */
+  .row-2col { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.7fr); gap: 16px; margin-bottom: 16px; align-items: stretch; }
+
+  .card { background: white; border-radius: 14px; padding: 22px 24px; border: 1px solid var(--line); }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 14px; }
+  .head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .head-row .section-label { margin-bottom: 0; }
+  .head-row .head-sub { font-size: 11px; color: var(--muted-2); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .head-row .head-sub svg { width: 12px; height: 12px; }
+
+  /* Quick Actions */
+  .qa-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; border: 1px solid transparent; margin-bottom: 10px; }
+  .qa-btn:last-child { margin-bottom: 0; }
+  .qa-btn.primary { background: var(--ink); color: white; }
+  .qa-btn.primary:hover { background: var(--ink-2); }
+  .qa-btn.secondary { background: white; color: var(--blue); border: 1.5px solid var(--blue); }
+  .qa-btn.secondary:hover { background: var(--blue-soft); }
+  .qa-btn svg { width: 15px; height: 15px; }
+
+  /* My Hours (now clickable) */
+  .my-hours-card { cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+  .my-hours-card:hover { box-shadow: 0 8px 20px rgba(20, 20, 30, 0.08); border-color: var(--blue); }
+  .period-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-2); border-radius: 999px; padding: 3px; margin-bottom: 16px; }
+  .period-seg-btn { padding: 8px 4px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ink-light); text-align: center; cursor: pointer; }
+  .period-seg-btn.active { background: var(--ink); color: white; }
+  .hours-bignum { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--line-2); margin-bottom: 14px; }
+  .hours-bignum .hours-actual { font-size: 36px; font-weight: 700; color: var(--ink); line-height: 1; font-feature-settings: 'tnum'; }
+  .hours-bignum .hours-actual .h-unit { font-size: 16px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+  .hours-client-count { text-align: right; cursor: pointer; border-radius: 9px; padding: 4px 8px; margin: -4px -8px; transition: background 0.12s; }
+  .hours-client-count:hover { background: var(--blue-soft); }
+  .hours-client-count .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 3px; }
+  .hours-client-count .ccount { font-size: 24px; font-weight: 700; color: var(--ink-light); line-height: 1; font-feature-settings: 'tnum'; }
+  .hours-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .hours-breakdown-item { background: var(--bg-2); border-radius: 9px; padding: 10px 12px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: border-color 0.12s, background 0.12s; }
+  .hours-breakdown-item:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .hours-breakdown-item .lbl { font-size: 9.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .hours-breakdown-item .val { font-size: 15px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .hours-breakdown-item .val.bil { color: var(--green); }
+  .hours-breakdown-item .val.nbl { color: var(--ink-light); }
+  .hours-breakdown-item .val.ot { color: var(--red); }
+  .click-hint { color: var(--blue); }
+
+  /* KPI ring grid (single row on desktop) */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-cell { background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); text-align: center; line-height: 1.3; min-height: 28px; display: flex; align-items: center; }
+  .kpi-ring { position: relative; width: 100px; height: 100px; }
+  .kpi-ring svg { width: 100px; height: 100px; transform: rotate(-90deg); }
+  .kpi-ring .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-center .rc-pct { font-size: 22px; font-weight: 800; line-height: 1; font-feature-settings: 'tnum'; }
+  .ring-center .rc-word { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
+  .kpi-cell.under .rc-pct, .kpi-cell.under .rc-word { color: var(--green); }
+  .kpi-cell.near .rc-pct, .kpi-cell.near .rc-word { color: var(--amber); }
+  .kpi-cell.over .rc-pct, .kpi-cell.over .rc-word { color: var(--red); }
+  .kpi-cell .ring-track { stroke: var(--line); }
+  .kpi-cell.under .ring-fill { stroke: var(--green); }
+  .kpi-cell.near .ring-fill { stroke: var(--amber); }
+  .kpi-cell.over .ring-fill { stroke: var(--red); }
+  .kpi-cell.count .ring-fill { stroke: var(--blue); }
+  .kpi-cell.afterhours .ring-fill { stroke: #eab308; }
+  .kpi-sub { font-size: 11px; color: var(--muted); font-feature-settings: 'tnum'; text-align: center; }
+  .ring-center .rc-count { font-size: 28px; font-weight: 800; color: var(--ink); line-height: 1; font-feature-settings: 'tnum'; }
+  .ring-center .rc-count-unit { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-top: 3px; }
+  .kpi-delta { font-weight: 700; }
+  .kpi-delta.up { color: var(--ink-light); }
+
+  /* Tabs (My / Open / Closed) */
+  .wo-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line-2); margin-bottom: 4px; }
+  .wo-tab { padding: 10px 0; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-right: 22px; display: flex; align-items: center; gap: 7px; }
+  .wo-tab.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+  .wo-tab .count-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--ink); color: white; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; }
+  .wo-tab:not(.active) .count-badge { background: var(--bg-2); color: var(--ink-light); }
+
+  .field-search { display: flex; align-items: center; gap: 8px; padding: 11px 16px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; margin: 16px 0 6px; max-width: 380px; }
+  .field-search input { border: none; background: transparent; outline: none; flex: 1; font-size: 13.5px; color: var(--ink); font-family: inherit; }
+  .field-search svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Rollup banner */
+  .rollup-banner { border-radius: 12px; padding: 16px 18px; margin: 16px 0; border: 1px solid; }
+  .rollup-banner.under { background: linear-gradient(135deg, #e6f5ec, #d9efe1); border-color: #b4d9c2; }
+  .rollup-banner.near { background: linear-gradient(135deg, #fdf2dd, #fae5bc); border-color: #f0d597; }
+  .rollup-banner.over { background: linear-gradient(135deg, #fee9ea, #fcd5d7); border-color: #f0c0c3; }
+  .rollup-banner.neutral { background: linear-gradient(135deg, #eef2f8, #e6edf7); border-color: #d3def0; }
+  .rollup-banner-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .rollup-banner-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); flex: 1; min-width: 0; }
+  .rollup-banner-status { font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
+  .rollup-banner.under .rollup-banner-status { background: var(--green); color: white; }
+  .rollup-banner.near .rollup-banner-status { background: var(--amber); color: white; }
+  .rollup-banner.over .rollup-banner-status { background: var(--red); color: white; }
+  .rollup-banner.neutral .rollup-banner-status { background: var(--blue); color: white; }
+  .rollup-banner-nums { display: flex; align-items: baseline; gap: 7px; margin-bottom: 10px; font-feature-settings: 'tnum'; }
+  .rollup-banner-nums .actual { font-size: 26px; font-weight: 700; color: var(--ink); }
+  .rollup-banner-nums .actual-unit { font-size: 14px; color: var(--ink-light); font-weight: 500; }
+  .rollup-banner-nums .vs { font-size: 13px; color: var(--muted); margin: 0 4px; }
+  .rollup-banner-nums .estimate { font-size: 17px; font-weight: 600; color: var(--ink-light); }
+  .rollup-banner-foot { font-size: 11.5px; color: var(--ink-light); opacity: 0.85; }
+  .rollup-banner-bar { height: 10px; background: rgba(255, 255, 255, 0.6); border-radius: 999px; overflow: hidden; position: relative; margin-bottom: 8px; }
+  .rollup-banner-bar-fill { height: 100%; border-radius: 999px; }
+  .rollup-banner.under .rollup-banner-bar-fill { background: linear-gradient(to right, #1f9e4a, #2bb558); }
+  .rollup-banner.near .rollup-banner-bar-fill { background: linear-gradient(to right, #d99316, #e7a93a); }
+  .rollup-banner.over .rollup-banner-bar-fill { background: linear-gradient(to right, #ed1c24, #f54a52); }
+  .rollup-banner.neutral .rollup-banner-bar-fill { background: linear-gradient(to right, #3b7ce4, #1d62d3); }
+
+  /* WO rows */
+  .wo-row { padding: 14px 4px; border-bottom: 1px solid var(--line-2); cursor: pointer; border-radius: 8px; }
+  .wo-row:hover { background: var(--bg-2); }
+  .wo-row:last-child { border-bottom: none; }
+  .wo-row-toprow { display: flex; align-items: flex-start; gap: 16px; }
+  .wo-row-main { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+  .wo-row-id-client { min-width: 0; }
+  .wo-row-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
+  .wo-row-id { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12.5px; font-weight: 700; color: var(--blue-dark); }
+  .wo-row-date { font-size: 11.5px; color: var(--muted); }
+  .wo-row-client { font-size: 14.5px; color: var(--ink); font-weight: 500; margin-bottom: 2px; }
+  .wo-row-type { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+  .wo-expand-chev { color: var(--muted-2); flex-shrink: 0; margin-top: 8px; transition: transform 0.15s; }
+  .wo-expand-chev svg { width: 17px; height: 17px; }
+  .wo-row.open .wo-expand-chev { transform: rotate(180deg); }
+
+  .row-est { }
+  .row-est-bar { height: 6px; background: var(--bg-2); border-radius: 999px; overflow: hidden; margin-bottom: 5px; }
+  .row-est-bar-fill { height: 100%; border-radius: 999px; }
+  .row-est-bar-fill.under { background: var(--green); }
+  .row-est-bar-fill.near { background: var(--amber); }
+  .row-est-bar-fill.over { background: var(--red); }
+  .row-est-bar-fill.neutral { background: var(--blue); }
+  .row-est-nums { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; }
+  .row-est-nums .a { font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .row-est-nums .a .unit { color: var(--muted); font-weight: 500; }
+  .row-est-nums .e { color: var(--muted); font-feature-settings: 'tnum'; }
+  .row-est-nums .pct { font-weight: 700; font-size: 12px; }
+  .row-est-nums .pct.under { color: var(--green); }
+  .row-est-nums .pct.near { color: var(--amber); }
+  .row-est-nums .pct.over { color: var(--red); }
+  .row-est-nums .pct.neutral { color: var(--blue); }
+  .row-mine { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 3px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-dark); font-size: 11.5px; font-weight: 600; }
+  .row-mine svg { width: 11px; height: 11px; }
+
+  .wo-expand { display: none; margin-top: 14px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .wo-row.open .wo-expand { display: block; }
+  .wo-expand-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px; }
+  .contrib-row { display: flex; align-items: center; gap: 9px; padding: 7px 0; font-size: 13px; }
+  .contrib-row:not(:last-of-type) { border-bottom: 1px solid var(--line-2); }
+  .contrib-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .contrib-name { flex: 1; color: var(--ink); font-weight: 500; }
+  .contrib-name.muted { color: var(--muted); font-weight: 500; }
+  .contrib-hrs { font-feature-settings: 'tnum'; font-weight: 700; color: var(--ink); }
+  .contrib-hrs .ot { color: var(--red); font-weight: 700; margin-left: 4px; }
+  .contrib-hrs.est { color: var(--muted); font-weight: 600; }
+  .wo-expand-foot { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-2); display: flex; justify-content: space-between; align-items: center; }
+  .wo-expand-foot .lbl { font-size: 12px; color: var(--ink-light); }
+  .wo-expand-foot .pct { font-size: 13.5px; font-weight: 800; }
+  .wo-expand-foot .pct.under { color: var(--green); }
+  .wo-expand-foot .pct.near { color: var(--amber); }
+  .wo-expand-foot .pct.over { color: var(--red); }
+
+  .view-all-row { padding: 14px 0 2px; text-align: center; border-top: 1px solid var(--line-2); margin-top: 6px; }
+  .view-all-row a { font-size: 13px; font-weight: 600; color: var(--blue); text-decoration: none; cursor: pointer; }
+  .view-all-row a:hover { text-decoration: underline; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+  /* Hours detail modal (Billable / Non-bil / OT / Clients) */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 15, 26, 0.6); backdrop-filter: blur(2px); z-index: 60; display: none; align-items: center; justify-content: center; padding: 40px; }
+  .modal-backdrop.show { display: flex; }
+  .hours-modal { background: white; border-radius: 18px; width: 100%; max-width: 520px; max-height: 82vh; overflow-y: auto; box-shadow: 0 28px 64px rgba(10, 10, 20, 0.4); }
+  .hm-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 4px; gap: 16px; }
+  .hm-head-text .hm-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 6px; }
+  .hm-head-text h2 { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.15; }
+  .hm-head-text .hm-total { font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+  .hm-close { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .hm-close:hover { background: var(--line-2); }
+  .hm-close svg { width: 13px; height: 13px; color: var(--ink-light); }
+  .hm-note { margin: 14px 24px 4px; padding: 12px 14px; border-radius: 10px; background: var(--blue-soft); color: var(--ink-light); font-size: 12.5px; line-height: 1.55; }
+  .hm-note strong { color: var(--ink); font-weight: 600; }
+  .hm-list { padding: 8px 24px 22px; }
+  .hm-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .hm-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .hm-row-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--ink-light); }
+  .hm-row-icon svg { width: 14px; height: 14px; }
+  .hm-row-body { flex: 1; min-width: 0; }
+  .hm-row-name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .hm-row-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .hm-row-hrs { font-size: 14px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; flex-shrink: 0; }
+  .hm-row-hrs.bil { color: var(--green); }
+  .hm-row-hrs.ot { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item active">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-left">
+            <div class="hero-hello">Hello</div>
+            <div class="hero-name">Dave</div>
+            <div class="hero-date">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Thu, Jun 11
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="hero-hours-block">Hours today<div class="hours-num">6.5</div></div>
+            <div class="hero-signoff">Sign off</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row: Quick Actions + My Hours -->
+      <div class="row-2col">
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="section-label">Quick Actions</div>
+          <div class="qa-btn primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Submit a timesheet
+          </div>
+          <div class="qa-btn secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Global search
+          </div>
+        </div>
+
+        <!-- My Hours (now clickable) -->
+        <div class="card my-hours-card" onclick="location.href='#daily-timesheets'">
+          <div class="head-row">
+            <div class="section-label">My Hours</div>
+            <div class="head-sub click-hint">
+              your logged time
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+          <div class="period-seg">
+            <div class="period-seg-btn" onclick="event.stopPropagation(); selectPeriod(this)">This Week</div>
+            <div class="period-seg-btn active" onclick="event.stopPropagation(); selectPeriod(this)">Month</div>
+            <div class="period-seg-btn" onclick="event.stopPropagation(); selectPeriod(this)">YTD</div>
+            <div class="period-seg-btn" onclick="event.stopPropagation(); selectPeriod(this)">All Time</div>
+          </div>
+          <div class="hours-bignum">
+            <div class="hours-actual">32.5<span class="h-unit">h logged</span></div>
+            <div class="hours-client-count" onclick="event.stopPropagation(); openHoursModal('clients')">
+              <div class="label">Clients</div>
+              <div class="ccount">5</div>
+            </div>
+          </div>
+          <div class="hours-breakdown">
+            <div class="hours-breakdown-item" onclick="event.stopPropagation(); openHoursModal('billable')"><div class="lbl">Billable</div><div class="val bil">27.5h</div></div>
+            <div class="hours-breakdown-item" onclick="event.stopPropagation(); openHoursModal('nonbillable')"><div class="lbl">Non-bil</div><div class="val nbl">2.0h</div></div>
+            <div class="hours-breakdown-item" onclick="event.stopPropagation(); openHoursModal('ot')"><div class="lbl">OT</div><div class="val ot">3.0h</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Team Scoreboard -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="head-row">
+          <div class="section-label">Team Scoreboard</div>
+          <div class="head-sub">closed work · last 30 days</div>
+        </div>
+        <div class="kpi-grid">
+
+          <div class="kpi-cell under">
+            <div class="kpi-label">Maintenance</div>
+            <div class="kpi-ring">
+              <svg viewBox="0 0 84 84"><circle class="ring-track" cx="42" cy="42" r="34" fill="none" stroke-width="8"/><circle class="ring-fill" cx="42" cy="42" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="181.6 213.6"/></svg>
+              <div class="ring-center"><div class="rc-pct">15%</div><div class="rc-word">under est</div></div>
+            </div>
+            <div class="kpi-sub">1,060h of 1,240h</div>
+          </div>
+
+          <div class="kpi-cell over">
+            <div class="kpi-label">Quoted Service Work</div>
+            <div class="kpi-ring">
+              <svg viewBox="0 0 84 84"><circle class="ring-track" cx="42" cy="42" r="34" fill="none" stroke-width="8"/><circle class="ring-fill" cx="42" cy="42" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6 213.6"/></svg>
+              <div class="ring-center"><div class="rc-pct">18%</div><div class="rc-word">over est</div></div>
+            </div>
+            <div class="kpi-sub">920h of 780h</div>
+          </div>
+
+          <div class="kpi-cell count afterhours">
+            <div class="kpi-label">After Hours</div>
+            <div class="kpi-ring">
+              <svg viewBox="0 0 84 84"><circle class="ring-track" cx="42" cy="42" r="34" fill="none" stroke-width="8"/><circle class="ring-fill" cx="42" cy="42" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6 213.6"/></svg>
+              <div class="ring-center"><div class="rc-count">14</div><div class="rc-count-unit">calls</div></div>
+            </div>
+            <div class="kpi-sub"><span class="kpi-delta up">▲ 2</span> vs prev 30 days</div>
+          </div>
+
+          <div class="kpi-cell count">
+            <div class="kpi-label">Emergency Service</div>
+            <div class="kpi-ring">
+              <svg viewBox="0 0 84 84"><circle class="ring-track" cx="42" cy="42" r="34" fill="none" stroke-width="8"/><circle class="ring-fill" cx="42" cy="42" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6 213.6"/></svg>
+              <div class="ring-center"><div class="rc-count">32</div><div class="rc-count-unit">calls</div></div>
+            </div>
+            <div class="kpi-sub"><span class="kpi-delta up">▲ 5</span> vs prev 30 days</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Work Orders -->
+      <div class="card">
+        <div class="section-label">Work Orders</div>
+        <div class="wo-tabs">
+          <div class="wo-tab active" data-tab="wo-mine" onclick="switchTab(this)">My Dept WO <span class="count-badge">12</span></div>
+          <div class="wo-tab" data-tab="wo-open" onclick="switchTab(this)">Open <span class="count-badge">54</span></div>
+          <div class="wo-tab" data-tab="wo-closed" onclick="switchTab(this)">Closed</div>
+        </div>
+
+        <div class="field-search">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search work order # or client…">
+        </div>
+
+        <!-- My Dept WO -->
+        <div class="tab-panel active" id="wo-mine">
+          <div class="rollup-banner near">
+            <div class="rollup-banner-head">
+              <span class="rollup-banner-label">My Dept WO</span>
+              <span class="rollup-banner-status">93% consumed</span>
+            </div>
+            <div class="rollup-banner-nums"><span class="actual">41<span class="actual-unit">h logged</span></span><span class="vs">of</span><span class="estimate">44h estimated</span></div>
+            <div class="rollup-banner-bar"><div class="rollup-banner-bar-fill" style="width: 93%;"></div></div>
+            <div class="rollup-banner-foot">Every tech's hours on the department's jobs, against the estimates.</div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66843</span><span class="wo-row-date">Jun 9</span></div>
+                  <div class="wo-row-client">Pattison Food Group</div>
+                  <div class="wo-row-type">Emergency Service</div>
+                  <div class="row-mine">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+                    You logged 3.0h of this
+                  </div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill over" style="width: 100%;"></div></div>
+                  <div class="row-est-nums"><span class="a">8.0<span class="unit">h logged</span></span><span class="e">of 6.0h est</span><span class="pct over">+33%</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Dave Kowalski</span><span class="contrib-hrs">3.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Mandeep Tiwana</span><span class="contrib-hrs">4.0h<span class="ot">+1.0 OT</span></span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">6.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">8.0h worked of 6.0h estimated</span><span class="pct over">+33% over</span></div>
+            </div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66816</span><span class="wo-row-date">Jun 8</span></div>
+                  <div class="wo-row-client">Thor Plumbing &amp; Heating Ltd.</div>
+                  <div class="wo-row-type">Maintenance</div>
+                  <div class="row-mine">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+                    You logged 9.0h of this
+                  </div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill neutral" style="width: 70%;"></div></div>
+                  <div class="row-est-nums"><span class="a">21.0<span class="unit">h logged</span></span><span class="e">of 30.0h est</span><span class="pct neutral">70% used</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Dave Kowalski</span><span class="contrib-hrs">9.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Sarah Gilman</span><span class="contrib-hrs">12.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">30.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">21.0h worked of 30.0h estimated</span><span class="pct under">-30% under</span></div>
+            </div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66801</span><span class="wo-row-date">Jun 7</span></div>
+                  <div class="wo-row-client">Client ABC Inc.</div>
+                  <div class="wo-row-type">Quoted Service Work</div>
+                  <div class="row-mine">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+                    You logged 5.0h of this
+                  </div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill near" style="width: 95%;"></div></div>
+                  <div class="row-est-nums"><span class="a">12.0<span class="unit">h logged</span></span><span class="e">of 12.6h est</span><span class="pct near">95% used</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Dave Kowalski</span><span class="contrib-hrs">5.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Connor Wren</span><span class="contrib-hrs">6.0h<span class="ot">+1.0 OT</span></span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">12.6h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">12.0h worked of 12.6h estimated</span><span class="pct near">-5% under</span></div>
+            </div>
+          </div>
+          <div class="view-all-row"><a>Show all department work orders</a></div>
+        </div>
+
+        <!-- Open WOs -->
+        <div class="tab-panel" id="wo-open">
+          <div class="rollup-banner neutral">
+            <div class="rollup-banner-head">
+              <span class="rollup-banner-label">Open WOs</span>
+              <span class="rollup-banner-status">79% consumed</span>
+            </div>
+            <div class="rollup-banner-nums"><span class="actual">248<span class="actual-unit">h logged</span></span><span class="vs">of</span><span class="estimate">312h estimated</span></div>
+            <div class="rollup-banner-bar"><div class="rollup-banner-bar-fill" style="width: 79%;"></div></div>
+            <div class="rollup-banner-foot">Live snapshot of every open work order, all hands.</div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66875</span><span class="wo-row-date">Jun 9</span></div>
+                  <div class="wo-row-client">Birchwood Automotive Group</div>
+                  <div class="wo-row-type">Emergency Service</div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill neutral" style="width: 60%;"></div></div>
+                  <div class="row-est-nums"><span class="a">3.6<span class="unit">h logged</span></span><span class="e">of 6.0h est</span><span class="pct neutral">60% used</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Daryl Mercier</span><span class="contrib-hrs">3.6h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">6.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">3.6h worked of 6.0h estimated</span><span class="pct under">-40% under</span></div>
+            </div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66792</span><span class="wo-row-date">Jun 6</span></div>
+                  <div class="wo-row-client">Miller Environmental Corp.</div>
+                  <div class="wo-row-type">Maintenance</div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill over" style="width: 100%;"></div></div>
+                  <div class="row-est-nums"><span class="a">9.5<span class="unit">h logged</span></span><span class="e">of 8.0h est</span><span class="pct over">+19%</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Sarah Gilman</span><span class="contrib-hrs">9.5h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">8.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">9.5h worked of 8.0h estimated</span><span class="pct over">+19% over</span></div>
+            </div>
+          </div>
+          <div class="view-all-row"><a>Show all 54 open work orders</a></div>
+        </div>
+
+        <!-- Closed WOs -->
+        <div class="tab-panel" id="wo-closed">
+          <div class="rollup-banner under">
+            <div class="rollup-banner-head">
+              <span class="rollup-banner-label">Closed WOs · 30 days</span>
+              <span class="rollup-banner-status">12% under</span>
+            </div>
+            <div class="rollup-banner-nums"><span class="actual">1,742<span class="actual-unit">h logged</span></span><span class="vs">of</span><span class="estimate">1,980h estimated</span></div>
+            <div class="rollup-banner-bar"><div class="rollup-banner-bar-fill" style="width: 88%;"></div></div>
+            <div class="rollup-banner-foot">Everything closed in the last 30 days, all hands. The real scorecard.</div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66740</span><span class="wo-row-date">Jun 3</span></div>
+                  <div class="wo-row-client">Pattison Food Group</div>
+                  <div class="wo-row-type">Maintenance</div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill under" style="width: 80%;"></div></div>
+                  <div class="row-est-nums"><span class="a">12.0<span class="unit">h logged</span></span><span class="e">of 15.0h est</span><span class="pct under">-20%</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Dave Kowalski</span><span class="contrib-hrs">7.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Connor Wren</span><span class="contrib-hrs">5.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">15.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">12.0h worked of 15.0h estimated</span><span class="pct under">-20% under</span></div>
+            </div>
+          </div>
+
+          <div class="wo-row" onclick="this.classList.toggle('open')">
+            <div class="wo-row-toprow">
+              <div class="wo-row-main">
+                <div class="wo-row-id-client">
+                  <div class="wo-row-head"><span class="wo-row-id">66688</span><span class="wo-row-date">May 30</span></div>
+                  <div class="wo-row-client">Headoffice Renovation</div>
+                  <div class="wo-row-type">Quoted Service Work</div>
+                </div>
+                <div class="row-est">
+                  <div class="row-est-bar"><div class="row-est-bar-fill over" style="width: 100%;"></div></div>
+                  <div class="row-est-nums"><span class="a">28.0<span class="unit">h logged</span></span><span class="e">of 22.0h est</span><span class="pct over">+27%</span></div>
+                </div>
+              </div>
+              <div class="wo-expand-chev"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
+            <div class="wo-expand">
+              <div class="wo-expand-title">Who worked on this</div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--blue);"></span><span class="contrib-name">Dave Kowalski</span><span class="contrib-hrs">10.0h<span class="ot">+2.0 OT</span></span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--amber);"></span><span class="contrib-name">Mandeep Tiwana</span><span class="contrib-hrs">16.0h</span></div>
+              <div class="contrib-row"><span class="contrib-dot" style="background: var(--muted-2);"></span><span class="contrib-name muted">Estimated</span><span class="contrib-hrs est">22.0h</span></div>
+              <div class="wo-expand-foot"><span class="lbl">28.0h worked of 22.0h estimated</span><span class="pct over">+27% over</span></div>
+            </div>
+          </div>
+          <div class="view-all-row"><a>Show all closed work orders</a></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.1 · Tech Home (KPI scoreboard)</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup, "Projects" section removed per this request</span>
+      Built from the mobile Tech Home (v3, KPI scoreboard) dashboard. Kept: Hero, Quick Actions, My Hours, Team Scoreboard, Work Orders. Removed entirely: the standalone "Projects" card (Open/Closed tabs, rollup banners, project rows) — techs reach projects through the top-nav Projects tab now, so this duplicate list wasn't needed here.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">My Hours is now clickable</span>
+      The whole card is a click target (hover shows a lift + blue border, and a chevron next to "your logged time" signals it) that opens the tech's detailed hours view — e.g. Daily/Weekly Timesheets. The period toggle (This Week / Month / YTD / All Time) still switches independently inside the card via <code>event.stopPropagation()</code>, so choosing a period doesn't also trigger navigation.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Layout: hero full-width, two-column row below</span>
+      Quick Actions and My Hours sit side by side under the hero (mobile stacks everything vertically). Team Scoreboard and Work Orders stay full-width since both need the horizontal room — the KPI rings run in a single row of 4 instead of a 2×2 grid, and Work Orders rows lay out ID/client/type on the left with the estimate bar on the right in one line instead of stacking.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">My Hours — personal, no estimate (unchanged)</span>
+      Your own logged time for the selected period. Billable / Non-billable / OT breakdown and client count carried over unchanged.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Team Scoreboard — closed work, rolling 30 days (unchanged)</span>
+      Maintenance and Quoted Service Work rings show hours logged vs. estimated on <em>closed</em> work only — a finished job is the only time you know the real number. Green = under, red = over. After Hours and Emergency Service each show a call count with a trend delta instead of an estimate, since there's no estimate to compare against for either.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Work Orders — three tabs, all-hands hours (unchanged)</span>
+      My Dept WO / Open / Closed. Hours shown are the whole job's hours from everyone who worked it, against the job's estimate — not just the individual tech's time, since an estimate covers the whole crew. Open jobs get a neutral progress bar; closed jobs get green/red based on how they landed. Techs aren't tied to individual jobs yet, so each tab shows the full department/open/closed set with a "Show all" link into the full list.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Team Scoreboard update: Projects ring swapped for After Hours</span>
+      The "Projects" ring is removed from Team Scoreboard (Projects has its own home in the top nav now, and the est-vs-actual framing didn't add much there). In its place: <strong>After Hours</strong>, styled like Emergency Service — a plain call count in the center of the ring with a trend delta below, no estimate comparison, since after-hours work isn't quoted against an estimate either.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Click any row to expand (unchanged)</span>
+      Reveals who worked on it and their hours, including OT, plus the estimate line for reference — same interaction as mobile, just wider.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">New: Billable, Non-bil, OT, and Clients are clickable</span>
+      Each of the three breakdown tiles and the Clients count now opens a descriptive modal — a hover state on each signals this. Billable/Non-bil/OT show which jobs make up that number; Clients lists each client worked for in the period with hours per client. All open on top of Home rather than navigating away, since these are "explain this number" moments, not destinations.
+    </div>
+  </div>
+
+  <!-- ============== HOURS DETAIL MODAL ============== -->
+  <div class="modal-backdrop" id="hoursModalBackdrop" onclick="if(event.target===this) closeHoursModal()">
+    <div class="hours-modal">
+
+      <!-- Billable -->
+      <div class="hm-panel" id="hm-billable">
+        <div class="hm-head">
+          <div class="hm-head-text">
+            <div class="hm-eyebrow">My Hours · Month</div>
+            <h2>Billable — 27.5h</h2>
+            <div class="hm-total">Across 4 clients this period</div>
+          </div>
+          <div class="hm-close" onclick="closeHoursModal()"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+        </div>
+        <div class="hm-note"><strong>Billable</strong> is time logged against a client job — Maintenance, Quoted Service Work, Emergency Service, or a Project. It's what gets invoiced.</div>
+        <div class="hm-list">
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Fairmont Hotel Renovation</div><div class="hm-row-meta">Project · 4 entries</div></div>
+            <div class="hm-row-hrs bil">14.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Thor Plumbing &amp; Heating Ltd.</div><div class="hm-row-meta">Maintenance · WO 66816</div></div>
+            <div class="hm-row-hrs bil">9.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Client ABC Inc.</div><div class="hm-row-meta">Quoted Service Work · WO 66801</div></div>
+            <div class="hm-row-hrs bil">3.5h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Pattison Food Group</div><div class="hm-row-meta">Emergency Service · WO 66843</div></div>
+            <div class="hm-row-hrs bil">1.0h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Non-billable -->
+      <div class="hm-panel" id="hm-nonbillable" style="display: none;">
+        <div class="hm-head">
+          <div class="hm-head-text">
+            <div class="hm-eyebrow">My Hours · Month</div>
+            <h2>Non-billable — 2.0h</h2>
+            <div class="hm-total">Internal time, not tied to a client</div>
+          </div>
+          <div class="hm-close" onclick="closeHoursModal()"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+        </div>
+        <div class="hm-note"><strong>Non-billable</strong> is time that doesn't get invoiced to a client — training, internal meetings, drive time logged separately, and similar entries.</div>
+        <div class="hm-list">
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.42A12.07 12.07 0 0112 21a12.07 12.07 0 01-6.16-10.42L12 14z"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Safety training — confined space refresher</div><div class="hm-row-meta">Jun 5</div></div>
+            <div class="hm-row-hrs">1.5h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Weekly team huddle</div><div class="hm-row-meta">Jun 9</div></div>
+            <div class="hm-row-hrs">0.5h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OT -->
+      <div class="hm-panel" id="hm-ot" style="display: none;">
+        <div class="hm-head">
+          <div class="hm-head-text">
+            <div class="hm-eyebrow">My Hours · Month</div>
+            <h2>Overtime — 3.0h</h2>
+            <div class="hm-total">Hours logged beyond your standard shift</div>
+          </div>
+          <div class="hm-close" onclick="closeHoursModal()"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+        </div>
+        <div class="hm-note"><strong>OT</strong> is any portion of a logged entry beyond your standard 8-hour day. It's called out separately here so it's easy to spot before you submit your timesheet.</div>
+        <div class="hm-list">
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Pattison Food Group</div><div class="hm-row-meta">Emergency Service · WO 66843 · Jun 9</div></div>
+            <div class="hm-row-hrs ot">+2.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Thor Plumbing &amp; Heating Ltd.</div><div class="hm-row-meta">Maintenance · WO 66816 · Jun 8</div></div>
+            <div class="hm-row-hrs ot">+1.0h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div class="hm-panel" id="hm-clients" style="display: none;">
+        <div class="hm-head">
+          <div class="hm-head-text">
+            <div class="hm-eyebrow">My Hours · Month</div>
+            <h2>5 Clients</h2>
+            <div class="hm-total">Every client you logged time against this period</div>
+          </div>
+          <div class="hm-close" onclick="closeHoursModal()"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+        </div>
+        <div class="hm-note">Counts every distinct client with at least one time entry in the selected period, across any job type.</div>
+        <div class="hm-list">
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Fairmont Hotel Renovation</div><div class="hm-row-meta">Project</div></div>
+            <div class="hm-row-hrs">14.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Thor Plumbing &amp; Heating Ltd.</div><div class="hm-row-meta">Maintenance</div></div>
+            <div class="hm-row-hrs">10.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Client ABC Inc.</div><div class="hm-row-meta">Quoted Service Work</div></div>
+            <div class="hm-row-hrs">3.5h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Pattison Food Group</div><div class="hm-row-meta">Emergency Service</div></div>
+            <div class="hm-row-hrs">3.0h</div>
+          </div>
+          <div class="hm-row">
+            <div class="hm-row-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div class="hm-row-body"><div class="hm-row-name">Headoffice Renovation</div><div class="hm-row-meta">Quoted Service Work</div></div>
+            <div class="hm-row-hrs">2.0h</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+
+  function selectPeriod(btn) {
+    var seg = btn.closest('.period-seg');
+    seg.querySelectorAll('.period-seg-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+
+  function switchTab(tab) {
+    var tabs = tab.closest('.wo-tabs');
+    var card = tab.closest('.card');
+    tabs.querySelectorAll('.wo-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    card.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    var panel = card.querySelector('#' + tab.getAttribute('data-tab'));
+    if (panel) panel.classList.add('active');
+  }
+
+  function openHoursModal(kind) {
+    document.querySelectorAll('.hm-panel').forEach(function(p) { p.style.display = 'none'; });
+    var panel = document.getElementById('hm-' + kind);
+    if (panel) panel.style.display = 'block';
+    document.getElementById('hoursModalBackdrop').classList.add('show');
+  }
+  function closeHoursModal() {
+    document.getElementById('hoursModalBackdrop').classList.remove('show');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeHoursModal();
+  });
+</script>
+</body>
+</html>

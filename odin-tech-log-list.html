@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · My Daily Logs (mobile)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; min-height: 780px; }
+
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .new-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 999px; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; font-size: 12.5px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(237, 28, 36, 0.25); }
+  .new-btn svg { width: 12px; height: 12px; }
+
+  .title-block { padding: 6px 22px 16px; }
+  .title-block h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 11.5px; color: var(--ink); }
+  .project-context svg { width: 10px; height: 10px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+
+  /* Stats strip */
+  .stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 16px 14px; }
+  .stat-card { background: white; border-radius: 10px; padding: 12px 10px; text-align: center; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .stat-value.alert { color: var(--amber); }
+  .stat-label { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* Filter row */
+  .filter-row { display: flex; gap: 6px; padding: 0 16px 12px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip { padding: 6px 13px; border-radius: 999px; background: white; border: 1px solid var(--line); color: var(--ink-light); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Logs list */
+  .logs-list { background: white; border-radius: 12px; margin: 0 16px 14px; overflow: hidden; }
+  .log-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; padding: 14px 16px; cursor: pointer; align-items: start; }
+  .log-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .log-row:hover { background: var(--bg-2); }
+
+  .log-date-block { text-align: center; padding-top: 2px; }
+  .log-date-day { font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .log-date-month { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--red); margin-top: 2px; }
+  .log-date-weekday { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .log-info { min-width: 0; }
+  .log-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .log-status { padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+  .log-status.reviewed { background: var(--green-soft); color: var(--green); }
+  .log-status.unreviewed { background: var(--amber-soft); color: var(--amber); }
+  .log-status.draft { background: var(--bg); color: var(--ink-light); }
+  .log-summary { font-size: 13px; color: var(--ink-light); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .log-meta { font-size: 10.5px; color: var(--muted); margin-top: 6px; display: flex; gap: 10px; }
+  .log-meta svg { width: 9px; height: 9px; vertical-align: -1px; margin-right: 2px; }
+
+  .log-thumbs { display: flex; gap: 3px; flex-shrink: 0; padding-top: 2px; }
+  .log-thumb { width: 30px; height: 30px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+  .log-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .log-thumb-more { width: 30px; height: 30px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: var(--ink-light); font-weight: 700; }
+
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </div>
+      <div class="new-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        New Log
+      </div>
+    </div>
+
+    <div class="title-block">
+      <h1>My Daily Logs</h1>
+      <div class="project-context">
+        <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <strong>Fairmont Hotel Renovation</strong>
+      </div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-value">14</div>
+        <div class="stat-label">Total Logs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">82.5</div>
+        <div class="stat-label">Hours</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value alert">1</div>
+        <div class="stat-label">Draft</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-chip active">All</div>
+      <div class="filter-chip">This week</div>
+      <div class="filter-chip">Last 30 days</div>
+      <div class="filter-chip">Drafts only</div>
+    </div>
+
+    <div class="logs-list">
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">20</div>
+          <div class="log-date-month">May</div>
+          <div class="log-date-weekday">Wed</div>
+        </div>
+        <div class="log-info">
+          <div class="log-row1">
+            <span class="log-status reviewed">Reviewed</span>
+          </div>
+          <div class="log-summary">Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop.</div>
+          <div class="log-meta">
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>6.5 hrs</span>
+            <span>5 photos</span>
+            <span>2 tasks</span>
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#cfd5db"/><rect y="32" width="48" height="16" fill="#a89580"/><rect x="8" y="6" width="3" height="32" fill="#c98551"/><rect x="20" y="6" width="3" height="32" fill="#c98551"/></svg></div>
+          <div class="log-thumb-more">+4</div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">19</div>
+          <div class="log-date-month">May</div>
+          <div class="log-date-weekday">Tue</div>
+        </div>
+        <div class="log-info">
+          <div class="log-row1">
+            <span class="log-status unreviewed">Awaiting Review</span>
+          </div>
+          <div class="log-summary">Continued rough-in on west wall. Installed manifold and shut-off valves. Material delivery arrived around 11 AM.</div>
+          <div class="log-meta">
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>7.0 hrs</span>
+            <span>3 photos</span>
+            <span>1 task</span>
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#c0c5cc"/><rect x="4" y="20" width="40" height="8" fill="#888c92"/></svg></div>
+          <div class="log-thumb-more">+2</div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">17</div>
+          <div class="log-date-month">May</div>
+          <div class="log-date-weekday">Sun</div>
+        </div>
+        <div class="log-info">
+          <div class="log-row1">
+            <span class="log-status draft">Draft</span>
+          </div>
+          <div class="log-summary">Need to finish writing this up. Pressure tested east supply line.</div>
+          <div class="log-meta">
+            <span>1 photo</span>
+            <span>No hours yet</span>
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#5a6068"/></svg></div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">18</div>
+          <div class="log-date-month">May</div>
+          <div class="log-date-weekday">Mon</div>
+        </div>
+        <div class="log-info">
+          <div class="log-row1">
+            <span class="log-status reviewed">Reviewed</span>
+          </div>
+          <div class="log-summary">Started west wall rough-in. Snap lines for vertical and horizontal runs. Installed first 3 vertical risers.</div>
+          <div class="log-meta">
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>8.0 hrs</span>
+            <span>4 photos</span>
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#e8dcc4"/><rect x="8" y="0" width="3" height="48" fill="#c98551"/><rect x="24" y="0" width="3" height="48" fill="#c98551"/></svg></div>
+          <div class="log-thumb-more">+3</div>
+        </div>
+      </div>
+
+      <div class="log-row">
+        <div class="log-date-block">
+          <div class="log-date-day">16</div>
+          <div class="log-date-month">May</div>
+          <div class="log-date-weekday">Sat</div>
+        </div>
+        <div class="log-info">
+          <div class="log-row1">
+            <span class="log-status reviewed">Reviewed</span>
+          </div>
+          <div class="log-summary">Valve rough-in detail on west and north walls. All copper joints sweated and tested for leaks.</div>
+          <div class="log-meta">
+            <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>6.0 hrs</span>
+            <span>2 photos</span>
+          </div>
+        </div>
+        <div class="log-thumbs">
+          <div class="log-thumb"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#d8c9b0"/><rect x="12" y="42" width="6" height="6" fill="#888"/></svg></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="annotations">
+    <h3>My Daily Logs (full list) notes</h3>
+    <ul>
+      <li><strong>Lands here from</strong> the "View all" link on the per-project view's My Recent Daily Logs section.</li>
+      <li><strong>Project context shown as pill</strong> at the top, scoping the list to this project only.</li>
+      <li><strong>Stats strip</strong> shows Total Logs, total Hours submitted, and Drafts count. Drafts highlighted amber when greater than zero so the tech sees their pending work.</li>
+      <li><strong>Filter chips</strong>: All / This week / Last 30 days / Drafts only. Horizontal scroll if needed.</li>
+      <li><strong>Row format mirrors the per-project view's preview</strong>: big day/month/weekday date block on the left, status pill, summary, meta row with hours/photos/tasks, photo thumbs on the right.</li>
+      <li><strong>Three states shown</strong>: Reviewed (green), Awaiting Review (amber), Draft (grey). Draft rows show "No hours yet" if hours not entered.</li>
+      <li><strong>"New Log" button</strong> in the app bar (top right, pink-red gradient) shortcuts to composer with this project pre-filled.</li>
+      <li><strong>Tap a row</strong> opens the log detail view (Reviewed/Awaiting) or the composer (Draft).</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

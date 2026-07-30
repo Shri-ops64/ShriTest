@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Activity</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); border-bottom-width: 3px; font-weight: 700; font-size: 14px; }
+
+  /* Page title bar (below tabs) */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+  .tab .count { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* ============ Activity layout ============ */
+  .activity-wrap { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
+
+  /* Composer (compact, Facebook-style) */
+  .composer-card { background: white; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; }
+  .composer-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+  .composer-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .composer-input-inline { flex: 1; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-2); font-size: 13px; color: var(--muted); cursor: text; }
+  .composer-input-inline:hover { background: var(--bg); }
+  .composer-actions { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--line); background: var(--bg-2); }
+  .composer-actions-right { margin-left: auto; display: flex; gap: 8px; }
+  .icon-btn { width: 28px; height: 28px; border-radius: 6px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+  .icon-btn svg { width: 13px; height: 13px; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+  /* Filter chips */
+  .filter-row { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; cursor: pointer; background: white; border: 1px solid var(--line); color: var(--ink-light); display: flex; align-items: center; gap: 5px; }
+  .filter-chip:hover { background: var(--bg-2); color: var(--ink); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .filter-chip .chip-count { font-size: 10px; opacity: 0.7; }
+  .filter-chip.active .chip-count { opacity: 0.9; }
+  .filter-divider { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+  .filter-search { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid var(--line); border-radius: 999px; flex: 1; min-width: 200px; max-width: 320px; }
+  .filter-search input { border: none; background: transparent; outline: none; flex: 1; font-size: 13px; color: var(--ink); }
+  .filter-search svg { width: 12px; height: 12px; color: var(--muted); }
+
+  /* Date group label */
+  .date-group-label { padding: 14px 4px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+
+  /* Feed */
+  .feed-card { background: white; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 12px; }
+
+  /* HUMAN POST entry (full treatment) */
+  .post-item { display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line-2); }
+  .post-item:last-child { border-bottom: none; }
+  .post-item:hover { background: var(--bg-2); }
+  .post-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; }
+  .av-1 { background: #5b8def; }
+  .av-2 { background: #c97a4a; }
+  .av-3 { background: #7a6cd9; }
+  .av-4 { background: #4a8a5e; }
+  .av-5 { background: var(--ink); }
+  .post-body { min-width: 0; }
+  .post-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .post-name { font-weight: 600; font-size: 13.5px; color: var(--ink); }
+  .post-tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; line-height: 1.4; }
+  .post-tag.post { background: var(--bg); color: var(--ink-light); }
+  .post-tag.decision { background: var(--purple-soft); color: var(--purple); }
+  .post-time { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .post-title { font-size: 14.5px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .post-content { font-size: 13.5px; color: var(--ink-light); line-height: 1.55; }
+  .post-content p { margin-bottom: 6px; }
+  .post-content p:last-child { margin-bottom: 0; }
+  .post-meta { margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .post-meta a { color: var(--blue); text-decoration: none; }
+  .post-meta a:hover { text-decoration: underline; }
+
+  /* SYSTEM EVENT entry (light, single-line, optional thumbnails) */
+  .system-item { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; padding: 9px 20px 9px 24px; border-bottom: 1px solid var(--line-2); align-items: center; }
+  .system-item:last-child { border-bottom: none; }
+  .system-item:hover { background: var(--bg-2); }
+  .system-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; }
+  .system-icon svg { width: 11px; height: 11px; }
+  .system-icon.task { background: var(--green-soft); border-color: #b8dec6; color: var(--green); }
+  .system-icon.task.blocked { background: var(--red-soft); border-color: #f0c0c3; color: var(--red); }
+  .system-icon.time { background: var(--bg); color: var(--ink-light); }
+  .system-icon.log { background: var(--blue-soft); border-color: #b3cdef; color: var(--blue-dark); }
+  .system-icon.change { background: var(--amber-soft); border-color: #f0d597; color: var(--amber); }
+  .system-icon.asset { background: var(--purple-soft); border-color: #c9bef0; color: var(--purple); }
+  .system-icon.milestone { background: var(--green-soft); border-color: #b8dec6; color: var(--green); }
+  .system-icon.report { background: var(--blue-soft); border-color: #b3cdef; color: var(--blue-dark); }
+  .system-content { font-size: 13px; color: var(--ink-light); line-height: 1.4; min-width: 0; }
+  .system-content strong { color: var(--ink); font-weight: 600; }
+  .system-content a { color: var(--blue); text-decoration: none; }
+  .system-content a:hover { text-decoration: underline; }
+  .system-content .badge { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; vertical-align: 1px; margin-left: 2px; }
+  .system-content .badge.blocked { background: var(--red-soft); color: var(--red); }
+  .system-content .badge.complete { background: var(--green-soft); color: var(--green); }
+  .system-content .badge.approved { background: var(--green-soft); color: var(--green); }
+  .system-content .badge.pcn { background: var(--amber-soft); color: var(--amber); }
+  .system-content .badge.rfi { background: var(--blue-soft); color: var(--blue-dark); }
+  .system-right { display: flex; align-items: center; gap: 12px; }
+  .system-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  /* Inline thumbnails for system events with photos */
+  .sys-thumbs { display: flex; gap: 3px; }
+  .sys-thumb { width: 28px; height: 28px; border-radius: 3px; border: 1px solid var(--line); overflow: hidden; position: relative; flex-shrink: 0; }
+  .sys-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .sys-thumb-more { width: 28px; height: 28px; border-radius: 3px; border: 1px solid var(--line); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--ink-light); font-weight: 600; flex-shrink: 0; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 14px; }
+  .right-card { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+  .right-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 12px; }
+  .by-type-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+  .by-type-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .by-type-row .label { display: flex; align-items: center; gap: 8px; }
+  .by-type-row .sw { width: 8px; height: 8px; border-radius: 2px; }
+  .by-type-row .count { font-weight: 600; color: var(--ink); }
+  .quick-help { background: var(--blue-soft); border: 1px solid #b3cdef; padding: 12px 14px; border-radius: 8px; font-size: 12px; color: var(--blue-dark); line-height: 1.5; }
+  .quick-help strong { color: var(--blue-dark); }
+
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 – 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Daily Logs <span class="count">23</span></div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Activity</h2>
+          <div class="pt-sub">Chronological timeline of all project events: posts, tasks, logs, change notices, assets</div>
+        </div>
+        <div class="pt-counter"><strong>87</strong> events this week</div>
+      </div>
+
+      <div class="activity-wrap">
+
+        <!-- LEFT: composer + filter + feed -->
+        <div>
+
+          <!-- Composer (compact, Facebook-style single input) -->
+          <div class="composer-card">
+            <div class="composer-head">
+              <div class="composer-avatar">JT</div>
+              <div class="composer-input-inline">Share an update with the team…</div>
+            </div>
+            <div class="composer-actions">
+              <button class="icon-btn" title="Attach file"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+              <button class="icon-btn" title="Link a task"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button>
+              <div class="composer-actions-right">
+                <button class="btn btn-primary btn-sm">Post</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter chips -->
+          <div class="filter-row">
+            <div class="filter-chip active">All <span class="chip-count">86</span></div>
+            <div class="filter-chip">Posts <span class="chip-count">12</span></div>
+            <div class="filter-chip">Tasks <span class="chip-count">28</span></div>
+            <div class="filter-chip">Daily Logs <span class="chip-count">23</span></div>
+            <div class="filter-chip">Change Notices <span class="chip-count">11</span></div>
+            <div class="filter-chip">Time <span class="chip-count">8</span></div>
+            <div class="filter-chip">Assets <span class="chip-count">4</span></div>
+            <div class="filter-divider"></div>
+            <div class="filter-search">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search activity…">
+            </div>
+          </div>
+
+          <div class="date-group-label">Today · Wed, May 20</div>
+
+          <!-- Today's events -->
+          <div class="feed-card">
+
+            <!-- System: daily log -->
+            <div class="system-item">
+              <div class="system-icon log">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Mark Panteluk</strong> submitted a daily log · 6.5 hrs
+              </div>
+              <div class="system-right">
+                <div class="sys-thumbs">
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#cfd5db"/>
+                      <rect y="32" width="48" height="16" fill="#a89580"/>
+                      <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+                      <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+                      <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+                      <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+                    </svg>
+                  </div>
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#3a4148"/>
+                      <circle cx="24" cy="22" r="14" fill="#e8e4dc"/>
+                      <circle cx="24" cy="22" r="11" fill="#fff"/>
+                      <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+                      <circle cx="24" cy="22" r="1.5" fill="#222"/>
+                    </svg>
+                  </div>
+                  <div class="sys-thumb-more">+3</div>
+                </div>
+                <div class="system-time">4:18 PM</div>
+              </div>
+            </div>
+
+            <!-- Human post -->
+            <div class="post-item">
+              <div class="post-avatar av-5">JT</div>
+              <div class="post-body">
+                <div class="post-row1">
+                  <span class="post-name">Justin Thorsteinson</span>
+                  <span class="post-tag post">Post</span>
+                  <span class="post-time">2:14 PM</span>
+                </div>
+                <div class="post-content">
+                  <p>Decision made: we're switching to Viega ProPress fittings throughout west wing. After reviewing the test results from rough-in, this is the right call. Also applies to the east wing when we get there. Site safety policy makes this an easy choice regardless of cost.</p>
+                  <p>This supersedes the original spec in Section 22 10 00. Crews already trained, so no schedule impact.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- System: task complete -->
+            <div class="system-item">
+              <div class="system-icon task">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Mark Panteluk</strong> marked task <a href="#">Pressure testing supply lines</a> as <span class="badge complete">Complete</span>
+              </div>
+              <div class="system-time">12:42 PM</div>
+            </div>
+
+            <!-- System: time entry -->
+            <div class="system-item">
+              <div class="system-icon time">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Mark Panteluk</strong> submitted 6.5 hrs to <a href="#">West wall rough-in</a> · Billable
+              </div>
+              <div class="system-time">12:30 PM</div>
+            </div>
+
+            <!-- System: PCN status changed -->
+            <div class="system-item">
+              <div class="system-icon change">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Justin Thorsteinson</strong> updated <span class="badge pcn">PCN #003</span> <a href="#">Relocate utility room access door</a> · status changed to Pending Owner Sign-off
+              </div>
+              <div class="system-time">9:02 AM</div>
+            </div>
+
+          </div>
+
+          <div class="date-group-label">Yesterday · Tue, May 19</div>
+
+          <div class="feed-card">
+
+            <!-- System: task blocked (highlighted) -->
+            <div class="system-item">
+              <div class="system-icon task blocked">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Mark Panteluk</strong> marked task <a href="#">Install main supply line</a> as <span class="badge blocked">Blocked</span> · Waiting on revised P&amp;ID drawings from engineer
+              </div>
+              <div class="system-time">3:30 PM</div>
+            </div>
+
+            <!-- System: RFI raised -->
+            <div class="system-item">
+              <div class="system-icon change">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Adam Coey</strong> raised <span class="badge rfi">RFI #007</span> <a href="#">Clarification on hot water recirc loop spec</a> · Due May 22
+              </div>
+              <div class="system-time">9:15 AM</div>
+            </div>
+
+            <!-- Human Post: regular note -->
+            <div class="post-item">
+              <div class="post-avatar av-3">SP</div>
+              <div class="post-body">
+                <div class="post-row1">
+                  <span class="post-name">Sam Paterson</span>
+                  <span class="post-tag post">Post</span>
+                  <span class="post-time">8:00 AM</span>
+                </div>
+                <div class="post-content">
+                  <p>Heads up: Site contact has changed. New super on site is <strong>Dave Mercier</strong>, ext 4412. Brad is off-rotation until June.</p>
+                  <p>Update your phone contacts. Dave will be doing morning walk-throughs starting today.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- System: daily log -->
+            <div class="system-item">
+              <div class="system-icon log">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Travis Heibert</strong> submitted a daily log · 5.5 hrs
+              </div>
+              <div class="system-right">
+                <div class="sys-thumbs">
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#3a4148"/>
+                      <rect x="10" y="14" width="28" height="22" rx="2" fill="#5a6068"/>
+                      <circle cx="24" cy="25" r="8" fill="#1a1d20"/>
+                      <circle cx="24" cy="25" r="6" fill="#3a3f45"/>
+                      <rect x="22" y="36" width="4" height="6" fill="#c98551"/>
+                    </svg>
+                  </div>
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#c0c5cc"/>
+                      <rect x="8" y="14" width="32" height="6" fill="#888c92"/>
+                      <rect x="20" y="20" width="8" height="4" fill="#c98551"/>
+                      <circle cx="14" cy="17" r="2.5" fill="#2050c9"/>
+                      <circle cx="34" cy="17" r="2.5" fill="#c92020"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="system-time">3:45 PM</div>
+              </div>
+            </div>
+
+            <!-- System: asset upload -->
+            <div class="system-item">
+              <div class="system-icon asset">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Sam Paterson</strong> uploaded 6 files to <a href="#">Site Photos</a>
+              </div>
+              <div class="system-right">
+                <div class="sys-thumbs">
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#a8c4d8"/>
+                      <rect y="30" width="48" height="18" fill="#7a8a96"/>
+                      <rect x="14" y="14" width="20" height="20" fill="#d8c9b0"/>
+                      <rect x="18" y="18" width="4" height="6" fill="#3a4148"/>
+                      <rect x="26" y="18" width="4" height="6" fill="#3a4148"/>
+                    </svg>
+                  </div>
+                  <div class="sys-thumb">
+                    <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" fill="#d8c9b0"/>
+                      <rect width="48" height="22" fill="#e8dcc4"/>
+                      <rect x="6" y="28" width="3" height="20" fill="#888"/>
+                      <rect x="20" y="28" width="3" height="20" fill="#888"/>
+                      <rect x="34" y="28" width="3" height="20" fill="#888"/>
+                      <circle cx="7.5" cy="32" r="3" fill="#c92020"/>
+                      <circle cx="21.5" cy="32" r="3" fill="#2050c9"/>
+                    </svg>
+                  </div>
+                  <div class="sys-thumb-more">+4</div>
+                </div>
+                <div class="system-time">11:08 AM</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="date-group-label">Mon, May 18</div>
+
+          <div class="feed-card">
+
+            <!-- System: milestone reached -->
+            <div class="system-item">
+              <div class="system-icon milestone">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 21V4l16 8.5L4 21z"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Milestone reached:</strong> <a href="#">Rough-in installation</a> · Completed by Mark Panteluk
+              </div>
+              <div class="system-time">5:00 PM</div>
+            </div>
+
+            <!-- System: PCN approved -->
+            <div class="system-item">
+              <div class="system-icon change">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Justin Thorsteinson</strong> marked <span class="badge pcn">PCN #002</span> <a href="#">Commercial-grade water hammer arrestors</a> as <span class="badge approved">Approved</span>
+              </div>
+              <div class="system-time">2:20 PM</div>
+            </div>
+
+            <!-- System: time submitted (rolled up) -->
+            <div class="system-item">
+              <div class="system-icon time">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Mark Panteluk</strong> submitted 8.0 hrs to <a href="#">West wall rough-in</a> · Billable
+              </div>
+              <div class="system-time">5:15 PM</div>
+            </div>
+
+            <!-- Human post: regular -->
+            <div class="post-item">
+              <div class="post-avatar av-1">AC</div>
+              <div class="post-body">
+                <div class="post-row1">
+                  <span class="post-name">Adam Coey</span>
+                  <span class="post-tag post">Post</span>
+                  <span class="post-time">10:30 AM</span>
+                </div>
+                <div class="post-content">
+                  <p>Reminder for the team: weekly project review meeting moved to Thursday this week (Fairmont has a conflict Wednesday). Same time, 8:00 AM. Conference room B.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- System: report sent -->
+            <div class="system-item">
+              <div class="system-icon report">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="system-content">
+                <strong>Justin Thorsteinson</strong> sent <a href="#">Client Update Report · 04 May – 18 May</a> to Brett Hartnell (Fairmont)
+              </div>
+              <div class="system-time">8:05 AM</div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- RIGHT: context -->
+        <div class="right-col">
+
+          <div class="right-card">
+            <div class="right-card-title">Event Mix (Last 7 Days)</div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:#5b8def"></span>Daily Logs</span>
+              <span class="count">8</span>
+            </div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:var(--green)"></span>Task events</span>
+              <span class="count">12</span>
+            </div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:var(--ink-light)"></span>Time entries</span>
+              <span class="count">14</span>
+            </div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:var(--amber)"></span>Change Notices</span>
+              <span class="count">3</span>
+            </div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:var(--purple)"></span>Assets</span>
+              <span class="count">2</span>
+            </div>
+            <div class="by-type-row">
+              <span class="label"><span class="sw" style="background:var(--ink)"></span>Human posts</span>
+              <span class="count">4</span>
+            </div>
+          </div>
+
+          <div class="quick-help">
+            <strong>Activity is the timeline.</strong> Everything that happens on the project is logged here automatically. Use Posts for team updates and Decisions to log permanent choices.
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="annotations">
+        <h3>Activity tab notes</h3>
+        <ul>
+          <li><strong>Two visual treatments.</strong> Human posts get the full block layout with initials avatar and body text. System events get a light single-line treatment with a small colored icon. The eye flows over system noise to find human content.</li>
+          <li><strong>Every project event lands here.</strong> Daily log submitted, task status changed, time entered, PCN raised, asset uploaded, milestone reached, client report sent. Single source of truth for "what happened."</li>
+          <li><strong>Inline photo thumbnails on relevant system events.</strong> Daily log submissions and image uploads show small thumbnails (28×28) inline before the timestamp. Lets admins eyeball photo content without clicking in.</li>
+          <li><strong>Color-coded icons.</strong> Green for tasks, blue for daily logs and reports, amber for change notices, purple for assets, grey for time. Visual category at a glance.</li>
+          <li><strong>Blocked tasks highlighted.</strong> Red icon and inline status badge so blockers stand out in the timeline.</li>
+          <li><strong>Composer is Facebook-style.</strong> Single "Share an update with the team" input. No type selector, no Decision type. Posts are just posts; "decisions" are just posts that happen to say "we decided X" in the body.</li>
+          <li><strong>Filter chips cover all event sources.</strong> All / Posts / Tasks / Daily Logs / Change Notices / Time / Assets. Single-select. Default is All.</li>
+          <li><strong>Date grouping with section headers.</strong> Today / Yesterday / specific dates.</li>
+          <li><strong>Right column shows event mix.</strong> Helps the admin understand the project's pulse over the last 7 days.</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

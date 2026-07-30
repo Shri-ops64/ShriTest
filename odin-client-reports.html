@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Client Reports</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn svg { width: 13px; height: 13px; }
+  .btn-text { background: transparent; color: var(--blue); border: none; padding: 4px 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+  .btn-text:hover { text-decoration: underline; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); border-bottom-width: 3px; font-weight: 700; font-size: 14px; }
+
+  /* Page title bar (below tabs) */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+  .tab .count { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* ============ Client Reports layout ============ */
+  .reports-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+
+  .zone-card { background: white; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .zone-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .zone-head h2 { font-size: 14.5px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .zone-head h2 .badge-num { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .zone-head h2 .badge-num.amber { background: var(--amber-soft); color: var(--amber); }
+  .zone-head .zone-head-meta { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* ============ ZONE 1: Generate panel ============ */
+  .generate-body { padding: 18px; }
+  .generate-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  .gen-field { display: flex; flex-direction: column; gap: 5px; }
+  .gen-field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .gen-field select { padding: 8px 11px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 13.5px; color: var(--ink); font-family: inherit; outline: none; }
+  .gen-field select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  .generate-meta { padding: 12px 18px; background: var(--bg-2); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--ink-light); flex-wrap: wrap; }
+  .generate-meta .meta-item { display: flex; align-items: center; gap: 5px; }
+  .generate-meta .meta-item svg { width: 12px; height: 12px; color: var(--muted); }
+  .generate-meta .meta-item strong { color: var(--ink); font-weight: 600; }
+  .ai-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: var(--purple-soft); color: var(--purple); font-size: 11px; font-weight: 700; }
+  .ai-tag svg { width: 10px; height: 10px; }
+
+  /* ============ ZONE 2: Pending Approval ============ */
+  .pending-list { display: flex; flex-direction: column; }
+  .pending-item { padding: 16px 18px; border-bottom: 1px solid var(--line-2); display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; }
+  .pending-item:last-child { border-bottom: none; }
+  .pending-item:hover { background: var(--bg-2); }
+
+  .pending-info { min-width: 0; }
+  .pending-row1 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .pending-title { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .pending-status-pill { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+  .pending-status-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+  .pending-status-pill.awaiting { background: var(--amber-soft); color: var(--amber); }
+  .pending-status-pill.awaiting::before { background: var(--amber); }
+  .pending-status-pill.draft { background: var(--bg); color: var(--ink-light); }
+  .pending-status-pill.draft::before { background: var(--muted); }
+  .pending-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pending-meta svg { width: 11px; height: 11px; vertical-align: -1px; margin-right: 4px; }
+  .pending-summary { font-size: 13px; color: var(--ink-light); line-height: 1.55; }
+
+  .pending-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .pending-actions .btn { white-space: nowrap; }
+
+  .empty-pending { padding: 30px 18px; text-align: center; color: var(--muted); font-size: 13px; }
+  .empty-pending strong { color: var(--ink-light); }
+
+  /* ============ ZONE 3: Report History ============ */
+  .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .history-table thead th { text-align: left; padding: 10px 14px; background: var(--bg-2); border-bottom: 1px solid var(--line); font-weight: 600; font-size: 11.5px; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+  .history-table tbody tr { cursor: pointer; }
+  .history-table tbody tr:hover { background: var(--bg-2); }
+  .history-table tbody tr:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .history-table tbody td { padding: 11px 14px; vertical-align: middle; }
+  .history-title { color: var(--ink); font-weight: 500; }
+  .history-period { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .history-status { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--green-soft); color: var(--green); }
+  .history-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .history-recipient { font-size: 12.5px; color: var(--ink-light); }
+  .history-recipient .em { color: var(--muted); font-size: 11.5px; }
+  .history-actions { display: flex; gap: 4px; justify-content: flex-end; }
+  .icon-btn-sm { width: 26px; height: 26px; border-radius: 5px; background: transparent; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+  .icon-btn-sm:hover { background: var(--bg); border-color: var(--line); color: var(--ink); }
+  .icon-btn-sm svg { width: 13px; height: 13px; }
+
+  /* ============ RIGHT COLUMN ============ */
+  .right-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .right-card { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+  .right-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .right-card-title .header-action { margin-left: auto; font-size: 11px; color: var(--blue); cursor: pointer; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+  .stat-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .stat-row .label { color: var(--ink-light); }
+  .stat-row .value { font-weight: 600; color: var(--ink); }
+
+  /* Scheduled toggle */
+  .schedule-block { background: var(--blue-soft); border: 1px solid #b3cdef; border-radius: 8px; padding: 14px 16px; }
+  .schedule-block-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--blue-dark); margin-bottom: 6px; }
+  .schedule-block-title svg { width: 13px; height: 13px; }
+  .schedule-block-desc { font-size: 12px; color: var(--ink-light); line-height: 1.5; margin-bottom: 10px; }
+  .schedule-block-status { font-size: 12px; color: var(--blue-dark); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .toggle-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: 11px; font-weight: 700; }
+  .toggle-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+  /* Recipients */
+  .recipient-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 13px; }
+  .recipient-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .recipient-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: white; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .recipient-avatar.c2 { background: #c97a4a; }
+  .recipient-info { flex: 1; min-width: 0; }
+  .recipient-name { font-size: 12.5px; font-weight: 500; color: var(--ink); }
+  .recipient-email { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Workflow visualization */
+  .workflow-steps { display: flex; flex-direction: column; gap: 12px; }
+  .workflow-step { display: flex; align-items: flex-start; gap: 10px; position: relative; }
+  .workflow-step:not(:last-child)::after { content: ''; position: absolute; left: 12px; top: 26px; bottom: -8px; width: 2px; background: var(--line); }
+  .workflow-num { width: 24px; height: 24px; border-radius: 50%; background: var(--bg); color: var(--ink-light); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid white; box-shadow: 0 0 0 1px var(--line); position: relative; z-index: 1; }
+  .workflow-step.active .workflow-num { background: var(--blue); color: white; box-shadow: 0 0 0 1px var(--blue); }
+  .workflow-step-info { padding-top: 2px; }
+  .workflow-step-title { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .workflow-step-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 – 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Daily Logs <span class="count">23</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Client Reports</h2>
+          <div class="pt-sub">AI-drafted reports sent to the client. Admin reviews and approves before send.</div>
+        </div>
+        <div class="pt-counter"><strong>4</strong> sent · <strong>2</strong> pending approval</div>
+      </div>
+
+      <div class="reports-wrap">
+
+        <!-- LEFT: three zones stacked -->
+        <div>
+
+          <!-- ZONE 1: Generate -->
+          <div class="zone-card">
+            <div class="zone-head">
+              <h2>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--purple);"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+                Generate Client Report
+              </h2>
+              <span class="zone-head-meta">AI drafts a client update from project activity</span>
+            </div>
+            <div class="generate-body">
+              <div class="generate-row">
+                <div class="gen-field">
+                  <label>Reporting Period</label>
+                  <select>
+                    <option>Last 7 days</option>
+                    <option selected>Last 14 days (May 7 – May 20)</option>
+                    <option>Last 30 days</option>
+                    <option>Since last report (May 12)</option>
+                    <option>Custom range…</option>
+                  </select>
+                </div>
+                <div class="gen-field">
+                  <label>Template</label>
+                  <select>
+                    <option selected>Standard Client Update</option>
+                    <option>Project Kickoff</option>
+                    <option>Project Milestone</option>
+                    <option>Project Closeout</option>
+                  </select>
+                </div>
+                <div class="gen-field">
+                  <label>Tone</label>
+                  <select>
+                    <option selected>Professional</option>
+                    <option>Conversational</option>
+                    <option>Brief</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" style="height: 38px;">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+                  Generate Draft
+                </button>
+              </div>
+            </div>
+            <div class="generate-meta">
+              <span class="ai-tag">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+                AI
+              </span>
+              <span class="meta-item">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+                Will pull from: <strong>8 daily logs · 11 change notices · 28 task events · 14 time entries</strong>
+              </span>
+              <span class="meta-item">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Generation typically takes <strong>20–30 sec</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- ZONE 2: Pending Approval -->
+          <div class="zone-card">
+            <div class="zone-head">
+              <h2>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--amber);"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Pending Approval
+                <span class="badge-num amber">2</span>
+              </h2>
+              <span class="zone-head-meta">Drafts awaiting admin review before send</span>
+            </div>
+            <div class="pending-list">
+
+              <div class="pending-item">
+                <div class="pending-info">
+                  <div class="pending-row1">
+                    <span class="pending-title">Client Update Report</span>
+                    <span class="pending-status-pill awaiting">Awaiting Admin Review</span>
+                  </div>
+                  <div class="pending-meta">
+                    <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Reporting period: <strong style="color:var(--ink-light); font-weight:600;">May 7 – May 20</strong></span>
+                    <span>Generated today, 4:30 PM</span>
+                    <span>Standard Client Update · Professional tone</span>
+                  </div>
+                  <div class="pending-summary">
+                    West wall rough-in completed on schedule. Pressure testing of supply lines at 60 PSI held for 30 min with no drop. Three PCNs in flight, one approved this period (water hammer arrestors, +$1,240). Mechanical room demo continuing. Recirc pump mounted, awaiting electrical for wiring. Schedule remains on track for June 30 completion.
+                  </div>
+                </div>
+                <div class="pending-actions">
+                  <button class="btn btn-primary btn-sm">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Review &amp; Approve
+                  </button>
+                  <button class="btn btn-secondary btn-sm">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+                    Preview
+                  </button>
+                  <button class="btn-text" style="font-size: 11.5px;">Discard</button>
+                </div>
+              </div>
+
+              <div class="pending-item">
+                <div class="pending-info">
+                  <div class="pending-row1">
+                    <span class="pending-title">Project Milestone Report</span>
+                    <span class="pending-status-pill draft">Draft (Not Submitted)</span>
+                  </div>
+                  <div class="pending-meta">
+                    <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>Reporting period: <strong style="color:var(--ink-light); font-weight:600;">Apr 25 – May 18</strong></span>
+                    <span>Generated yesterday, 11:08 AM</span>
+                    <span>Project Milestone · Professional tone</span>
+                  </div>
+                  <div class="pending-summary">
+                    Marks completion of rough-in installation milestone. All west wing supply lines pressure-tested and verified. Mechanical room mid-installation. Punch list items below…
+                  </div>
+                </div>
+                <div class="pending-actions">
+                  <button class="btn btn-secondary btn-sm">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit Draft
+                  </button>
+                  <button class="btn btn-secondary btn-sm">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                    Submit for Approval
+                  </button>
+                  <button class="btn-text" style="font-size: 11.5px;">Discard</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ZONE 3: Report History -->
+          <div class="zone-card">
+            <div class="zone-head">
+              <h2>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--green);"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Report History
+                <span class="badge-num">4</span>
+              </h2>
+              <span class="zone-head-meta">Sent to client</span>
+            </div>
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Sent</th>
+                  <th>Recipient</th>
+                  <th>Approved by</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="history-title">Client Update Report</div>
+                    <div class="history-period">Apr 23 – May 6</div>
+                  </td>
+                  <td><span class="history-status">Sent</span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">May 7, 8:05 AM</span></td>
+                  <td><span class="history-recipient">Brett Hartnell <span class="em">(Fairmont)</span></span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Justin Thorsteinson</span></td>
+                  <td>
+                    <div class="history-actions">
+                      <button class="icon-btn-sm" title="View"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-btn-sm" title="Download"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                      <button class="icon-btn-sm" title="Resend"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="history-title">Project Kickoff Report</div>
+                    <div class="history-period">Apr 1 – Apr 22</div>
+                  </td>
+                  <td><span class="history-status">Sent</span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Apr 23, 9:42 AM</span></td>
+                  <td><span class="history-recipient">Brett Hartnell <span class="em">(Fairmont)</span></span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Justin Thorsteinson</span></td>
+                  <td>
+                    <div class="history-actions">
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="history-title">Client Update Report</div>
+                    <div class="history-period">Apr 9 – Apr 22</div>
+                  </td>
+                  <td><span class="history-status">Sent</span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Apr 23, 8:10 AM</span></td>
+                  <td><span class="history-recipient">Brett Hartnell <span class="em">(Fairmont)</span></span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Adam Coey</span></td>
+                  <td>
+                    <div class="history-actions">
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="history-title">Client Update Report</div>
+                    <div class="history-period">Mar 26 – Apr 8</div>
+                  </td>
+                  <td><span class="history-status">Sent</span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Apr 9, 7:50 AM</span></td>
+                  <td><span class="history-recipient">Brett Hartnell <span class="em">(Fairmont)</span></span></td>
+                  <td><span style="font-size: 12.5px; color: var(--ink-light);">Justin Thorsteinson</span></td>
+                  <td>
+                    <div class="history-actions">
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                      <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: stats, scheduled, recipients, workflow -->
+        <div class="right-col">
+
+          <!-- Reporting Stats -->
+          <div class="right-card">
+            <div class="right-card-title">Reporting Overview</div>
+            <div class="stat-row">
+              <span class="label">Total sent</span>
+              <span class="value">4</span>
+            </div>
+            <div class="stat-row">
+              <span class="label">Pending approval</span>
+              <span class="value" style="color: var(--amber);">2</span>
+            </div>
+            <div class="stat-row">
+              <span class="label">Last sent</span>
+              <span class="value">13 days ago</span>
+            </div>
+            <div class="stat-row">
+              <span class="label">Avg time to send</span>
+              <span class="value">~14 days</span>
+            </div>
+          </div>
+
+          <!-- Scheduled reports -->
+          <div class="right-card">
+            <div class="right-card-title">
+              Scheduled Reports
+              <span class="header-action">Settings</span>
+            </div>
+            <div class="schedule-block">
+              <div class="schedule-block-title">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Bi-weekly Client Update
+              </div>
+              <div class="schedule-block-desc">
+                Auto-generates a Client Update Report every other Friday morning. Lands in Pending Approval awaiting your review before sending.
+              </div>
+              <div class="schedule-block-status">
+                <span class="toggle-pill">ON</span>
+                <span style="color: var(--ink-light); font-weight: 500;">Next: Fri, May 22</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recipients -->
+          <div class="right-card">
+            <div class="right-card-title">
+              Recipients
+              <span class="header-action">Edit</span>
+            </div>
+            <div class="recipient-row">
+              <div class="recipient-avatar">BH</div>
+              <div class="recipient-info">
+                <div class="recipient-name">Brett Hartnell</div>
+                <div class="recipient-email">brett.hartnell@fairmont.com</div>
+              </div>
+            </div>
+            <div class="recipient-row">
+              <div class="recipient-avatar c2">DM</div>
+              <div class="recipient-info">
+                <div class="recipient-name">Dave Mercier</div>
+                <div class="recipient-email">d.mercier@fairmont.com</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Workflow visualization -->
+          <div class="right-card">
+            <div class="right-card-title">How it works</div>
+            <div class="workflow-steps">
+              <div class="workflow-step">
+                <div class="workflow-num">1</div>
+                <div class="workflow-step-info">
+                  <div class="workflow-step-title">Generate Draft</div>
+                  <div class="workflow-step-desc">AI pulls from project activity for the period</div>
+                </div>
+              </div>
+              <div class="workflow-step active">
+                <div class="workflow-num">2</div>
+                <div class="workflow-step-info">
+                  <div class="workflow-step-title">Admin Review</div>
+                  <div class="workflow-step-desc">Edit content, regenerate sections, or approve as-is</div>
+                </div>
+              </div>
+              <div class="workflow-step">
+                <div class="workflow-num">3</div>
+                <div class="workflow-step-info">
+                  <div class="workflow-step-title">Send to Client</div>
+                  <div class="workflow-step-desc">Email with PDF attachment to recipients</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="annotations">
+        <h3>Client Reports tab notes</h3>
+        <ul>
+          <li><strong>Three vertical zones</strong>: Generate (top), Pending Approval (middle), Report History (bottom). Reads top-to-bottom as a workflow.</li>
+          <li><strong>Generate panel is compact</strong>: 3 dropdowns (period, template, tone) and one big Generate Draft button. Below the form, a meta strip shows what data the AI will draw from and how long generation takes. The AI tag (purple) flags this as an AI-generated action.</li>
+          <li><strong>Pending Approval queue</strong> shows two states: "Awaiting Admin Review" (amber, fresh AI draft) and "Draft (Not Submitted)" (grey, admin started editing but hasn't submitted yet). Each row has type-appropriate actions: Review &amp; Approve for fresh drafts, Edit + Submit for in-progress drafts.</li>
+          <li><strong>Pending summary preview</strong> is the first paragraph of the AI-generated report, so the admin can eyeball whether it captured the period correctly before opening the full editor.</li>
+          <li><strong>Report History table</strong> shows what's been sent: title, reporting period, status (all "Sent" in this view), sent timestamp, recipient, approved-by. Actions: view, download, resend.</li>
+          <li><strong>Right column gives context that frames the workflow</strong>: stats (counts, last sent, cadence), Scheduled Reports (Bi-weekly auto-generation that drops into Pending Approval), Recipients, and the workflow visualization (Generate → Review → Send, current step highlighted blue).</li>
+          <li><strong>The workflow visualization</strong> is intentional onboarding. New admins immediately understand that AI doesn't auto-send. Admin approval is the safety gate.</li>
+          <li><strong>Scheduled Reports</strong> is the auto-pilot feature: setting it up means a fresh draft lands in Pending Approval every 2 weeks (or whatever cadence), so the admin's job becomes review-and-send instead of generate-from-scratch.</li>
+          <li><strong>Approval gate is non-bypassable in v1.</strong> Every report goes through human review before client sees it. AI is a drafting assistant, not an autopilot.</li>
+        </ul>
+
+        <h4>What sits behind the "Review &amp; Approve" button</h4>
+        <ul>
+          <li>Opens the full report editor (separate screen). Admin can edit sections, regenerate individual paragraphs ("regenerate this section with more detail on PCNs"), tweak tone, add/remove content. Once happy, click Approve &amp; Send. Email goes out with PDF attached.</li>
+          <li>The output design of the actual report sent to client is defined by <code>odin_client_report_mockup.html</code> (the previously-produced reference).</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

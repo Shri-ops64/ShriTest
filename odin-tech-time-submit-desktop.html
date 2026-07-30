@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Submit Time (Foreman/Supervisor) (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1320px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* Header */
+  .composer-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; gap: 20px; }
+  .work-type { font-size: 11.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .composer-header h1 { font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
+  .today-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); flex-shrink: 0; margin-top: 4px; }
+  .today-pill strong { font-weight: 600; }
+
+  /* Info banner */
+  .info-card { display: flex; gap: 12px; align-items: flex-start; background: var(--blue-soft); border: 1px solid #cfe0fa; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+  .info-card svg { width: 19px; height: 19px; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+  .info-card .info-text { font-size: 13.5px; color: var(--ink); line-height: 1.55; }
+
+  /* Body grid: form column + sticky summary rail */
+  .composer-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.85fr); gap: 20px; align-items: start; }
+  .form-col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--white); border-radius: 14px; padding: 24px 26px; border: 1px solid var(--line); }
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .hint { font-size: 11px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  .field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .field-block { display: flex; flex-direction: column; }
+  .field-block-label { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+
+  .radio-row { display: flex; gap: 20px; padding-top: 4px; }
+  .radio-item { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+  .radio-circle { width: 19px; height: 19px; border-radius: 50%; border: 2px solid var(--muted-2); flex-shrink: 0; position: relative; }
+  .radio-circle.selected { border-color: var(--blue); }
+  .radio-circle.selected::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--blue); }
+  .radio-label { font-size: 14px; color: var(--ink); font-weight: 500; }
+
+  .field-input { padding: 11px 13px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--ink); width: 100%; outline: none; }
+  .field-input.readonly { display: flex; align-items: center; gap: 8px; }
+  .field-input.readonly svg { width: 12px; height: 12px; color: var(--blue); flex-shrink: 0; }
+  .field-input.readonly strong { font-weight: 600; }
+  .field-input.readonly .id-tag { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  /* Time on site */
+  .time-block { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .time-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 12px; }
+  .time-block-label { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .time-range { font-size: 13px; color: var(--ink-light); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; background: white; font-family: inherit; width: 150px; text-align: right; }
+  .time-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .hours-stepper { display: flex; align-items: center; gap: 14px; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+  .stepper-btn { width: 34px; height: 34px; border-radius: 50%; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); flex-shrink: 0; }
+  .stepper-btn:hover { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); }
+  .stepper-btn svg { width: 14px; height: 14px; }
+  .stepper-value { min-width: 76px; text-align: center; font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .stepper-value .unit { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .hours-shortcuts { display: flex; gap: 7px; flex-wrap: wrap; }
+  .hours-shortcut { padding: 7px 14px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--ink-light); cursor: pointer; }
+  .hours-shortcut:hover { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+  .hours-shortcut.selected { background: var(--ink); color: white; border-color: var(--ink); }
+  .add-time-block { display: flex; align-items: center; gap: 6px; margin-top: 14px; padding: 12px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; justify-content: center; }
+  .add-time-block:hover { background: var(--blue-soft); border-color: var(--blue); }
+  .add-time-block .sub { color: var(--muted-2); font-weight: 500; }
+  .time-total { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-2); }
+  .time-total .lbl { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  .time-total .val { font-size: 16px; color: var(--ink); font-weight: 700; }
+
+  /* Allocation */
+  .alloc-bar { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+  .alloc-track { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin-bottom: 9px; }
+  .alloc-fill { height: 100%; background: var(--blue); border-radius: 999px; }
+  .alloc-text { font-size: 12.5px; color: var(--ink-light); font-weight: 600; }
+  .alloc-text strong { color: var(--ink); }
+  .task-search { display: flex; align-items: center; gap: 9px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 9px; padding: 10px 13px; margin-bottom: 6px; }
+  .task-search svg { width: 14px; height: 14px; color: var(--muted-2); flex-shrink: 0; }
+  .task-search input { border: none; background: transparent; outline: none; font-size: 13.5px; color: var(--ink); font-family: inherit; width: 100%; }
+  .task-list-hint { font-size: 11.5px; color: var(--muted-2); padding: 2px 0 6px; }
+  .task-link-row { display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-radius: 8px; }
+  .task-link-row:hover { background: var(--bg-2); }
+  .task-link-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .task-check { width: 19px; height: 19px; border-radius: 4px; background: white; border: 1.5px solid var(--muted-2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .task-check.checked { background: var(--blue); border-color: var(--blue); color: white; }
+  .task-check.checked svg { width: 12px; height: 12px; }
+  .task-link-name { flex: 1; font-size: 14px; color: var(--ink); font-weight: 500; }
+  .task-link-meta { font-size: 11.5px; color: var(--muted); margin-left: 8px; }
+  .task-hours { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .task-hours input { width: 54px; text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 7px 5px; font-size: 13.5px; font-weight: 600; color: var(--ink); font-family: inherit; background: white; }
+  .task-hours .unit { font-size: 11.5px; color: var(--muted); }
+  .task-other { display: flex; align-items: center; gap: 14px; padding: 12px 4px 4px; margin-top: 6px; border-top: 1px dashed var(--line); }
+  .task-other .task-link-name { color: var(--muted); font-weight: 500; font-style: italic; }
+  .task-other .task-link-sub { font-size: 11px; color: var(--muted-2); display: block; font-style: normal; margin-top: 1px; }
+  .task-other .task-check { border-color: var(--muted-2); }
+
+  /* Sticky summary rail */
+  .summary-rail { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .summary-card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .summary-card .sc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 14px; }
+  .sc-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .sc-row:last-child { border-bottom: none; }
+  .sc-row .k { font-size: 13px; color: var(--muted); }
+  .sc-row .v { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
+  .sc-alloc-status { display: flex; align-items: center; gap: 7px; margin-top: 4px; padding: 10px 12px; border-radius: 9px; background: var(--green-soft); color: var(--green); font-size: 12.5px; font-weight: 600; }
+  .sc-alloc-status svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: 999px; font-size: 14.5px; font-weight: 700; cursor: pointer; border: none; width: 100%; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 4px 14px rgba(237, 28, 36, 0.28); }
+  .btn-pill:hover { box-shadow: 0 6px 18px rgba(237, 28, 36, 0.34); }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <a>Fairmont Hotel Renovation</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="current">Submit Time</span>
+      </div>
+
+      <!-- Header -->
+      <div class="composer-header">
+        <div>
+          <div class="work-type">Projects · Foreman / Supervisor</div>
+          <h1>Submit Time</h1>
+        </div>
+        <div class="today-pill">
+          Today's date: <strong>20-May-26</strong>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div class="info-card">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="info-text">Foremen and Supervisors enter their project time here, since they file a weekly report rather than a Daily Tech Log. Log your hours and split them across the tasks you worked on. This is your single time entry and it feeds the regular Odin timesheet, so don't re-enter it there. (Technicians enter time inside their Daily Tech Log instead.)</div>
+      </div>
+
+      <!-- Composer grid: form + sticky summary rail -->
+      <div class="composer-grid">
+
+        <!-- FORM COLUMN -->
+        <div class="form-col">
+
+          <!-- TIMESHEET TYPE / PROJECT / DATE -->
+          <div class="card">
+            <div class="field-row">
+              <div class="field-block">
+                <div class="field-block-label">Timesheet Type</div>
+                <div class="radio-row">
+                  <div class="radio-item">
+                    <div class="radio-circle selected"></div>
+                    <div class="radio-label">Billable</div>
+                  </div>
+                  <div class="radio-item">
+                    <div class="radio-circle"></div>
+                    <div class="radio-label">Non-Billable</div>
+                  </div>
+                </div>
+              </div>
+              <div class="field-block">
+                <div class="field-block-label">Project</div>
+                <div class="field-input readonly">
+                  <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  <strong>Fairmont Hotel Renovation</strong>
+                  <span class="id-tag">9059</span>
+                </div>
+              </div>
+              <div class="field-block">
+                <div class="field-block-label">Date</div>
+                <div class="field-input readonly">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+                  <span>05/20/2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIME ON SITE -->
+          <div class="card">
+            <div class="field-label">
+              <span>Time on site</span>
+              <span class="hint">one block per visit</span>
+            </div>
+
+            <div class="time-block">
+              <div class="time-block-head">
+                <span class="time-block-label">On site</span>
+                <input class="time-range" value="7:00a – 3:30p" aria-label="Time range (optional)">
+              </div>
+              <div class="time-row">
+                <div class="hours-stepper">
+                  <div class="stepper-btn">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+                  </div>
+                  <div class="stepper-value">8.0<span class="unit">hrs</span></div>
+                  <div class="stepper-btn">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                  </div>
+                </div>
+                <div class="hours-shortcuts">
+                  <div class="hours-shortcut">4</div>
+                  <div class="hours-shortcut">6</div>
+                  <div class="hours-shortcut selected">8</div>
+                  <div class="hours-shortcut">8.5</div>
+                  <div class="hours-shortcut">10</div>
+                  <div class="hours-shortcut">Custom</div>
+                </div>
+              </div>
+              <div class="add-time-block">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M12 5v14M5 12h14"/></svg>
+                Add another time block <span class="sub">if you returned to site later</span>
+              </div>
+            </div>
+
+            <div class="time-total">
+              <span class="lbl">Total on site</span>
+              <span class="val">8.0 hrs</span>
+            </div>
+          </div>
+
+          <!-- ALLOCATE HOURS TO TASKS -->
+          <div class="card">
+            <div class="field-label">
+              <span>Allocate hours to tasks</span>
+            </div>
+
+            <div class="alloc-bar">
+              <div class="alloc-track"><div class="alloc-fill" style="width: 100%;"></div></div>
+              <div class="alloc-text"><strong>8.0</strong> of 8.0 hrs allocated</div>
+            </div>
+
+            <div class="task-search">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search this project's tasks…">
+            </div>
+            <div class="task-list-hint">Enter the hours spent on each.</div>
+
+            <div class="task-link-row">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">West wall rough-in <span class="task-link-meta">In Progress</span></div>
+              <div class="task-hours"><input value="2.0"><span class="unit">hrs</span></div>
+            </div>
+            <div class="task-link-row">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">Pressure testing supply lines <span class="task-link-meta">Complete</span></div>
+              <div class="task-hours"><input value="1.0"><span class="unit">hrs</span></div>
+            </div>
+            <!-- "Other" line: non-task work (oversight, walkthroughs, helping out) -->
+            <div class="task-other">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">Other<span class="task-link-sub">Work not tied to a specific task</span></div>
+              <div class="task-hours"><input value="5.0"><span class="unit">hrs</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- STICKY SUMMARY RAIL -->
+        <div class="summary-rail">
+          <div class="summary-card">
+            <div class="sc-label">Time summary</div>
+            <div class="sc-row"><span class="k">Type</span><span class="v">Billable</span></div>
+            <div class="sc-row"><span class="k">Project</span><span class="v">Fairmont Hotel Renovation</span></div>
+            <div class="sc-row"><span class="k">Date</span><span class="v">May 20, 2026</span></div>
+            <div class="sc-row"><span class="k">Total on site</span><span class="v">8.0 hrs</span></div>
+            <div class="sc-alloc-status">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              Fully allocated · 8.0 of 8.0 hrs
+            </div>
+          </div>
+
+          <button class="btn-pill">Submit Time</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.10 · Submit Time (Foreman/Supervisor)</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup</span>
+      Built from the mobile Submit Time screen, adapted to the established desktop chrome (nav, breadcrumb, this annotation rail) and the same form + sticky summary rail pattern used for the Daily Tech Log Composer conversion.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Standalone time entry for roles that file no daily log (D-040)</span>
+      Technicians enter time inside the Daily Tech Log (D-036). Foremen and Supervisors file a weekly report instead, so they need a real place to submit project hours — this screen, carrying the same time-blocks-plus-allocation model as the log, minus the narrative and photos.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Same time model as the Daily Tech Log</span>
+      One or more time blocks (optional time range + hours stepper; "Add another time block" for a return visit), a Total on site, then hours-to-task allocation where each task gets its own hours and an "Other" line catches non-task work (oversight, walkthroughs, helping out). The live "X of Y hrs allocated" bar shows when the day is fully accounted for. Worked example: a supervisor's 8.0 hrs split as 2.0 + 1.0 on tasks and 5.0 on Other (oversight).
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Single source of truth</span>
+      These hours feed the regular Odin timesheet directly — the leader does not re-enter them there. (Training point for the Thor team.)
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Existing-timesheet attributes kept</span>
+      Billable / Non-Billable, Project (pre-filled, locked when entered from the per-project view), and Date — laid out as three fields side by side on desktop rather than stacked, since there's room.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Sticky rail replaces the mobile footer button</span>
+      Mobile pins a single "Submit Time" button to the bottom. Desktop moves it into the sticky right rail alongside a running summary (type, project, date, total hours, allocation status), consistent with the Daily Tech Log Composer's rail.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Who sees this</span>
+      Foreman / Supervisor: "Submit Time" on their per-project view opens this screen — it's their time entry. Technician: no separate Submit Time; techs enter time in the Daily Tech Log, so the tech per-project view drops this button entirely (D-040), avoiding double-entry. The universal TimeTracker path (Home, Emergency Service / Maintenance / Projects / Non-Billable) is unchanged for non-project work.
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+</script>
+</body>
+</html>

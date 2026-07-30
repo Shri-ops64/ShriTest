@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Project Photos (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1180px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 26px; gap: 20px; flex-wrap: wrap; }
+  .page-header h1 { font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.3px; }
+  .header-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); }
+  .project-context svg { width: 12px; height: 12px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+  .photo-count-meta { font-size: 12.5px; color: var(--muted); }
+
+  .add-photo-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; background: var(--ink); color: white; border: none; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0; margin-top: 4px; }
+  .add-photo-btn:hover { background: var(--ink-2); }
+  .add-photo-btn svg { width: 14px; height: 14px; }
+
+  /* Date group */
+  .date-group-label { padding: 4px 4px 12px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-top: 8px; }
+  .date-group:first-of-type .date-group-label { margin-top: 0; }
+  .photo-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 6px; }
+  .photo-tile { aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid var(--line); transition: transform 0.1s, box-shadow 0.1s; }
+  .photo-tile:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0,0,0,0.16); }
+  .photo-tile svg.scene { width: 100%; height: 100%; display: block; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <a>Fairmont Hotel Renovation</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="current">Project Photos</span>
+      </div>
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h1>Project Photos</h1>
+          <div class="header-meta">
+            <div class="project-context">
+              <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <strong>Fairmont Hotel Renovation</strong>
+            </div>
+            <span class="photo-count-meta">23 photos uploaded by you · 64.2 MB</span>
+          </div>
+        </div>
+        <button class="add-photo-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Add Photos
+        </button>
+      </div>
+
+      <!-- Today -->
+      <div class="date-group">
+        <div class="date-group-label">Today, May 20</div>
+        <div class="photo-grid">
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#cfd5db"/><rect y="32" width="48" height="16" fill="#a89580"/><rect x="8" y="6" width="3" height="32" fill="#c98551"/><rect x="20" y="6" width="3" height="32" fill="#c98551"/><rect x="32" y="6" width="3" height="32" fill="#c98551"/><rect x="6" y="14" width="32" height="3" fill="#c98551"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#3a4148"/><circle cx="24" cy="22" r="14" fill="#e8e4dc"/><circle cx="24" cy="22" r="11" fill="#fff"/><line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#c0c5cc"/><rect x="4" y="20" width="40" height="8" fill="#888c92"/><rect x="10" y="28" width="4" height="14" fill="#c98551"/><rect x="22" y="28" width="4" height="14" fill="#c98551"/><rect x="34" y="28" width="4" height="14" fill="#c98551"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#d8c9b0"/><rect width="48" height="22" fill="#e8dcc4"/><rect x="6" y="28" width="3" height="20" fill="#888"/><rect x="20" y="28" width="3" height="20" fill="#888"/><circle cx="7.5" cy="32" r="3" fill="#c92020"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#5a6068"/><rect y="32" width="48" height="16" fill="#3a3f45"/><g transform="translate(8 14) rotate(35 16 12)"><rect x="0" y="9" width="22" height="6" rx="1" fill="#b8b8b8"/></g></svg></div>
+        </div>
+      </div>
+
+      <!-- Yesterday -->
+      <div class="date-group">
+        <div class="date-group-label">Yesterday, May 19</div>
+        <div class="photo-grid">
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#3a4148"/><rect x="10" y="14" width="28" height="22" rx="2" fill="#5a6068"/><circle cx="24" cy="25" r="8" fill="#1a1d20"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#a8c4d8"/><rect y="30" width="48" height="18" fill="#7a8a96"/><rect x="14" y="14" width="20" height="20" fill="#d8c9b0"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#e8dcc4"/><rect x="8" y="0" width="3" height="48" fill="#c98551"/><rect x="24" y="0" width="3" height="48" fill="#c98551"/></svg></div>
+        </div>
+      </div>
+
+      <!-- Mon, May 18 -->
+      <div class="date-group">
+        <div class="date-group-label">Mon, May 18</div>
+        <div class="photo-grid">
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#d8c9b0"/><rect width="48" height="32" fill="#e8dcc4"/><rect x="12" y="42" width="6" height="6" fill="#888"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#c0c5cc"/><rect x="20" y="8" width="8" height="32" fill="#888c92"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#cfd5db"/><rect y="32" width="48" height="16" fill="#a89580"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#3a4148"/><rect x="14" y="8" width="20" height="32" fill="#888"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#5a6068"/><circle cx="24" cy="24" r="14" fill="#888"/></svg></div>
+          <div class="photo-tile"><svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" fill="#d8c9b0"/><rect x="0" y="32" width="48" height="16" fill="#a89580"/></svg></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.8 · Project Photos (full grid)</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup</span>
+      Built from the mobile Project Photos grid, adapted to the established desktop chrome (nav, breadcrumb, annotation rail). Every content decision from mobile carried over unchanged.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Scoped to "my photos on this project"</span>
+      Other techs' photos are not shown here — same scoping as mobile.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Grouped by date (unchanged)</span>
+      Today, Yesterday, then specific dates — same pattern as the admin Daily Logs and Activity tabs.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Grid widened from 3 to 7 columns</span>
+      Mobile uses edge-to-edge 3-column tiles for density on a small screen. Desktop widens to 7 columns to use the available space, with a small gap and rounded corners (matching the tile treatment used elsewhere on desktop) instead of mobile's edge-to-edge, gapless layout.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">"Add Photos" button (unchanged affordance)</span>
+      Same action as the per-project view's "Add Photos" — opens a picker and attaches to this project's photo library. On desktop this is a drag-and-drop-capable button in the page header rather than an app-bar icon button, consistent with the composer and log detail conversions.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Count + storage shown in header (unchanged)</span>
+      "23 photos uploaded by you · 64.2 MB" — same awareness metric as mobile.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Source of photos (unchanged)</span>
+      Unified view of everything the tech has uploaded to this project: photos attached to daily logs they submitted, plus standalone uploads via the project view or this screen. Same backing data as mobile.
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+</script>
+</body>
+</html>

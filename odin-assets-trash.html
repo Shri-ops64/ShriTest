@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Assets · Trash</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); border-bottom-width: 3px; font-weight: 700; font-size: 14px; }
+
+  /* Page title bar (below tabs) */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+  .tab .count { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* ============ Assets layout ============ */
+  .assets-wrap { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; min-height: 600px; }
+
+  /* Folder sidebar */
+  .folder-sidebar { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 14px 0; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .folder-sidebar-head { padding: 0 16px 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .folder-sidebar-head .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .folder-sidebar-head .add-btn { width: 22px; height: 22px; border-radius: 5px; background: transparent; border: 1px solid transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .folder-sidebar-head .add-btn:hover { background: var(--bg-2); border-color: var(--line); color: var(--ink); }
+  .folder-sidebar-head .add-btn svg { width: 13px; height: 13px; }
+
+  .folder-list { padding: 8px 6px 0; }
+  .folder-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 5px; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .folder-item:hover { background: var(--bg-2); }
+  .folder-item.active { background: var(--blue-soft); color: var(--blue-dark); font-weight: 500; }
+  .folder-item.active svg.folder-icon { color: var(--blue-dark); }
+  .folder-item svg.folder-icon { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+  .folder-item.active svg.folder-icon { color: var(--blue); }
+  .folder-item .folder-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .folder-item .folder-count { font-size: 11px; color: var(--muted); }
+  .folder-item.active .folder-count { color: var(--blue-dark); }
+
+  .folder-divider { height: 1px; background: var(--line); margin: 10px 12px; }
+  .folder-item.trash { color: var(--ink-light); }
+  .folder-item.trash svg.folder-icon { color: var(--muted); }
+  .folder-item.trash.active { background: var(--bg); color: var(--ink); font-weight: 500; }
+  .folder-item.trash.active svg.folder-icon { color: var(--ink); }
+  .folder-item.trash.active .folder-count { color: var(--ink); }
+
+  /* Trash file card: subdued, with deletion meta + restore/delete buttons */
+  .file-card.trashed { opacity: 0.85; }
+  .file-card.trashed .file-preview { filter: grayscale(40%); }
+  .trashed-meta { padding: 8px 12px; background: var(--bg-2); border-top: 1px solid var(--line-2); font-size: 11px; color: var(--ink-light); }
+  .trashed-meta .deleted-by { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .trashed-meta .countdown { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+  .trashed-meta .countdown.urgent { color: var(--red); }
+  .trashed-meta .countdown.soon { color: var(--amber); }
+  .trashed-meta .countdown.normal { color: var(--ink-light); }
+  .trashed-meta .countdown svg { width: 11px; height: 11px; }
+  .trash-action-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line-2); }
+  .trash-btn { flex: 1; padding: 6px 8px; border-radius: 5px; font-size: 11.5px; font-weight: 500; cursor: pointer; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .trash-btn.restore { background: white; color: var(--ink); }
+  .trash-btn.restore:hover { background: var(--blue-soft); color: var(--blue-dark); border-color: #b3cdef; }
+  .trash-btn.restore svg { width: 11px; height: 11px; }
+  .trash-btn.delete-forever { background: white; color: var(--red); border-color: #f0c0c3; }
+  .trash-btn.delete-forever:hover { background: var(--red-soft); }
+  .trash-btn.delete-forever svg { width: 11px; height: 11px; }
+  .trash-btn.delete-forever.disabled { color: var(--muted-2); border-color: var(--line); cursor: not-allowed; }
+  .trash-btn.delete-forever.disabled:hover { background: white; }
+
+  /* Trash header banner */
+  .trash-info-banner { padding: 12px 18px; background: var(--bg-2); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--ink-light); }
+  .trash-info-banner svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+  .trash-info-banner strong { color: var(--ink); font-weight: 600; }
+  .trash-info-banner .empty-link { margin-left: auto; color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .trash-info-banner .empty-link.disabled { color: var(--muted-2); cursor: not-allowed; }
+  .trash-info-banner .empty-link:hover:not(.disabled) { text-decoration: underline; }
+
+  /* Main area */
+  .assets-main { background: white; border: 1px solid var(--line); border-radius: 8px; min-height: 600px; }
+
+  /* Toolbar */
+  .assets-toolbar { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .breadcrumb-trail { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb-trail .crumb { color: var(--muted); }
+  .breadcrumb-trail .crumb.current { color: var(--ink); font-weight: 600; }
+  .breadcrumb-trail .crumb-sep { color: var(--muted-2); }
+  .folder-meta { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .toolbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-input { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; min-width: 200px; }
+  .search-input input { border: none; background: transparent; outline: none; flex: 1; font-size: 13px; color: var(--ink); }
+  .search-input svg { width: 12px; height: 12px; color: var(--muted); }
+  .view-toggle { display: flex; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px; }
+  .view-toggle .vt { width: 28px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+  .view-toggle .vt.active { background: white; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .view-toggle .vt svg { width: 13px; height: 13px; }
+
+  /* Drop zone (upload hint) */
+  .upload-strip { padding: 10px 18px; background: var(--blue-soft); border-bottom: 1px solid #b3cdef; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--blue-dark); }
+  .upload-strip svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+  .upload-strip .link { color: var(--blue-dark); font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+  /* Trash banner */
+  .trash-banner { padding: 12px 18px; background: var(--amber-soft); border-bottom: 1px solid #f0d597; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-light); }
+  .trash-banner svg { width: 14px; height: 14px; color: var(--amber); flex-shrink: 0; }
+  .trash-banner strong { color: var(--amber); font-weight: 700; }
+
+  /* Files grid */
+  .files-grid { padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+  .file-card { background: white; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .file-card:hover { border-color: var(--blue); }
+  .file-card.selected { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(29, 98, 211, 0.15); }
+  .file-preview { aspect-ratio: 4 / 3; background: var(--bg-2); position: relative; overflow: hidden; }
+  .file-preview svg.scene { width: 100%; height: 100%; display: block; }
+  .file-preview .file-badge { position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; color: white; background: rgba(0,0,0,0.55); }
+  .file-preview.pdf { background: linear-gradient(135deg, #f9eaea, #fee9ea); display: flex; align-items: center; justify-content: center; }
+  .file-preview.pdf .pdf-icon { font-size: 28px; font-weight: 800; color: var(--red); letter-spacing: 1px; }
+  .file-preview.doc { background: linear-gradient(135deg, #eaf0f9, #e8f0fc); display: flex; align-items: center; justify-content: center; }
+  .file-preview.doc .doc-icon { font-size: 28px; font-weight: 800; color: var(--blue); letter-spacing: 1px; }
+  .file-preview.xls { background: linear-gradient(135deg, #e8f5ee, #e6f5ec); display: flex; align-items: center; justify-content: center; }
+  .file-preview.xls .xls-icon { font-size: 28px; font-weight: 800; color: var(--green); letter-spacing: 1px; }
+
+  .file-info { padding: 10px 12px; border-top: 1px solid var(--line-2); }
+  .file-name { font-size: 12.5px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .file-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .file-meta .dot { color: var(--muted-2); }
+  .file-card-foot { padding: 6px 12px 10px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .file-uploader { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 8px; font-weight: 600; }
+  .av-1 { background: #5b8def; }
+  .av-2 { background: #c97a4a; }
+  .av-3 { background: #7a6cd9; }
+  .av-4 { background: #4a8a5e; }
+  .av-5 { background: var(--ink); }
+  .file-context-menu { margin-left: auto; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer; }
+  .file-context-menu:hover { background: var(--bg-2); color: var(--ink); }
+  .file-context-menu svg { width: 12px; height: 12px; }
+
+  /* Empty state */
+  .empty-state { padding: 60px 30px; text-align: center; color: var(--muted); }
+  .empty-state-icon { width: 56px; height: 56px; margin: 0 auto 14px; background: var(--bg-2); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+  .empty-state-icon svg { width: 26px; height: 26px; }
+  .empty-state-title { font-size: 15px; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+
+  /* Trash card variant: subdued */
+  .file-card.in-trash { opacity: 0.75; }
+  .file-card.in-trash .file-name { color: var(--muted); }
+  .trash-restore-bar { padding: 6px 12px 10px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); border-top: 1px dashed var(--line); }
+  .trash-action { padding: 4px 9px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--line); background: white; color: var(--ink); }
+  .trash-action:hover { background: var(--bg-2); }
+  .trash-action.danger { color: var(--red); border-color: #f0c0c3; }
+  .trash-action.danger:hover { background: var(--red-soft); }
+  .trash-deadline { font-size: 10.5px; color: var(--amber); font-weight: 600; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 – 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Daily Logs <span class="count">23</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Assets · Trash</h2>
+          <div class="pt-sub">Deleted files with 30-day recovery window. Admin can restore or delete permanently.</div>
+        </div>
+        <div class="pt-counter"><strong>3</strong> items · <strong>8.2</strong> MB</div>
+      </div>
+
+      <div class="assets-wrap">
+
+        <!-- LEFT: folder sidebar -->
+        <aside class="folder-sidebar">
+          <div class="folder-sidebar-head">
+            <span class="label">Folders</span>
+            <button class="add-btn" title="New folder">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          <div class="folder-list">
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Site Photos</span>
+              <span class="folder-count">18</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Drawings</span>
+              <span class="folder-count">12</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Permits &amp; Inspections</span>
+              <span class="folder-count">6</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Contracts &amp; Quotes</span>
+              <span class="folder-count">4</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Submittals</span>
+              <span class="folder-count">3</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Safety Documents</span>
+              <span class="folder-count">2</span>
+            </div>
+
+            <div class="folder-item">
+              <svg class="folder-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg>
+              <span class="folder-name">Closeout</span>
+              <span class="folder-count">2</span>
+            </div>
+
+            <div class="folder-divider"></div>
+
+            <div class="folder-item trash active">
+              <svg class="folder-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              <span class="folder-name">Trash</span>
+              <span class="folder-count">3</span>
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- RIGHT: file grid -->
+        <div class="assets-main">
+
+          <div class="assets-toolbar">
+            <div class="breadcrumb-trail">
+              <span class="crumb">Assets</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb current">Trash</span>
+            </div>
+            <span class="folder-meta">3 items · 8.2 MB</span>
+            <div class="toolbar-actions">
+              <div class="search-input">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Search trash…">
+              </div>
+              <div class="view-toggle">
+                <div class="vt active" title="Grid">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="vt" title="List">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trash info banner -->
+          <div class="trash-info-banner">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <div>
+              Items here will be <strong>permanently deleted 30 days after</strong> they were moved to Trash. Restore brings them back to their original folder. Only project admins can permanently delete before auto-purge.
+            </div>
+            <span class="empty-link">Empty Trash</span>
+          </div>
+
+          <!-- Files grid (trashed items) -->
+          <div class="files-grid">
+
+            <!-- Trashed photo: was in Site Photos, 23 days left -->
+            <div class="file-card trashed">
+              <div class="file-preview">
+                <svg class="scene" viewBox="0 0 100 75" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                  <rect width="100" height="75" fill="#5a6068"/>
+                  <rect y="50" width="100" height="25" fill="#3a3f45"/>
+                  <rect x="16" y="20" width="32" height="36" fill="#888c92"/>
+                  <circle cx="32" cy="40" r="4" fill="#c92020"/>
+                  <rect x="56" y="28" width="28" height="28" fill="#a8a8a8"/>
+                </svg>
+                <span class="file-badge">JPG</span>
+              </div>
+              <div class="file-info">
+                <div class="file-name">old-equipment-staging.jpg</div>
+                <div class="file-meta">3.2 MB <span class="dot">·</span> from Site Photos</div>
+              </div>
+              <div class="trashed-meta">
+                <div class="deleted-by">
+                  <div class="file-uploader av-2" style="width:16px; height:16px; font-size:7px;">MP</div>
+                  Deleted by Mark Panteluk · May 17
+                </div>
+                <span class="countdown normal">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Auto-deletes in 27 days
+                </span>
+              </div>
+              <div class="trash-action-row">
+                <button class="trash-btn restore">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg>
+                  Restore
+                </button>
+                <button class="trash-btn delete-forever">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  Delete Forever
+                </button>
+              </div>
+            </div>
+
+            <!-- Trashed PDF: 6 days left (soon) -->
+            <div class="file-card trashed">
+              <div class="file-preview pdf">
+                <div class="pdf-icon">PDF</div>
+                <span class="file-badge">PDF</span>
+              </div>
+              <div class="file-info">
+                <div class="file-name">Original-Quote-Draft-v2.pdf</div>
+                <div class="file-meta">412 KB <span class="dot">·</span> from Contracts &amp; Quotes</div>
+              </div>
+              <div class="trashed-meta">
+                <div class="deleted-by">
+                  <div class="file-uploader av-5" style="width:16px; height:16px; font-size:7px;">JT</div>
+                  Deleted by Justin Thorsteinson · Apr 26
+                </div>
+                <span class="countdown soon">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Auto-deletes in 6 days
+                </span>
+              </div>
+              <div class="trash-action-row">
+                <button class="trash-btn restore">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg>
+                  Restore
+                </button>
+                <button class="trash-btn delete-forever">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  Delete Forever
+                </button>
+              </div>
+            </div>
+
+            <!-- Trashed photo: 2 days left (urgent) -->
+            <div class="file-card trashed">
+              <div class="file-preview">
+                <svg class="scene" viewBox="0 0 100 75" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                  <rect width="100" height="75" fill="#cfd5db"/>
+                  <rect y="50" width="100" height="25" fill="#a89580"/>
+                  <rect x="20" y="14" width="60" height="42" fill="#d8c9b0"/>
+                  <rect x="28" y="22" width="44" height="20" fill="#a89580"/>
+                </svg>
+                <span class="file-badge">JPG</span>
+              </div>
+              <div class="file-info">
+                <div class="file-name">duplicate-of-IMG-2204.jpg</div>
+                <div class="file-meta">4.6 MB <span class="dot">·</span> from Site Photos</div>
+              </div>
+              <div class="trashed-meta">
+                <div class="deleted-by">
+                  <div class="file-uploader av-3" style="width:16px; height:16px; font-size:7px;">SP</div>
+                  Deleted by Sam Paterson · Apr 22
+                </div>
+                <span class="countdown urgent">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Auto-deletes in 2 days
+                </span>
+              </div>
+              <div class="trash-action-row">
+                <button class="trash-btn restore">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6M3 13a9 9 0 109-9"/></svg>
+                  Restore
+                </button>
+                <button class="trash-btn delete-forever">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  Delete Forever
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="annotations">
+        <h3>Assets · Trash view</h3>
+        <ul>
+          <li><strong>Same layout as the main Assets view</strong>, with the active folder switched to Trash. Helps users feel oriented (still in Assets, just looking at deleted items).</li>
+          <li><strong>Info banner at top</strong> explains the 30-day auto-purge rule and that permanent delete is admin-only. Sets expectations before the user takes destructive action.</li>
+          <li><strong>"Empty Trash" link</strong> on the right of the banner (red, admin-only). Confirms with a modal before purging everything. Hidden or disabled for non-admins.</li>
+          <li><strong>Trashed file cards are visually subdued</strong> (grayscale-filtered preview, reduced opacity) so it's obvious these aren't live files.</li>
+          <li><strong>"From [original folder]"</strong> shown in the file meta so users know where to find it if they restore.</li>
+          <li><strong>Deleted by + date</strong> on every card so the audit is visible at a glance.</li>
+          <li><strong>Auto-purge countdown</strong> is the key affordance. Color-coded:
+            <ul style="list-style: disc; padding-left: 16px; margin-top: 4px;">
+              <li>Grey/normal: 8+ days remaining</li>
+              <li>Amber/soon: 3-7 days remaining</li>
+              <li>Red/urgent: 0-2 days remaining (last chance to restore)</li>
+            </ul>
+          </li>
+          <li><strong>Two action buttons per card</strong>: Restore (any user with edit access) and Delete Forever (project admin only). For non-admin users, Delete Forever would be disabled with a tooltip explaining the permission requirement.</li>
+          <li><strong>No bulk actions in v1.</strong> Items are restored or deleted one at a time. Bulk select + restore/delete is a v1.1 consideration.</li>
+          <li><strong>Empty state</strong> for an empty trash: "Trash is empty. Items moved to Trash from this project will appear here for 30 days before being permanently removed."</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

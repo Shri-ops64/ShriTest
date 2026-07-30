@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Submit Timesheet (Project) (mobile)</title>
+<style>
+  :root {
+    --ink: #1a1a1a; --ink-light: #58595b; --muted: #828487; --muted-2: #b0b2b5;
+    --line: #e5e7eb; --line-2: #ececec; --bg: #eef1f5; --bg-2: #f7f8fa;
+    --blue: #1d62d3; --blue-soft: #e8f0fc; --red: #ed1c24;
+    --pink-grad-1: #f86077; --pink-grad-2: #ed1c24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .today-label { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .today-label strong { color: var(--ink); font-weight: 600; }
+
+  .title-block { padding: 6px 22px 16px; }
+  .title-block .work-type { font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+  .title-block h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
+
+  .card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px 18px; }
+  .field-block { margin-bottom: 14px; }
+  .field-block:last-child { margin-bottom: 0; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-input { padding: 11px 13px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--ink); width: 100%; outline: none; }
+  .field-input.readonly { background: var(--bg-2); display: flex; align-items: center; gap: 8px; }
+  .field-input.readonly svg { width: 12px; height: 12px; color: var(--blue); }
+  .field-input.readonly strong { font-weight: 600; }
+
+  /* Radio row (billable / non) */
+  .radio-row { display: flex; gap: 16px; }
+  .radio-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .radio-circle { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted-2); flex-shrink: 0; position: relative; }
+  .radio-circle.selected { border-color: var(--blue); }
+  .radio-circle.selected::after { content: ''; position: absolute; inset: 2px; border-radius: 50%; background: var(--blue); }
+  .radio-label { font-size: 14px; color: var(--ink); font-weight: 500; }
+
+  /* Time row */
+  .time-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .time-field { padding: 11px 13px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--ink); text-align: center; font-weight: 600; }
+
+  /* Enter time display */
+  .enter-time-box { text-align: center; padding: 20px 0; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); margin: 4px 0; }
+  .enter-time-label { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 14px; }
+  .time-display { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 40px; font-weight: 700; color: var(--ink); }
+  .time-display .colon { color: var(--muted-2); }
+  .time-display .unit-label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; }
+  .time-display-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .overtime-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; color: var(--ink); font-weight: 500; cursor: pointer; margin-top: 14px; }
+  .overtime-btn svg { width: 12px; height: 12px; color: var(--muted); }
+
+  /* Supplier receipts */
+  .receipts-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--bg-2); margin: 0 16px 8px; border-radius: 12px; }
+  .receipts-head-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .add-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .add-btn svg { width: 13px; height: 13px; }
+  .receipts-empty { font-size: 12px; color: var(--muted); padding: 0 24px 14px; font-style: italic; }
+
+  /* Footer */
+  .footer-actions { padding: 14px 18px 18px; }
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 18px; border-radius: 999px; font-size: 14.5px; font-weight: 700; cursor: pointer; border: none; width: 100%; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 3px 10px rgba(237, 28, 36, 0.25); }
+  .btn-pill svg { width: 14px; height: 14px; }
+
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="device-frame">
+
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </div>
+      <div class="today-label">Today's date: <strong>20-May-26</strong></div>
+    </div>
+
+    <div class="title-block">
+      <div class="work-type">Projects</div>
+      <h1>Submit Timesheet</h1>
+    </div>
+
+    <!-- Main form card -->
+    <div class="card">
+
+      <div class="field-block">
+        <div class="field-label">Timesheet Type</div>
+        <div class="radio-row">
+          <div class="radio-item">
+            <div class="radio-circle selected"></div>
+            <div class="radio-label">Billable</div>
+          </div>
+          <div class="radio-item">
+            <div class="radio-circle"></div>
+            <div class="radio-label">Non-Billable</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Date</div>
+        <div class="field-input readonly">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+          <span>05/20/2026</span>
+        </div>
+      </div>
+
+      <!-- Project (replaces "Work Order" field for project work type) -->
+      <div class="field-block">
+        <div class="field-label">Project <span class="req">*</span></div>
+        <div class="field-input readonly">
+          <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <strong>Fairmont Hotel Renovation</strong>
+          <span style="color: var(--muted); font-size: 12px; margin-left: auto;">9059</span>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Task <span style="color: var(--muted); font-weight: 500;">(optional)</span></div>
+        <select class="field-input" style="background: var(--bg-2);">
+          <option>Select task...</option>
+          <option selected>West wall rough-in</option>
+          <option>Pressure testing supply lines</option>
+          <option>Install main supply line</option>
+        </select>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Work Performed</div>
+        <textarea class="field-input" rows="3" style="resize: vertical; font-family: inherit;" placeholder="Brief description of work…"></textarea>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Arrival Time</div>
+        <div class="time-row">
+          <div class="time-field">7</div>
+          <div class="time-field">00</div>
+          <div class="time-field">am</div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Departure Time</div>
+        <div class="time-row">
+          <div class="time-field">1</div>
+          <div class="time-field">30</div>
+          <div class="time-field">pm</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Enter time block -->
+    <div class="card">
+      <div class="enter-time-box" style="border: none;">
+        <div class="enter-time-label">Enter your time</div>
+        <div class="time-display">
+          <div class="time-display-col">
+            <span>06</span>
+            <span class="unit-label">Hours</span>
+          </div>
+          <div class="colon">:</div>
+          <div class="time-display-col">
+            <span>30</span>
+            <span class="unit-label">Minutes</span>
+          </div>
+        </div>
+        <div class="overtime-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Overtime
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplier receipts -->
+    <div class="receipts-head">
+      <span class="receipts-head-label">Supplier Receipts</span>
+      <div class="add-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+    <div class="receipts-empty">[currently no receipts]</div>
+
+    <div class="footer-actions">
+      <button class="btn-pill">Save</button>
+    </div>
+
+  </div>
+
+  <div class="annotations">
+    <h3>Submit Timesheet (Project context) notes</h3>
+    <ul>
+      <li><strong>This is the existing production Submit Timesheet form</strong> (image 3 from the uploads), with two changes for the project-context variant.</li>
+    </ul>
+
+    <h4>What's different from the service version</h4>
+    <ul>
+      <li><strong>"Work Order" field becomes "Project"</strong>: same field slot, different label, different picker source. When work type = Projects, the field shows projects instead of work orders.</li>
+      <li><strong>Project is pre-filled</strong> when the tech entered this form from the per-project view's "Submit Time" button. Read-only in that case (greyed out, locked). The tech wants to log to THIS project; switching is a back-out gesture.</li>
+      <li><strong>New optional "Task" field</strong>: lists the tech's open tasks on the selected project. Lets them attribute time to a specific task. Optional because techs may not always work on a specific task (general project labor).</li>
+    </ul>
+
+    <h4>What's the same</h4>
+    <ul>
+      <li>Timesheet Type (Billable / Non-Billable) radio</li>
+      <li>Date picker (today by default)</li>
+      <li>Work Performed text</li>
+      <li>Arrival / Departure time pickers</li>
+      <li>Enter your time hours/minutes display</li>
+      <li>Overtime button</li>
+      <li>Supplier Receipts section</li>
+      <li>Pink-red gradient Save button</li>
+    </ul>
+
+    <h4>If the tech came via the universal path (Home → Submit a timesheet)</h4>
+    <ul>
+      <li>They first see the existing TimeTracker work-type picker (image 2 from uploads: Emergency Service / Maintenance / Projects / Non-Billable).</li>
+      <li>If they pick Projects, the form opens with this layout but the Project field is empty (not pre-filled). Tapping it opens the project picker (the picker mockup we built earlier) with assigned projects at top.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Daily Tech Log Composer (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+  .nav-item.active { color: var(--ink); font-weight: 600; }
+  .nav-item.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -16px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  /* Nav dropdown (Timesheets) */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1320px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* Composer header */
+  .composer-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; gap: 20px; }
+  .composer-header h1 { font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.3px; }
+  .header-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); }
+  .project-context svg { width: 12px; height: 12px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+  .header-meta .date { font-size: 12.5px; color: var(--muted); }
+  .draft-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 4px; }
+  .draft-pill svg { width: 12px; height: 12px; }
+
+  /* Body grid: form column + sticky summary rail */
+  .composer-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.85fr); gap: 20px; align-items: start; }
+  .form-col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--white); border-radius: 14px; padding: 24px 26px; border: 1px solid var(--line); }
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-label .hint { font-size: 11px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  /* Photos */
+  .photo-dropzone { display: flex; align-items: center; gap: 16px; padding: 20px 22px; border-radius: 12px; border: 1.5px dashed var(--line); background: var(--bg-2); cursor: pointer; margin-bottom: 18px; transition: border-color 0.12s, background 0.12s; }
+  .photo-dropzone:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .photo-dropzone .dz-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--white); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--ink-light); }
+  .photo-dropzone .dz-icon svg { width: 20px; height: 20px; }
+  .photo-dropzone .dz-title { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .photo-dropzone .dz-sub { font-size: 12.5px; color: var(--muted); }
+
+  .photo-thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .photo-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-thumb-remove { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.65); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.12s; }
+  .photo-thumb:hover .photo-thumb-remove { opacity: 1; }
+  .photo-thumb-remove svg { width: 11px; height: 11px; }
+  .photo-count-meta { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  /* Summary textarea */
+  .ta-wrap { position: relative; }
+  .form-textarea { width: 100%; padding: 14px 44px 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); font-size: 14px; color: var(--ink); font-family: inherit; resize: vertical; min-height: 130px; outline: none; line-height: 1.55; }
+  .form-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .mic-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #cfe0fa; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .mic-btn:hover { background: #dcebfc; }
+  .mic-btn svg { width: 15px; height: 15px; color: var(--blue); }
+  .char-count { font-size: 11.5px; color: var(--muted-2); text-align: right; margin-top: 8px; }
+
+  /* Time on site */
+  .time-block { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .time-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 12px; }
+  .time-block-label { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .time-range { font-size: 13px; color: var(--ink-light); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; background: white; font-family: inherit; width: 150px; text-align: right; }
+  .time-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .hours-stepper { display: flex; align-items: center; gap: 14px; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+  .stepper-btn { width: 34px; height: 34px; border-radius: 50%; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); flex-shrink: 0; }
+  .stepper-btn:hover { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); }
+  .stepper-btn svg { width: 14px; height: 14px; }
+  .stepper-value { min-width: 76px; text-align: center; font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .stepper-value .unit { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .hours-shortcuts { display: flex; gap: 7px; flex-wrap: wrap; }
+  .hours-shortcut { padding: 7px 14px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--ink-light); cursor: pointer; }
+  .hours-shortcut:hover { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+  .hours-shortcut.selected { background: var(--ink); color: white; border-color: var(--ink); }
+  .add-time-block { display: flex; align-items: center; gap: 6px; margin-top: 14px; padding: 12px; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; justify-content: center; }
+  .add-time-block:hover { background: var(--blue-soft); border-color: var(--blue); }
+  .add-time-block .sub { color: var(--muted-2); font-weight: 500; }
+  .time-total { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-2); }
+  .time-total .lbl { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  .time-total .val { font-size: 16px; color: var(--ink); font-weight: 700; }
+
+  /* Allocation */
+  .alloc-bar { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+  .alloc-track { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin-bottom: 9px; }
+  .alloc-fill { height: 100%; background: var(--blue); border-radius: 999px; }
+  .alloc-text { font-size: 12.5px; color: var(--ink-light); font-weight: 600; }
+  .alloc-text strong { color: var(--ink); }
+  .task-search { display: flex; align-items: center; gap: 9px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 9px; padding: 10px 13px; margin-bottom: 6px; }
+  .task-search svg { width: 14px; height: 14px; color: var(--muted-2); flex-shrink: 0; }
+  .task-search input { border: none; background: transparent; outline: none; font-size: 13.5px; color: var(--ink); font-family: inherit; width: 100%; }
+  .task-search input::placeholder { color: var(--muted-2); }
+  .task-list-hint { font-size: 11.5px; color: var(--muted-2); padding: 2px 0 6px; }
+  .task-link-row { display: flex; align-items: center; gap: 14px; padding: 12px 4px; cursor: pointer; border-radius: 8px; }
+  .task-link-row:hover { background: var(--bg-2); }
+  .task-link-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .task-check { width: 19px; height: 19px; border-radius: 4px; background: white; border: 1.5px solid var(--muted-2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .task-check.checked { background: var(--blue); border-color: var(--blue); color: white; }
+  .task-check.checked svg { width: 12px; height: 12px; }
+  .task-link-name { flex: 1; font-size: 14px; color: var(--ink); font-weight: 500; }
+  .task-link-meta { font-size: 11.5px; color: var(--muted); margin-left: 8px; }
+  .task-unallocated { display: flex; align-items: center; gap: 14px; padding: 12px 4px 4px; margin-top: 6px; border-top: 1px dashed var(--line); cursor: pointer; }
+  .task-unallocated .task-link-name { color: var(--muted); font-weight: 500; font-style: italic; }
+  .task-unallocated .task-link-sub { font-size: 11px; color: var(--muted-2); display: block; font-style: normal; margin-top: 1px; }
+  .task-unallocated .task-check { border-color: var(--muted-2); }
+  .task-hours { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .task-hours input { width: 54px; text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 7px 5px; font-size: 13.5px; font-weight: 600; color: var(--ink); font-family: inherit; background: white; }
+  .task-hours .unit { font-size: 11.5px; color: var(--muted); }
+  .task-hours.muted { color: var(--muted-2); font-size: 13.5px; padding-right: 8px; }
+
+  /* Sticky summary rail (desktop replacement for mobile footer bar) */
+  .summary-rail { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .summary-card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .summary-card .sc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 14px; }
+  .sc-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .sc-row:last-child { border-bottom: none; }
+  .sc-row .k { font-size: 13px; color: var(--muted); }
+  .sc-row .v { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
+  .sc-alloc-status { display: flex; align-items: center; gap: 7px; margin-top: 4px; padding: 10px 12px; border-radius: 9px; background: var(--green-soft); color: var(--green); font-size: 12.5px; font-weight: 600; }
+  .sc-alloc-status svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .rail-actions { display: flex; flex-direction: column; gap: 10px; }
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: 999px; font-size: 14.5px; font-weight: 700; cursor: pointer; border: none; width: 100%; }
+  .btn-pill.secondary { background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .btn-pill.secondary:hover { background: var(--bg-2); }
+  .btn-pill.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 4px 14px rgba(237, 28, 36, 0.28); }
+  .btn-pill.primary:hover { box-shadow: 0 6px 18px rgba(237, 28, 36, 0.34); }
+  .btn-pill svg { width: 14px; height: 14px; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <a>Fairmont Hotel Renovation</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="current">Daily Tech Log</span>
+      </div>
+
+      <!-- Composer header -->
+      <div class="composer-header">
+        <div>
+          <h1>Daily Tech Log</h1>
+          <div class="header-meta">
+            <div class="project-context">
+              <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <strong>Fairmont Hotel Renovation</strong>
+            </div>
+            <span class="date">For Wednesday, May 20, 2026</span>
+          </div>
+        </div>
+        <div class="draft-pill">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Draft saved
+        </div>
+      </div>
+
+      <!-- Composer grid: form + sticky summary rail -->
+      <div class="composer-grid">
+
+        <!-- FORM COLUMN -->
+        <div class="form-col">
+
+          <!-- PHOTOS -->
+          <div class="card">
+            <div class="field-label">
+              <span>Photos <span class="hint">3 added</span></span>
+            </div>
+
+            <div class="photo-dropzone">
+              <div class="dz-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div>
+                <div class="dz-title">Add photos</div>
+                <div class="dz-sub">Drag &amp; drop, or click to browse your computer</div>
+              </div>
+            </div>
+
+            <div class="photo-thumbs">
+              <div class="photo-thumb">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#cfd5db"/>
+                  <rect y="32" width="48" height="16" fill="#a89580"/>
+                  <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+                  <rect x="6" y="26" width="32" height="3" fill="#c98551"/>
+                </svg>
+                <div class="photo-thumb-remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="photo-thumb">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#3a4148"/>
+                  <circle cx="24" cy="22" r="14" fill="#e8e4dc"/>
+                  <circle cx="24" cy="22" r="11" fill="#fff"/>
+                  <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+                  <circle cx="24" cy="22" r="1.5" fill="#222"/>
+                </svg>
+                <div class="photo-thumb-remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="photo-thumb">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#c0c5cc"/>
+                  <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+                  <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+                  <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+                  <rect x="34" y="28" width="4" height="14" fill="#c98551"/>
+                  <circle cx="12" cy="18" r="2.5" fill="#c92020"/>
+                  <circle cx="24" cy="18" r="2.5" fill="#c92020"/>
+                  <circle cx="36" cy="18" r="2.5" fill="#c92020"/>
+                </svg>
+                <div class="photo-thumb-remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="photo-count-meta">Click a photo to view full size or add a caption</div>
+          </div>
+
+          <!-- SUMMARY TEXT -->
+          <div class="card">
+            <div class="field-label">
+              <span>What did you do today? <span class="req">*</span></span>
+            </div>
+            <div class="ta-wrap">
+              <textarea class="form-textarea" placeholder="Describe the work you completed, any issues encountered, materials used…">Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop. Capped all open ends for drywall crew tomorrow.</textarea>
+              <button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+            </div>
+            <div class="char-count">183 / 2000</div>
+          </div>
+
+          <!-- TIME ON SITE -->
+          <div class="card">
+            <div class="field-label">
+              <span>Time on site <span class="req">*</span></span>
+              <span class="hint">one block per visit</span>
+            </div>
+
+            <div class="time-block">
+              <div class="time-block-head">
+                <span class="time-block-label">On site</span>
+                <input class="time-range" value="7:00a – 1:30p" aria-label="Time range (optional)">
+              </div>
+              <div class="time-row">
+                <div class="hours-stepper">
+                  <div class="stepper-btn">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+                  </div>
+                  <div class="stepper-value">6.5<span class="unit">hrs</span></div>
+                  <div class="stepper-btn">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                  </div>
+                </div>
+                <div class="hours-shortcuts">
+                  <div class="hours-shortcut">4</div>
+                  <div class="hours-shortcut">6</div>
+                  <div class="hours-shortcut selected">6.5</div>
+                  <div class="hours-shortcut">8</div>
+                  <div class="hours-shortcut">10</div>
+                  <div class="hours-shortcut">Custom</div>
+                </div>
+              </div>
+              <div class="add-time-block">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M12 5v14M5 12h14"/></svg>
+                Add another time block <span class="sub">if you returned to site later</span>
+              </div>
+            </div>
+
+            <div class="time-total">
+              <span class="lbl">Total on site</span>
+              <span class="val">6.5 hrs</span>
+            </div>
+          </div>
+
+          <!-- ALLOCATE HOURS TO TASKS -->
+          <div class="card">
+            <div class="field-label">
+              <span>Allocate hours to tasks</span>
+              <span class="hint">split your 6.5 hrs</span>
+            </div>
+
+            <div class="alloc-bar">
+              <div class="alloc-track"><div class="alloc-fill" style="width: 100%;"></div></div>
+              <div class="alloc-text"><strong>6.5</strong> of 6.5 hrs allocated</div>
+            </div>
+
+            <div class="task-search">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search this project's tasks…">
+            </div>
+            <div class="task-list-hint">Your in-progress tasks first. Enter the hours spent on each.</div>
+
+            <div class="task-link-row">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">West wall rough-in <span class="task-link-meta">In Progress</span></div>
+              <div class="task-hours"><input value="3.5"><span class="unit">hrs</span></div>
+            </div>
+            <div class="task-link-row">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">Pressure testing supply lines <span class="task-link-meta">Complete</span></div>
+              <div class="task-hours"><input value="2.0"><span class="unit">hrs</span></div>
+            </div>
+            <div class="task-link-row">
+              <div class="task-check"></div>
+              <div class="task-link-name">Install main supply line <span class="task-link-meta" style="color: var(--red); font-weight: 600;">Blocked</span></div>
+              <div class="task-hours muted">–</div>
+            </div>
+            <!-- "Other" line: real selectable item for non-task work -->
+            <div class="task-unallocated">
+              <div class="task-check checked">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              </div>
+              <div class="task-link-name">Other<span class="task-link-sub">Work not tied to a specific task</span></div>
+              <div class="task-hours"><input value="1.0"><span class="unit">hrs</span></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- STICKY SUMMARY RAIL -->
+        <div class="summary-rail">
+          <div class="summary-card">
+            <div class="sc-label">Log summary</div>
+            <div class="sc-row"><span class="k">Project</span><span class="v">Fairmont Hotel Renovation</span></div>
+            <div class="sc-row"><span class="k">Date</span><span class="v">May 20, 2026</span></div>
+            <div class="sc-row"><span class="k">Photos</span><span class="v">3 added</span></div>
+            <div class="sc-row"><span class="k">Total on site</span><span class="v">6.5 hrs</span></div>
+            <div class="sc-alloc-status">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+              Fully allocated · 6.5 of 6.5 hrs
+            </div>
+          </div>
+
+          <div class="rail-actions">
+            <button class="btn-pill primary">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Submit Log
+            </button>
+            <button class="btn-pill secondary">Save Draft</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.5 · Daily Tech Log composer</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup</span>
+      Built from the mobile Daily Tech Log Composer, adapted to the established desktop chrome: grey top nav with the collapsible Timesheets dropdown and standalone Projects tab, breadcrumb, white page background, and this annotation rail.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Sticky summary rail replaces the mobile footer bar</span>
+      Mobile pins Save Draft / Submit Log to a fixed bottom bar because there's no room elsewhere. Desktop has the width for a second column, so the actions live in a sticky right rail alongside a running summary (project, date, photo count, total hours, allocation status) that stays visible while the tech scrolls the form.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Photo capture — no camera buttons on desktop</span>
+      Mobile's "Take Photo" / "From Library" pair assumes a device camera. Desktop swaps this for a single drag-and-drop upload zone, matching the "Add Photos" pattern used on the per-project view. Thumbnail grid widened to 6 columns to use the extra space.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Time on site (D-036)</span>
+      One or more time blocks, each with an optional time range and an hours stepper (0.5 hr increments) plus quick-pick chips. "Add another time block" covers a return visit later the same day. "Total on site" is the single time entry — a tech does not separately re-enter these hours in the regular Odin timesheet.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Allocate hours to tasks (D-036)</span>
+      The tech splits the day's total across tasks worked on, in hours (not percentage). The live allocation bar shows "X of Y hrs allocated." A search box keeps this usable at 40+ tasks; in-progress tasks list first. Allocation is encouraged but not blocking.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">"Other" line (D-040, renamed from Unallocated per Christine, Jun 9; D-031)</span>
+      A real selectable line item with its own checkbox and hours box, exactly like a task row, for work not tied to a specific task. Kept visually quiet (muted, dashed divider above) so allocating to real tasks stays the natural first choice.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Dictation mic (D-035)</span>
+      Browser-native speech-to-text button on the summary textarea, carried over unchanged from the mobile design.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">What's intentionally not here</span>
+      No location field (GPS auto-captured silently), no materials-used field (possible v1.1), no weather conditions, no "submit for approval" step — admin review happens passively on the web side.
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+</script>
+</body>
+</html>

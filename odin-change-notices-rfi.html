@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Change Notices (RFI)</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); border-bottom-width: 3px; font-weight: 700; font-size: 14px; }
+
+  /* Page title bar (below tabs) */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+  .tab .count { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* ============ Change Notices layout ============ */
+
+  /* Summary strip */
+  .summary-strip { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .summary-item { padding: 0 8px; }
+  .summary-item:not(:last-child) { border-right: 1px solid var(--line); }
+  .summary-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .summary-value { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+  .summary-value.alert { color: var(--amber); }
+  .summary-value.cost { color: var(--ink-light); }
+  .summary-sub { font-size: 11px; color: var(--muted-2); margin-top: 2px; }
+
+  /* Toolbar (action + filters) */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; cursor: pointer; background: white; border: 1px solid var(--line); color: var(--ink-light); display: flex; align-items: center; gap: 5px; }
+  .filter-chip:hover { background: var(--bg-2); color: var(--ink); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .filter-chip .chip-count { font-size: 10px; opacity: 0.7; }
+  .filter-chip.active .chip-count { opacity: 0.9; }
+  .filter-divider { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+  .filter-search { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 1px solid var(--line); border-radius: 999px; flex: 1; min-width: 200px; max-width: 320px; }
+  .filter-search input { border: none; background: transparent; outline: none; flex: 1; font-size: 13px; color: var(--ink); }
+  .filter-search svg { width: 12px; height: 12px; color: var(--muted); }
+
+  /* Register table */
+  .table-card { background: white; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  table.register { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.register thead th {
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  table.register thead th .sort-arrows { color: var(--muted-2); margin-left: 4px; font-size: 10px; }
+  table.register tbody tr { cursor: pointer; }
+  table.register tbody tr:hover { background: var(--bg-2); }
+  table.register tbody tr:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  table.register tbody td { padding: 12px 14px; vertical-align: middle; }
+  td.col-number { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12.5px; color: var(--ink); font-weight: 600; }
+  td.col-title { color: var(--ink); font-weight: 500; max-width: 280px; }
+  td.col-title .att-indicator { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); margin-left: 6px; }
+  td.col-title .att-indicator svg { width: 11px; height: 11px; }
+  .type-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+  .type-pill.pcn { background: var(--amber-soft); color: var(--amber); }
+  .type-pill.rfi { background: var(--blue-soft); color: var(--blue-dark); }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-pill.draft { background: var(--bg); color: var(--ink-light); }
+  .status-pill.draft::before { background: var(--muted); }
+  .status-pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .status-pill.pending::before { background: var(--amber); }
+  .status-pill.approved { background: var(--green-soft); color: var(--green); }
+  .status-pill.approved::before { background: var(--green); }
+  .status-pill.rejected { background: var(--red-soft); color: var(--red); }
+  .status-pill.rejected::before { background: var(--red); }
+  .status-pill.awaiting { background: var(--blue-soft); color: var(--blue-dark); }
+  .status-pill.awaiting::before { background: var(--blue); }
+  .status-pill.answered { background: var(--green-soft); color: var(--green); }
+  .status-pill.answered::before { background: var(--green); }
+  .status-pill.closed { background: var(--bg); color: var(--ink-light); }
+  .status-pill.closed::before { background: var(--muted); }
+
+  .raised-by { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-light); }
+  .rb-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
+  .av-1 { background: #5b8def; }
+  .av-2 { background: #c97a4a; }
+  .av-3 { background: #7a6cd9; }
+  .av-4 { background: #4a8a5e; }
+  .av-5 { background: var(--ink); }
+  .date-cell { font-size: 12.5px; color: var(--ink-light); white-space: nowrap; }
+  .date-cell.due-soon { color: var(--amber); font-weight: 600; }
+  .date-cell.overdue { color: var(--red); font-weight: 600; }
+  .cost-cell { font-size: 12.5px; color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .cost-cell .approved { color: var(--green); }
+  .actions-cell { display: flex; gap: 4px; justify-content: flex-end; }
+  .icon-btn-sm { width: 26px; height: 26px; border-radius: 5px; background: transparent; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+  .icon-btn-sm:hover { background: var(--bg); border-color: var(--line); color: var(--ink); }
+  .icon-btn-sm svg { width: 13px; height: 13px; }
+
+  /* ============ Modal (Raise New) ============ */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(28, 29, 31, 0.55); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+  .modal { background: white; border-radius: 10px; width: 100%; max-width: 720px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; }
+  .modal-head { padding: 18px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .modal-title { font-size: 17px; font-weight: 600; color: var(--ink); flex: 1; }
+  .modal-close { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-light); }
+  .modal-close:hover { background: var(--bg); }
+  .modal-close svg { width: 14px; height: 14px; }
+  .modal-type-switch { display: flex; gap: 4px; background: var(--bg-2); border-radius: 999px; padding: 3px; }
+  .modal-type-switch .type-tab { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); }
+  .modal-type-switch .type-tab.active { background: white; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+  .modal-body { padding: 22px 24px; overflow-y: auto; }
+  .modal-foot { padding: 14px 24px; border-top: 1px solid var(--line); background: var(--bg-2); display: flex; align-items: center; gap: 10px; }
+  .modal-foot .modal-foot-right { margin-left: auto; display: flex; gap: 8px; }
+
+  /* File upload area (primary) */
+  .upload-zone { border: 2px dashed #b3cdef; background: var(--blue-soft); border-radius: 10px; padding: 26px 20px; text-align: center; margin-bottom: 22px; }
+  .upload-zone-icon { width: 44px; height: 44px; border-radius: 10px; background: white; border: 1px solid #b3cdef; display: inline-flex; align-items: center; justify-content: center; color: var(--blue); margin-bottom: 12px; }
+  .upload-zone-icon svg { width: 22px; height: 22px; }
+  .upload-zone-text { font-size: 14px; font-weight: 600; color: var(--blue-dark); margin-bottom: 4px; }
+  .upload-zone-sub { font-size: 12px; color: var(--ink-light); }
+  .upload-zone-sub a { color: var(--blue); font-weight: 500; }
+  /* Uploaded state (shown for demo realism) */
+  .uploaded-file { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .uploaded-file-icon { width: 36px; height: 44px; background: var(--red-soft); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--red); font-weight: 700; font-size: 11px; flex-shrink: 0; }
+  .uploaded-file-info { flex: 1; min-width: 0; }
+  .uploaded-file-name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .uploaded-file-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .uploaded-file-remove { width: 28px; height: 28px; border-radius: 6px; background: transparent; border: 1px solid transparent; cursor: pointer; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+  .uploaded-file-remove:hover { background: var(--bg-2); color: var(--red); }
+
+  /* Form fields */
+  .form-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 12px; margin-top: 4px; }
+  .form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field label { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .form-field label .req { color: var(--red); margin-left: 2px; }
+  .form-field label .hint { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .form-field input[type=text],
+  .form-field input[type=date],
+  .form-field input[type=number],
+  .form-field select,
+  .form-field textarea {
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: white;
+    font-size: 13.5px;
+    color: var(--ink);
+    font-family: inherit;
+    outline: none;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .form-field textarea { min-height: 90px; resize: vertical; }
+  .form-field input[readonly] { background: var(--bg-2); color: var(--muted); cursor: not-allowed; }
+  .form-field .input-prefix { display: flex; align-items: center; }
+  .form-field .input-prefix .prefix { background: var(--bg-2); padding: 8px 11px; border: 1px solid var(--line); border-right: none; border-radius: 6px 0 0 6px; color: var(--muted); font-size: 13.5px; }
+  .form-field .input-prefix input { border-radius: 0 6px 6px 0; flex: 1; }
+
+  .help-note { background: var(--amber-soft); border: 1px solid #f0d597; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; font-size: 12px; color: var(--ink-light); line-height: 1.5; }
+  .help-note strong { color: var(--amber); }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 – 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Daily Logs <span class="count">23</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Change Notices</h2>
+          <div class="pt-sub">Project change notices (PCN) and requests for information (RFI)</div>
+        </div>
+        <div class="pt-counter"><strong>3</strong> PCN · <strong>2</strong> RFI · <strong>1</strong> pending</div>
+      </div>
+
+      <!-- Summary strip -->
+      <div class="summary-strip">
+        <div class="summary-item">
+          <div class="summary-label">Total</div>
+          <div class="summary-value">5</div>
+          <div class="summary-sub">3 PCN · 2 RFI</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Open</div>
+          <div class="summary-value alert">3</div>
+          <div class="summary-sub">Need follow-up</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Approved Cost Impact</div>
+          <div class="summary-value cost">+$1,240</div>
+          <div class="summary-sub">PCN-002 only</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Pending Cost Impact</div>
+          <div class="summary-value cost">+$420</div>
+          <div class="summary-sub">If PCN-003 approved</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Avg RFI turnaround</div>
+          <div class="summary-value">3.2 days</div>
+          <div class="summary-sub">From raised to answered</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button class="btn btn-primary">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Raise New
+        </button>
+        <div class="filter-divider"></div>
+        <div class="filter-chip active">All <span class="chip-count">5</span></div>
+        <div class="filter-chip">PCN <span class="chip-count">3</span></div>
+        <div class="filter-chip">RFI <span class="chip-count">2</span></div>
+        <div class="filter-divider"></div>
+        <div class="filter-chip">Open <span class="chip-count">3</span></div>
+        <div class="filter-chip">Closed <span class="chip-count">2</span></div>
+        <div class="filter-divider"></div>
+        <div class="filter-search">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search change notices…">
+        </div>
+      </div>
+
+      <!-- Register table -->
+      <div class="table-card">
+        <table class="register">
+          <thead>
+            <tr>
+              <th>Number <span class="sort-arrows">↕</span></th>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Raised by</th>
+              <th>Raised on <span class="sort-arrows">↓</span></th>
+              <th>Due</th>
+              <th>Cost</th>
+              <th>Hours</th>
+              <th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-number">PCN-003</td>
+              <td><span class="type-pill pcn">PCN</span></td>
+              <td class="col-title">
+                Relocate utility room access door 18" north
+                <span class="att-indicator"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> 1</span>
+              </td>
+              <td><span class="status-pill pending">Pending Sign-off</span></td>
+              <td>
+                <span class="raised-by"><span class="rb-avatar av-5">JT</span> Justin Thorsteinson</span>
+              </td>
+              <td class="date-cell">May 19, 2026</td>
+              <td class="date-cell">-</td>
+              <td class="cost-cell">+$420</td>
+              <td class="cost-cell">+4h</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="icon-btn-sm" title="Open"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="icon-btn-sm" title="Download"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                  <button class="icon-btn-sm" title="Archive"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="col-number">RFI-007</td>
+              <td><span class="type-pill rfi">RFI</span></td>
+              <td class="col-title">Clarification on hot water recirc loop spec</td>
+              <td><span class="status-pill awaiting">Awaiting Response</span></td>
+              <td>
+                <span class="raised-by"><span class="rb-avatar av-1">AC</span> Adam Coey</span>
+              </td>
+              <td class="date-cell">May 19, 2026</td>
+              <td class="date-cell due-soon">Due May 22</td>
+              <td class="cost-cell">-</td>
+              <td class="cost-cell">-</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="col-number">RFI-006</td>
+              <td><span class="type-pill rfi">RFI</span></td>
+              <td class="col-title">Confirm fixture model for accessible bathroom group</td>
+              <td><span class="status-pill awaiting">Awaiting Response</span></td>
+              <td>
+                <span class="raised-by"><span class="rb-avatar av-3">SP</span> Sam Paterson</span>
+              </td>
+              <td class="date-cell">May 14, 2026</td>
+              <td class="date-cell">May 28</td>
+              <td class="cost-cell">-</td>
+              <td class="cost-cell">-</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="col-number">PCN-002</td>
+              <td><span class="type-pill pcn">PCN</span></td>
+              <td class="col-title">
+                Upgrade to commercial-grade water hammer arrestors
+                <span class="att-indicator"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> 2</span>
+              </td>
+              <td><span class="status-pill approved">Approved</span></td>
+              <td>
+                <span class="raised-by"><span class="rb-avatar av-1">AC</span> Adam Coey</span>
+              </td>
+              <td class="date-cell">May 15, 2026</td>
+              <td class="date-cell">-</td>
+              <td class="cost-cell"><span class="approved">+$1,240</span></td>
+              <td class="cost-cell">+2h</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="col-number">PCN-001</td>
+              <td><span class="type-pill pcn">PCN</span></td>
+              <td class="col-title">
+                Substitute Viega ProPress for solder joints
+                <span class="att-indicator"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> 1</span>
+              </td>
+              <td><span class="status-pill approved">Approved</span></td>
+              <td>
+                <span class="raised-by"><span class="rb-avatar av-5">JT</span> Justin Thorsteinson</span>
+              </td>
+              <td class="date-cell">May 02, 2026</td>
+              <td class="date-cell">-</td>
+              <td class="cost-cell"><span class="approved">$0</span></td>
+              <td class="cost-cell">0h</td>
+              <td>
+                <div class="actions-cell">
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
+                  <button class="icon-btn-sm"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <div class="annotations">
+        <h3>Change Notices · RFI form variant</h3>
+        <ul>
+          <li><strong>Same register, different modal.</strong> The Raise New modal switches between PCN and RFI form schemas via the toggle at the top. The register table behind it is identical.</li>
+          <li><strong>Document upload still primary.</strong> RFIs typically reference a drawing or spec excerpt. The uploaded PDF here is a marked-up mechanical drawing.</li>
+          <li><strong>No cost/hours/schedule impact fields on RFI submission.</strong> An RFI by itself doesn't carry impact. The answer might, and that gets logged when the RFI is marked Answered (see Detail view spec).</li>
+          <li><strong>"Send to" is required.</strong> Unlike PCN which goes through internal sign-off, an RFI must have an explicit recipient.</li>
+          <li><strong>Discipline tagging</strong> (Plumbing / HVAC / Electrical / etc) helps with filtering and routing. Single-select.</li>
+          <li><strong>Priority field</strong> (Standard / Urgent / Critical) helps surface what's blocking work. Urgent and Critical would render with amber/red treatment in the register.</li>
+          <li><strong>Drawing reference and Spec section</strong> are optional but common in formal RFIs. Free-text fields so they can carry any identifier the project uses.</li>
+          <li><strong>"Blocking task?" toggle</strong> is a clever bridge: if Yes, raising this RFI automatically marks the linked task as Blocked with the RFI as the blocker reason. When the RFI is answered, the task can be auto-unblocked. Worth validating with Justin.</li>
+        </ul>
+
+        <h4>Field set (subject to client feedback)</h4>
+        <ul>
+          <li>RFI conventions are similar to PCN: industry-standard defaults that need real-world validation.</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ================ MODAL OVERLAY: Raise New ================ -->
+<div class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Raise New Change Notice</div>
+      <div class="modal-type-switch">
+        <div class="type-tab">PCN</div>
+        <div class="type-tab active">RFI</div>
+      </div>
+      <button class="modal-close">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="help-note">
+        <strong>Tip:</strong> Upload any reference drawings or spec excerpts the question relates to. The clearer the reference, the faster the response. RFIs typically need an answer within 5–10 business days to avoid schedule delays.
+      </div>
+
+      <!-- File upload (uploaded state) -->
+      <div class="uploaded-file">
+        <div class="uploaded-file-icon">PDF</div>
+        <div class="uploaded-file-info">
+          <div class="uploaded-file-name">M-201-Mechanical-Drawing-Markup.pdf</div>
+          <div class="uploaded-file-meta">1.2 MB · Uploaded just now · Section highlighted in yellow</div>
+        </div>
+        <button class="uploaded-file-remove" title="Remove">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="form-section-label">Details</div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>RFI Number <span class="hint">auto-generated</span></label>
+          <input type="text" value="RFI-008" readonly>
+        </div>
+        <div class="form-field">
+          <label>Date raised <span class="req">*</span></label>
+          <input type="date" value="2026-05-20">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Subject <span class="req">*</span></label>
+          <input type="text" placeholder="Brief subject of the question…" value="Confirm acceptable substitute for backflow preventer">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Question <span class="req">*</span></label>
+          <textarea placeholder="State the question clearly. Reference specific drawings, specs, or conditions…">Spec calls for Watts Series 909 RPZ backflow preventer (Section 22 11 16, Part 2.4.A). This unit has a 14-week lead time. Can we substitute Apollo 4ALF-LF or Wilkins 975XL, both of which are in stock locally and meet ASSE 1013 standards?
+
+If yes, please confirm acceptability and whether either is preferred for warranty/serviceability reasons.</textarea>
+        </div>
+      </div>
+
+      <div class="form-section-label">Recipient & Timing</div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>Send to <span class="req">*</span></label>
+          <input type="text" placeholder="Recipient name or email" value="Mark Donaldson, Engineer of Record">
+        </div>
+        <div class="form-field">
+          <label>Discipline</label>
+          <select>
+            <option>General</option>
+            <option selected>Plumbing</option>
+            <option>Mechanical / HVAC</option>
+            <option>Electrical</option>
+            <option>Structural</option>
+            <option>Architectural</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>Response needed by <span class="req">*</span></label>
+          <input type="date" value="2026-05-27">
+        </div>
+        <div class="form-field">
+          <label>Priority</label>
+          <select>
+            <option>Standard</option>
+            <option selected>Urgent (blocking work)</option>
+            <option>Critical (stoppage)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-label">Reference</div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>Drawing reference <span class="hint">optional</span></label>
+          <input type="text" placeholder="e.g. M-201, P-103" value="M-201, Detail 3">
+        </div>
+        <div class="form-field">
+          <label>Spec section <span class="hint">optional</span></label>
+          <input type="text" placeholder="e.g. 22 11 16" value="22 11 16, Part 2.4.A">
+        </div>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>Linked task <span class="hint">optional</span></label>
+          <select>
+            <option>(none)</option>
+            <option>West wall rough-in</option>
+            <option selected>Backflow preventer install</option>
+            <option>Pressure testing supply lines</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Blocking task? <span class="hint">marks linked task as Blocked</span></label>
+          <select>
+            <option>No</option>
+            <option selected>Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-label">Status</div>
+
+      <div class="form-row cols-2">
+        <div class="form-field">
+          <label>Initial status</label>
+          <select>
+            <option>Draft</option>
+            <option selected>Awaiting Response</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Notify recipient on submit <span class="hint">v1.1</span></label>
+          <input type="text" placeholder="Email recipient" disabled style="background:var(--bg-2); color:var(--muted);">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-secondary">Cancel</button>
+      <div class="modal-foot-right">
+        <button class="btn btn-secondary">Save Draft</button>
+        <button class="btn btn-primary">Submit RFI</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

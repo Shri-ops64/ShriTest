@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Daily Log Detail (mobile)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  /* App bar */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .edit-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; background: var(--ink); color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .edit-btn svg { width: 13px; height: 13px; }
+
+  /* Title block */
+  .title-block { padding: 6px 22px 18px; }
+  .log-date-large { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+  .project-context svg { width: 11px; height: 11px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+  .status-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .status-pill.reviewed { background: var(--green-soft); color: var(--green); }
+  .status-pill.reviewed::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .status-pill.unreviewed { background: var(--amber-soft); color: var(--amber); }
+  .status-pill.unreviewed::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+  .submit-time { font-size: 11.5px; color: var(--muted); }
+
+  /* Card */
+  .card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px 18px; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 10px; }
+
+  /* Photo gallery */
+  .photo-gallery-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .add-photo-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; background: var(--ink); color: white; font-size: 11.5px; font-weight: 600; cursor: pointer; border: none; }
+  .add-photo-btn svg { width: 11px; height: 11px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .photo-tile { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); cursor: pointer; }
+  .photo-tile svg.scene { width: 100%; height: 100%; display: block; }
+
+  /* Summary read */
+  .summary-text { font-size: 14px; color: var(--ink); line-height: 1.6; white-space: pre-line; }
+
+  /* Hours read */
+  .hours-readout { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+  .hours-readout-icon { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hours-readout-icon svg { width: 20px; height: 20px; color: white; }
+  .hours-readout-value { font-size: 28px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .hours-readout-value .unit { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .hours-readout-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+  /* Tasks read */
+  .task-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .task-row:not(:last-child) { border-bottom: 1px solid var(--line-2); }
+  .task-row .task-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .task-row .task-icon svg { width: 11px; height: 11px; }
+  .task-row .task-icon.blocked { background: var(--red-soft); color: var(--red); }
+  .task-name { flex: 1; font-size: 13.5px; color: var(--ink); font-weight: 500; }
+  .task-status { font-size: 11px; color: var(--muted); }
+  .task-status.blocked { color: var(--red); font-weight: 600; }
+
+  /* Annotations */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </div>
+      <div class="edit-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </div>
+    </div>
+
+    <div class="title-block">
+      <div class="log-date-large">Daily Log · May 20</div>
+      <div class="project-context">
+        <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <strong>Fairmont Hotel Renovation</strong>
+      </div>
+      <div class="status-row">
+        <span class="status-pill reviewed">Reviewed by admin</span>
+        <span class="submit-time">Submitted 4:18 PM · Reviewed 5:02 PM</span>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="card">
+      <div class="photo-gallery-head">
+        <div class="section-label" style="margin-bottom: 0;">Photos (5)</div>
+        <button class="add-photo-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Photos
+        </button>
+      </div>
+      <div class="photo-grid">
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#cfd5db"/>
+            <rect y="32" width="48" height="16" fill="#a89580"/>
+            <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+            <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+            <rect x="6" y="26" width="32" height="3" fill="#c98551"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#3a4148"/>
+            <circle cx="24" cy="22" r="14" fill="#e8e4dc"/>
+            <circle cx="24" cy="22" r="11" fill="#fff"/>
+            <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+            <circle cx="24" cy="22" r="1.5" fill="#222"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#c0c5cc"/>
+            <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+            <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="34" y="28" width="4" height="14" fill="#c98551"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#d8c9b0"/>
+            <rect width="48" height="22" fill="#e8dcc4"/>
+            <rect x="6" y="28" width="3" height="20" fill="#888"/>
+            <rect x="20" y="28" width="3" height="20" fill="#888"/>
+            <rect x="34" y="28" width="3" height="20" fill="#888"/>
+            <circle cx="7.5" cy="32" r="3" fill="#c92020"/>
+            <circle cx="21.5" cy="32" r="3" fill="#2050c9"/>
+            <circle cx="35.5" cy="32" r="3" fill="#888"/>
+          </svg>
+        </div>
+        <div class="photo-tile">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#5a6068"/>
+            <rect y="32" width="48" height="16" fill="#3a3f45"/>
+            <g transform="translate(8 14) rotate(35 16 12)">
+              <rect x="0" y="9" width="22" height="6" rx="1" fill="#b8b8b8"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <div class="section-label">Summary</div>
+      <div class="summary-text">Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop. Capped all open ends for drywall crew tomorrow.
+
+Found one stub at the wrong height (4" too low), corrected and re-pressure-tested. All good after correction.</div>
+    </div>
+
+    <!-- Hours -->
+    <div class="card">
+      <div class="section-label">Hours on Site</div>
+      <div class="hours-readout">
+        <div class="hours-readout-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div>
+          <div class="hours-readout-value">6.5<span class="unit">hrs</span></div>
+          <div class="hours-readout-sub">Logged 12:42 PM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks worked on -->
+    <div class="card">
+      <div class="section-label">Tasks Worked On</div>
+      <div class="task-row">
+        <div class="task-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <span class="task-name">West wall rough-in</span>
+        <span class="task-status">In Progress</span>
+      </div>
+      <div class="task-row">
+        <div class="task-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+        </div>
+        <span class="task-name">Pressure testing supply lines</span>
+        <span class="task-status">Complete</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="annotations">
+    <h3>Daily Log detail view notes</h3>
+    <ul>
+      <li><strong>Read mode by default.</strong> Tap "Edit" in the app bar to switch to composer view (same screen as #1, with all fields populated).</li>
+      <li><strong>Status pill prominent</strong> at top: "Reviewed by admin" (green) or "Awaiting admin review" (amber). Matters to techs because reviewed = admin saw it.</li>
+      <li><strong>Submission timeline shown</strong> as small text: submitted time, reviewed time (if applicable).</li>
+      <li><strong>"Add Photos" button in the Photos section header</strong> is the same affordance that the per-project view's "Add Photos" provides. Tapping it opens camera/library picker and attaches photos to THIS log (not just the project's Site Photos folder). Solves the "I forgot to add photos before submitting" case.</li>
+      <li><strong>Photos shown in a 3-column grid</strong> (denser than the composer's 4-col since we want them more viewable in read mode). Tap any photo to view full-size.</li>
+      <li><strong>Summary text preserves line breaks</strong> from what was submitted.</li>
+      <li><strong>Hours display</strong> uses the same pink-red gradient icon as the Submit Time button on the project view, keeping visual continuity.</li>
+      <li><strong>Tasks worked on are read-only here.</strong> Tapping a task row could navigate to the task detail screen (the next mockup) but doesn't edit the link from this view.</li>
+    </ul>
+
+    <h4>When the log is still in Draft state</h4>
+    <ul>
+      <li>Status pill reads "Draft" (grey)</li>
+      <li>"Submit Log" primary button appears at the bottom (instead of Edit-only access)</li>
+      <li>"Edit" still opens the composer</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

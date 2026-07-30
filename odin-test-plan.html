@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin Project Module · Test Plan</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #3a3a3a;
+    --muted: #6b6e72;
+    --muted-2: #9a9da0;
+    --line: #e5e7eb;
+    --line-2: #ececec;
+    --bg: #f3f4f6;
+    --bg-2: #f7f8fa;
+    --blue: #1d62d3;
+    --blue-soft: #e8f0fc;
+    --blue-dark: #134298;
+    --red: #ed1c24;
+    --red-soft: #fee9ea;
+    --green: #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber: #d99316;
+    --amber-soft: #fdf2dd;
+    --purple: #5d2a99;
+    --purple-soft: #ece7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 13.5px; line-height: 1.5; }
+
+  .page-head { background: linear-gradient(135deg, #0d1b3d 0%, #1a1240 60%, #2a1a4d 100%); color: white; padding: 40px 40px 30px; position: relative; overflow: hidden; }
+  .page-head::before { content: ''; position: absolute; top: -10%; left: 20%; width: 120%; height: 120%; background-image: repeating-linear-gradient(95deg, transparent 0 22px, rgba(180, 140, 220, 0.06) 22px 23px); pointer-events: none; }
+  .page-head-content { position: relative; max-width: 1360px; margin: 0 auto; }
+  .page-head-eyebrow { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.7; margin-bottom: 10px; }
+  .page-head h1 { font-size: 30px; font-weight: 700; line-height: 1.1; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .page-head .sub { font-size: 14.5px; opacity: 0.85; margin-bottom: 12px; }
+  .page-head .meta { font-size: 12.5px; opacity: 0.7; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 12.5px; color: white; opacity: 0.85; text-decoration: none; }
+  .back-link:hover { opacity: 1; }
+  .back-link svg { width: 12px; height: 12px; }
+
+  .container { max-width: 1360px; margin: 0 auto; padding: 28px 40px 100px; }
+
+  /* Progress summary */
+  .progress-card { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; margin-bottom: 16px; }
+  .progress-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .progress-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); }
+  .progress-exec { font-size: 13px; color: var(--ink-light); font-weight: 600; }
+  .progress-track { height: 14px; border-radius: 999px; background: var(--bg-2); overflow: hidden; display: flex; margin-bottom: 12px; }
+  .progress-seg { height: 100%; transition: width 0.2s; }
+  .progress-seg.pass { background: var(--green); }
+  .progress-seg.fail { background: var(--red); }
+  .progress-seg.blocked { background: var(--amber); }
+  .progress-legend { display: flex; gap: 22px; flex-wrap: wrap; }
+  .progress-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-light); font-weight: 600; }
+  .progress-legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .progress-legend .dot.pass { background: var(--green); }
+  .progress-legend .dot.fail { background: var(--red); }
+  .progress-legend .dot.blocked { background: var(--amber); }
+  .progress-legend .dot.notrun { background: var(--muted-2); }
+
+  /* Filter row */
+  .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .filter-chip { padding: 9px 18px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink-light); cursor: pointer; }
+  .filter-chip:hover { background: var(--bg-2); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .handoff-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 999px; background: var(--blue); color: white; font-size: 13.5px; font-weight: 700; cursor: pointer; border: none; }
+  .handoff-btn:hover { background: var(--blue-dark); }
+  .handoff-btn svg { width: 14px; height: 14px; }
+  .handoff-btn.disabled { background: var(--muted-2); cursor: default; }
+
+  /* Screen block */
+  .screen-block { background: white; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+  .screen-head { display: flex; align-items: center; gap: 14px; padding: 16px 22px; cursor: pointer; }
+  .screen-head:hover { background: var(--bg-2); }
+  .screen-head .chev { width: 16px; height: 16px; color: var(--muted-2); flex-shrink: 0; transition: transform 0.15s; }
+  .screen-block.open .screen-head .chev { transform: rotate(90deg); }
+  .screen-name { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .screen-file { font-size: 11px; color: var(--muted-2); font-family: 'IBM Plex Mono', Menlo, monospace; background: var(--bg-2); padding: 3px 9px; border-radius: 6px; margin-left: 10px; }
+  .platform-pill { font-size: 9.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.4px; text-transform: uppercase; flex-shrink: 0; }
+  .platform-pill.admin { background: var(--ink); color: white; }
+  .platform-pill.mobile { background: var(--blue-soft); color: var(--blue-dark); }
+  .platform-pill.desktop { background: var(--purple-soft); color: var(--purple); }
+  .screen-tally { margin-left: auto; font-size: 12.5px; color: var(--muted); font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+  .screen-tally strong { color: var(--ink); }
+
+  .screen-table-wrap { display: none; border-top: 1px solid var(--line-2); overflow-x: auto; }
+  .screen-block.open .screen-table-wrap { display: block; }
+  table.tc-table { width: 100%; border-collapse: collapse; min-width: 980px; }
+  table.tc-table th { text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 10px 14px; background: var(--bg-2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.tc-table td { padding: 12px 14px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+  table.tc-table tr:last-child td { border-bottom: none; }
+  table.tc-table tr.row-fail { background: #fef7f7; }
+  table.tc-table tr.row-blocked { background: #fffaf0; }
+  .col-cat { width: 90px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .col-test { width: 230px; font-size: 13px; color: var(--ink); font-weight: 600; line-height: 1.4; }
+  .col-expected { width: 280px; font-size: 12.5px; color: var(--ink-light); line-height: 1.45; }
+  .col-status { width: 110px; }
+  .col-notes { min-width: 220px; }
+  .col-dev { min-width: 220px; background: #fbfdff; }
+  .dev-input { width: 100%; border: 1px solid #cfe0fa; border-radius: 7px; padding: 7px 10px; font-size: 12.5px; font-family: inherit; color: var(--ink); resize: vertical; min-height: 32px; background: var(--blue-soft); }
+  .dev-input:focus { outline: none; border-color: var(--blue); background: white; box-shadow: 0 0 0 2px rgba(29,98,211,0.12); }
+  .dev-input::placeholder { color: #7fa3d9; }
+
+  .io-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--ink-light); cursor: pointer; }
+  .io-btn:hover { background: var(--bg-2); }
+  .io-btn svg { width: 13px; height: 13px; }
+  .io-status { font-size: 11.5px; color: var(--muted); margin-left: 4px; white-space: nowrap; }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; white-space: nowrap; user-select: none; }
+  .status-pill svg { width: 11px; height: 11px; }
+  .status-pill.notrun { background: var(--bg-2); color: var(--muted); }
+  .status-pill.pass { background: var(--green-soft); color: var(--green); }
+  .status-pill.fail { background: var(--red-soft); color: var(--red); }
+  .status-pill.blocked { background: var(--amber-soft); color: var(--amber); }
+
+  .notes-row { display: flex; align-items: flex-start; gap: 8px; }
+  .notes-input { flex: 1; border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; font-size: 12.5px; font-family: inherit; color: var(--ink); resize: vertical; min-height: 32px; background: var(--bg-2); }
+  .notes-input:focus { outline: none; border-color: var(--blue); background: white; box-shadow: 0 0 0 2px rgba(29,98,211,0.12); }
+  .attach-btn { width: 32px; height: 32px; border-radius: 7px; background: var(--bg-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--muted); }
+  .attach-btn:hover { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); }
+  .attach-btn svg { width: 14px; height: 14px; }
+  .thumb-chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 4px 8px 4px 4px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; }
+  .thumb-chip img { width: 28px; height: 28px; border-radius: 5px; object-fit: cover; cursor: pointer; display: block; }
+  .thumb-chip .thumb-name { font-size: 11px; color: var(--ink-light); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .thumb-chip .thumb-remove { width: 16px; height: 16px; border-radius: 50%; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); flex-shrink: 0; }
+  .thumb-chip .thumb-remove svg { width: 8px; height: 8px; }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(10,10,20,0.85); z-index: 100; display: none; align-items: center; justify-content: center; padding: 40px; }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .lightbox-close { position: absolute; top: 24px; right: 30px; width: 36px; height: 36px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .lightbox-close svg { width: 15px; height: 15px; color: var(--ink); }
+
+  /* Handoff modal */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(15,15,26,0.6); z-index: 90; display: none; align-items: center; justify-content: center; padding: 40px; }
+  .modal-backdrop.show { display: flex; }
+  .handoff-modal { background: white; border-radius: 16px; width: 100%; max-width: 780px; max-height: 82vh; overflow-y: auto; box-shadow: 0 28px 64px rgba(10,10,20,0.4); }
+  .hm-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px; border-bottom: 1px solid var(--line-2); position: sticky; top: 0; background: white; }
+  .hm-head h2 { font-size: 18px; font-weight: 700; }
+  .hm-head .hm-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .hm-close { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .hm-close svg { width: 13px; height: 13px; color: var(--ink-light); }
+  .hm-body { padding: 10px 26px 26px; }
+  .hm-issue { padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+  .hm-issue-head { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+  .hm-issue-screen { font-size: 11.5px; font-weight: 700; color: var(--blue-dark); background: var(--blue-soft); padding: 3px 9px; border-radius: 999px; }
+  .hm-issue-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .hm-issue-expected { font-size: 12.5px; color: var(--ink-light); margin: 4px 0; }
+  .hm-issue-notes { font-size: 12.5px; color: var(--ink-light); background: var(--bg-2); border-radius: 7px; padding: 8px 10px; margin-top: 6px; }
+  .hm-issue-notes.empty { color: var(--muted-2); font-style: italic; }
+  .hm-footer { padding: 16px 26px; border-top: 1px solid var(--line-2); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: white; }
+  .btn-secondary { padding: 10px 18px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink-light); cursor: pointer; }
+  .btn-primary { padding: 10px 18px; border-radius: 999px; background: var(--ink); border: none; font-size: 13px; font-weight: 600; color: white; cursor: pointer; }
+
+  .footer-note { background: white; border-radius: 12px; padding: 20px 26px; margin-top: 20px; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-light); line-height: 1.6; }
+  .footer-note strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-head-content">
+    <div class="page-head-eyebrow">Web Wizards · Odin · Thor Plumbing &amp; Heating</div>
+    <h1>Project Module · Test Plan</h1>
+    <div class="sub">Executable QA checklist. Update status and notes per test case, attach screenshots, then hand off issues to devs.</div>
+    <div class="meta" id="headMeta">30 screens · &hellip; test cases · Updated Jul 30, 2026</div>
+    <div style="margin-top:14px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <span id="connStatus" style="font-size:12.5px; opacity:0.85; display:inline-flex; align-items:center; gap:6px;">
+        <span id="connDot" style="width:8px;height:8px;border-radius:50%;background:#9a9da0;display:inline-block;"></span>
+        <span id="connText">Connecting…</span>
+      </span>
+      <span style="font-size:12.5px; opacity:0.7;">Tester:</span>
+      <input id="reporterName" type="text" placeholder="Your name" style="font-size:12.5px; padding:5px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; width:140px;">
+    </div>
+    <a href="index.html" class="back-link">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to mockup deck
+    </a>
+    <a href="odin-development-testing-plan.html" class="back-link" style="margin-left: 24px;">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+      Development &amp; timeline plan
+    </a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="progress-card">
+    <div class="progress-head">
+      <span class="progress-label">Overall progress</span>
+      <span class="progress-exec" id="progressExec">0 of 0 executed · 0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-seg pass" id="segPass" style="width:0%"></div>
+      <div class="progress-seg fail" id="segFail" style="width:0%"></div>
+      <div class="progress-seg blocked" id="segBlocked" style="width:0%"></div>
+    </div>
+    <div class="progress-legend">
+      <span><span class="dot pass"></span>Pass <strong id="cntPass">0</strong></span>
+      <span><span class="dot fail"></span>Fail <strong id="cntFail">0</strong></span>
+      <span><span class="dot blocked"></span>Blocked <strong id="cntBlocked">0</strong></span>
+      <span><span class="dot notrun"></span>Not run <strong id="cntNotRun">0</strong></span>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-chip active" data-filter="all">All</div>
+    <div class="filter-chip" data-filter="fail">Fails only</div>
+    <div class="filter-chip" data-filter="blocked">Blocked</div>
+    <div class="filter-chip" data-filter="notrun">Not run</div>
+    <span class="io-status" id="ioStatus"></span>
+    <button class="io-btn" style="margin-left:auto;" onclick="loadFromServer(true)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Refresh
+    </button>
+    <button class="handoff-btn" id="handoffBtn">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      Hand off issues to devs (<span id="handoffCount">0</span>)
+    </button>
+  </div>
+
+  <div id="screensRoot"></div>
+
+  <div class="footer-note">
+    <strong>How this saves and shares now:</strong> every status change, note, dev response, and screenshot saves straight to a shared Supabase database the moment you make it — there's no export/import step anymore. Anyone on the team who opens this same page (on the deployed site) sees the same data. Changes made elsewhere show up here automatically every 20 seconds, or immediately if you click <strong>Refresh</strong>.<br><br>
+    <strong>The "Tester" field</strong> at the top just labels your own changes with a name so the team can see who reported or resolved what — it's remembered in your browser only, not sent anywhere except attached to your saves.<br><br>
+    <strong>The green/red dot</strong> next to "Connecting…" shows whether this page can currently reach the database. If it turns red, your changes are not being saved — check your connection and click Refresh. <em>If you're viewing this file locally rather than on the deployed site, the API isn't available at all and this will always show offline — that's expected.</em>
+  </div>
+
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-close" onclick="closeLightbox(event)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="modal-backdrop" id="handoffModal" onclick="if(event.target===this) closeHandoff()">
+  <div class="handoff-modal">
+    <div class="hm-head">
+      <div>
+        <h2>Issues for dev handoff</h2>
+        <div class="hm-sub" id="handoffSub">0 issues</div>
+      </div>
+      <div class="hm-close" onclick="closeHandoff()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+    </div>
+    <div class="hm-body" id="handoffBody"></div>
+    <div class="hm-footer">
+      <button class="btn-secondary" onclick="closeHandoff()">Close</button>
+      <button class="btn-primary" onclick="copyHandoff()">Copy as text</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA: one entry per screen. Each row = { cat, test, expected }
+// ============================================================
+const SCREENS = [
+
+// ---------------- PART 1: MODULE ENTRY ----------------
+{ part: 'Module entry', name: 'Project List View', file: 'odin-projects-list.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Direct landing, no intermediate page', expected: 'Clicking Projects in the sidebar lands here immediately; no landing page with a "Go To Project" click required' },
+  { cat: 'Layout', test: 'Page title bar counter', expected: 'Icon + "Projects" h2 + subtitle + counter show correct live "X active . Y total"' },
+  { cat: 'Data', test: 'Primary KPI tiles', expected: 'Total Projects / Active / On Hold / Completed show correct counts and update live when a project status changes' },
+  { cat: 'Data', test: 'Task tiles + status donut', expected: 'Total/Completed Tasks tiles and completion-rate match data; donut legend and center count match Active tile' },
+  { cat: 'Tables', test: 'Table renders all 10 columns', expected: 'Project, Code, Client, Manager, Status, Start/End Date, Team, Progress, Actions all present; sortable columns actually sort' },
+  { cat: 'Data', test: 'Status pill colors', expected: 'Active=green, On Hold=amber, Completed=purple, Cancelled=red' },
+  { cat: 'Data', test: 'Progress bar rendering', expected: 'Blue fill for >0%, muted grey at 0%; percentage label matches bar width' },
+  { cat: 'Actions', test: 'Row navigation', expected: 'Project name link and View icon both open that project\'s Overview tab directly' },
+  { cat: 'Actions', test: 'Delete confirmation', expected: 'Delete icon opens a confirmation modal before any deletion occurs' },
+  { cat: 'Actions', test: 'Search + Add Project', expected: 'Search filters by name/code/client; Add Project opens the new project wizard' },
+  { cat: 'Tables', test: 'Pagination', expected: 'Per-page selector (25/50/100), counter, and prev/next (disabled at boundaries) all correct' },
+  { cat: 'Empty/Error', test: 'No results state', expected: 'Search/filter with zero matches shows an explicit empty message, not a blank table' },
+]},
+
+// ---------------- PART 2: ADMIN TABS ----------------
+{ part: 'Admin tabs', name: 'Overview tab', file: 'odin-overview-current-brand.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Hours This Week/Month tiles', expected: 'Correct billable/non-billable split and correct up/down arrow vs. prior period' },
+  { cat: 'Data', test: 'Hours to Date tile', expected: '"XX of YY hrs" and percentage match actual vs. estimated' },
+  { cat: 'Data', test: 'Project Health tile', expected: 'On Track/At Risk/Off Track reflects schedule+budget+blockers; detail panel appears when At Risk/Off Track' },
+  { cat: 'Data', test: 'Secondary KPI row', expected: 'Active Tasks, Open Blockers (red if >0), Open RFIs, Daily Logs This Week, Days Remaining all show correct live counts' },
+  { cat: 'Actions', test: 'Milestone toggle', expected: 'Checkbox toggles done; captures completed_at/by; done items show strikethrough + green check' },
+  { cat: 'Data', test: 'Active milestone highlight', expected: 'Next upcoming (not done) milestone renders with blue ring and blue date' },
+  { cat: 'Actions', test: 'Inline milestone edit/add', expected: 'Hover pencil edits name/date inline; "Add milestone" composer creates a new item sorted by target date ascending' },
+  { cat: 'Layout', test: 'Supporting widgets', expected: 'Activity preview (5 items, links to full tab), Latest Daily Logs, Team list, WIP card all show correct data' },
+  { cat: 'Layout', test: 'Removed elements gone', expected: '"Go to project" button, Tasks donut, and mascot character are all absent' },
+  { cat: 'Layout', test: 'Header actions', expected: 'Only "Edit Project" appears in the header; no New Post / Generate Client Report buttons here' },
+]},
+
+{ part: 'Admin tabs', name: 'Daily Logs tab', file: 'odin-daily-logs.html', platform: 'admin', rows: [
+  { cat: 'Filters', test: 'List sort + filters', expected: 'Sorts by date descending by default; date range, Technician, Tasks-referenced, Reviewed/Unreviewed filters combine correctly' },
+  { cat: 'Data', test: 'Row content', expected: 'Date, tech avatar+name, 2-line summary, up to 4 thumbnails with "+N" overflow, hours, tasks-referenced count, status all correct' },
+  { cat: 'Layout', test: 'Density variance', expected: 'Today\'s row stays full-size; older rows compress' },
+  { cat: 'Actions', test: 'Detail panel', expected: 'Clicking a row shows full text, full photo gallery, linked tasks, linked time entries, and location chip when GPS present' },
+  { cat: 'Actions', test: 'Mark Reviewed', expected: 'Flips status, captures reviewed_by/at, removes the amber "Awaiting admin review" banner' },
+  { cat: 'Actions', test: 'Export PDF', expected: 'Generates a single-log PDF including photos' },
+  { cat: 'Layout', test: 'No web composer', expected: 'Confirm this tab is consumption-only; no way to create a new log from the web' },
+]},
+
+{ part: 'Admin tabs', name: 'Activity tab', file: 'odin-activity.html', platform: 'admin', rows: [
+  { cat: 'Actions', test: 'Composer posts', expected: 'Short-form text with optional attachment/linked task appears at top of feed immediately after posting' },
+  { cat: 'Filters', test: 'Filter chips + search', expected: 'All/Posts/Tasks/Daily Logs/Change Notices/Time/Assets/Reports/Project chips are single-select and filter correctly; free-text search works' },
+  { cat: 'Data', test: 'Human vs. system treatment', expected: 'Human posts get full treatment (avatar/name/tag/timestamp/body); system events get lighter, single-line, dimmer treatment' },
+  { cat: 'Data', test: 'Inline photo thumbnails', expected: '28x28 thumbnails render on system events referencing images (log submissions, asset image uploads)' },
+  { cat: 'Data', test: 'Every system event source fires', expected: 'Task status change, time submitted/approved, log submitted/reviewed, PCN/RFI raised/changed, asset uploaded/deleted/restored, report drafted/approved/sent, milestone added/completed, team added/removed, project status changed all appear' },
+  { cat: 'Actions', test: 'Event deep links', expected: 'Clicking a system event (e.g. "PCN #003") jumps to the correct tab with that record open' },
+  { cat: 'Data', test: 'Feed ordering under load', expected: 'Chronological, newest first, no duplicate or missing events under rapid activity' },
+]},
+
+{ part: 'Admin tabs', name: 'Change Notices — PCN', file: 'odin-change-notices.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Register table columns', expected: 'Number, Type pill, Title (+paperclip count), Status pill, Raised by, Raised on, Cost, Hours, Actions all render' },
+  { cat: 'Tables', test: 'Default sort + column sort', expected: 'Status (open first) then raised-on descending by default; column sorting works' },
+  { cat: 'Filters', test: 'Filters + search', expected: 'All/PCN/RFI and Open/Closed chips combine correctly; free-text search across number/title/body works' },
+  { cat: 'Data', test: 'Summary strip totals', expected: 'Count split, open count, approved/pending cost impact recalculate correctly as records change' },
+  { cat: 'Validation', test: 'Raise New (PCN) required fields', expected: 'Title and Description required and block submit when empty; Number auto-generates read-only' },
+  { cat: 'Data', test: 'File upload zone', expected: 'Accepts PDF/image/.docx, supports multiple files, drag-and-drop works' },
+  { cat: 'Data', test: 'Impact fields save', expected: 'Cost, hours, schedule days, reason-for-change, linked task (scoped to this project) all save correctly' },
+  { cat: 'Actions', test: 'Save Draft vs. Submit', expected: 'Produces correct initial status: Draft vs. Pending Sign-off' },
+  { cat: 'Actions', test: 'State machine enforcement', expected: 'DRAFT to PENDING_SIGN_OFF to APPROVED or REJECTED only; invalid transitions blocked' },
+  { cat: 'Data', test: 'Status-change activity event', expected: 'Each transition emits CHANGE_NOTICE_STATUS_CHANGED with correct old/new values' },
+  { cat: 'Actions', test: 'Export/Archive/Discussion', expected: 'Export PDF, Archive, and threaded replies (separate from status changes) all work' },
+]},
+
+{ part: 'Admin tabs', name: 'Change Notices — RFI', file: 'odin-change-notices-rfi.html', platform: 'admin', rows: [
+  { cat: 'Validation', test: 'Raise New (RFI) required fields', expected: 'Subject and Question required; Question accepts multi-line text' },
+  { cat: 'Validation', test: 'Recipient & timing fields', expected: 'Send to, Discipline, Response-needed-by, Priority save correctly; a past due date is rejected' },
+  { cat: 'Data', test: 'Reference fields', expected: 'Drawing reference and Spec section free-text save; Linked task dropdown scoped to this project' },
+  { cat: 'Actions', test: 'Blocking task toggle', expected: 'Yes auto-marks the linked task Blocked with this RFI as reason; task auto-unblocks when RFI becomes Answered' },
+  { cat: 'Data', test: 'Due date highlighting', expected: 'Amber within 3 days, red when overdue' },
+  { cat: 'Data', test: 'Average turnaround stat', expected: 'Recalculates correctly as RFIs close' },
+  { cat: 'Actions', test: 'State machine enforcement', expected: 'AWAITING_RESPONSE to ANSWERED to CLOSED only; Response section only appears once Answered' },
+  { cat: 'Data', test: 'No auto external notification', expected: 'Confirm no auto-email fires to the external recipient (v1: admin manually marks Answered)' },
+]},
+
+{ part: 'Admin tabs', name: 'Assets tab', file: 'odin-assets-current-brand.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Default folders exist', expected: 'All 7 defaults present (Drawings, Site Photos, Permits & Inspections, Contracts & Quotes, Submittals, Safety Documents, Closeout) plus Trash' },
+  { cat: 'Actions', test: 'Folder create/rename', expected: '"+" adds a new folder; existing folders including defaults can be renamed' },
+  { cat: 'Layout', test: 'Toolbar + view toggle', expected: 'Breadcrumb, item count + size, in-folder search, grid/list toggle all correct' },
+  { cat: 'Actions', test: 'Upload', expected: 'Drag-and-drop strip and Upload button accept jpg/png/heic and pdf/doc/docx/xlsx/pptx' },
+  { cat: 'Data', test: 'Per-file metadata', expected: 'Filename, uploaded by, date, size, tags, description display and edit correctly' },
+  { cat: 'Actions', test: 'Per-file context menu', expected: 'Rename, Move, Download, Move to Trash all work' },
+  { cat: 'Actions', test: 'Bulk actions', expected: 'Multi-select + Move to folder / Move to Trash / Download as zip all work' },
+  { cat: 'Data', test: 'Folder deletion cascades', expected: 'Deleting a folder moves it and all contents to Trash together; restore brings everything back' },
+  { cat: 'Data', test: 'Activity events fire', expected: 'ASSET_DELETED / ASSET_RESTORED events appear correctly in Activity' },
+  { cat: 'Permissions', test: 'Permission tiers', expected: 'Admin (full control) vs. Member-edit (no permanent delete) vs. Member-view (browse/download only) enforced' },
+]},
+
+{ part: 'Admin tabs', name: 'Assets — Trash', file: 'odin-assets-trash.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Info banner + Empty Trash', expected: 'Banner explains 30-day purge rule; Empty Trash link is red, admin-only, hidden/disabled for non-admins' },
+  { cat: 'Data', test: 'Trashed card treatment', expected: 'Grayscale/reduced-opacity preview; shows "From [original folder]"' },
+  { cat: 'Data', test: 'Deleted-by + date', expected: 'Shown on every card' },
+  { cat: 'Data', test: 'Countdown color boundaries', expected: 'Grey >=8 days, amber 3-7 days, red 0-2 days — verify at each exact boundary' },
+  { cat: 'Actions', test: 'Restore accuracy', expected: 'Returns item to its original folder correctly, even if that folder was renamed since deletion' },
+  { cat: 'Permissions', test: 'Delete Forever gating', expected: 'Disabled with tooltip for non-admins; works and is irreversible for admins' },
+  { cat: 'Data', test: 'Auto-purge job', expected: 'Items past purge_at are actually removed (test with a backdated record)' },
+  { cat: 'Empty/Error', test: 'Empty Trash state', expected: 'Shows the specified copy, not a blank screen' },
+]},
+
+{ part: 'Admin tabs', name: 'Client Reports tab', file: 'odin-client-reports.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Generate panel dropdowns', expected: 'Reporting Period, Template, Tone all populate and save; Custom range date picker works' },
+  { cat: 'Data', test: 'Generate Draft data sources', expected: 'Pulls from daily logs, activity, change notices, completed tasks/milestones, hours, status for the selected period' },
+  { cat: 'Actions', test: 'Draft routing', expected: 'Newly generated draft routes into Pending Approval correctly' },
+  { cat: 'Permissions', test: 'Non-bypassable approval gate', expected: 'No path sends a report to the client without explicit admin approval' },
+  { cat: 'Data', test: 'Pending item states', expected: '"Awaiting Admin Review" vs. "Draft (Not Submitted)" show correct state and correct per-state actions' },
+  { cat: 'Data', test: 'Pending summary preview', expected: 'Shows first paragraph accurately, not truncated mid-word, not stale after a regenerate' },
+  { cat: 'Actions', test: 'Report editor', expected: 'Section edits, "regenerate this section," and tone tweaks save before Approve & Send' },
+  { cat: 'Actions', test: 'Approve & Send', expected: 'Emails correct recipients with PDF attached, matching the reference report design' },
+  { cat: 'Data', test: 'Report History table', expected: 'Title, period, status, sent timestamp, recipient, approved-by correct; view/download/resend work' },
+  { cat: 'Actions', test: 'Scheduled Reports cadence', expected: 'Drops a fresh draft into Pending Approval on schedule — not auto-sent' },
+]},
+
+// ---------------- PART 3: TECH MOBILE ----------------
+{ part: 'Tech mobile', name: 'Tech Home', file: 'odin-tech-home.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'My Projects widget scope', expected: 'Lists the tech\'s projects per the open-access model (D-030), not a strict "assigned" filter' },
+  { cat: 'Actions', test: 'Navigation', expected: 'Tapping a project opens the correct per-project view; "View all" opens the project picker' },
+]},
+
+{ part: 'Tech mobile', name: 'Per-project tech view', file: 'odin-tech-project.html', platform: 'mobile', rows: [
+  { cat: 'Actions', test: 'Write Daily Log quick action', expected: 'Opens the composer pre-filled for today\'s date' },
+  { cat: 'Data', test: 'My Open Tasks section', expected: 'Correct status icons and blocked-reason text; "View all" opens the full task list' },
+  { cat: 'Data', test: 'My Recent Daily Logs section', expected: 'Correct entries with summary preview; "View all" opens the full log list' },
+  { cat: 'Permissions', test: 'Tech-hidden content absent', expected: 'PM contact, other team members, milestones, project status/health, other techs\' logs/time/photos, Change Notices, Activity, client reports all absent' },
+]},
+
+{ part: 'Tech mobile', name: 'Project picker', file: 'odin-tech-picker.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Two-section sort', expected: 'Assigned section lists the tech\'s own projects first; "All active" lists the rest, per the open-access model' },
+  { cat: 'Actions', test: 'Search + selection', expected: 'Search filters by name/code; selecting a project navigates to its per-project view' },
+]},
+
+{ part: 'Tech mobile', name: 'Daily Log composer', file: 'odin-tech-log-composer.html', platform: 'mobile', rows: [
+  { cat: 'Actions', test: 'Photo capture', expected: 'Camera and library picker both attach photos; remove (x) works before submit' },
+  { cat: 'Data', test: 'Summary field', expected: 'Dictation mic works or degrades gracefully; character counter accurate' },
+  { cat: 'Validation', test: 'Time on site', expected: 'Stepper increments 0.5hr; quick-pick chips set value correctly; "Add another time block" totals correctly' },
+  { cat: 'Data', test: 'Task allocation bar', expected: 'Live "X of Y hrs allocated" updates as hours are entered; search finds tasks among 40+ items' },
+  { cat: 'Data', test: '"Other" line', expected: 'Accepts hours for non-task work without requiring a task selection' },
+  { cat: 'Actions', test: 'Submit vs. Save Draft', expected: 'Submit sets status "submitted"; Save Draft persists without submitting; reopening a draft repopulates all fields' },
+  { cat: 'Validation', test: 'Required-field blocking', expected: 'Missing summary or zero time blocks blocks submit with a clear message' },
+]},
+
+{ part: 'Tech mobile', name: 'Daily Log detail (read)', file: 'odin-tech-log-detail.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Status pill states', expected: '"Reviewed by admin" (green) vs. "Awaiting admin review" (amber) vs. "Draft" (grey) all correct' },
+  { cat: 'Data', test: 'Submission timeline', expected: 'Submitted/reviewed timestamps display accurately' },
+  { cat: 'Actions', test: 'Edit affordance', expected: 'Opens the composer with every field correctly pre-populated' },
+  { cat: 'Actions', test: 'Retroactive Add Photos', expected: 'Attaches directly to this specific log, not just the project\'s Site Photos folder' },
+  { cat: 'Data', test: 'Draft-state variant', expected: '"Submit Log" primary button appears at bottom alongside Edit' },
+  { cat: 'Actions', test: 'Tasks Worked On read-only', expected: 'Rows are read-only; tapping does not edit the task link' },
+]},
+
+{ part: 'Tech mobile', name: 'My Daily Logs full list', file: 'odin-tech-log-list.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Stats strip', expected: 'Total Logs/Hours/Drafts totals match underlying data; Drafts highlights amber when >0' },
+  { cat: 'Filters', test: 'Filter chips', expected: 'All/This week/Last 30 days/Drafts only filter correctly; horizontal scroll if chips overflow' },
+  { cat: 'Actions', test: 'New Log shortcut', expected: 'Opens the composer for today from the app bar' },
+  { cat: 'Actions', test: 'Row tap routing', expected: 'Reviewed/Awaiting rows open detail; Draft rows open the composer instead' },
+]},
+
+{ part: 'Tech mobile', name: 'My Tasks full list', file: 'odin-tech-task-list.html', platform: 'mobile', rows: [
+  { cat: 'Filters', test: 'Open filter composition', expected: 'Default Open filter shows exactly Not Started + In Progress + Blocked, nothing else' },
+  { cat: 'Filters', test: 'All / Complete filters', expected: 'Both filter correctly with accurate counts' },
+  { cat: 'Data', test: 'Status group order', expected: 'Blocked, then In Progress, then Not Started; Complete only appears under the Complete filter' },
+  { cat: 'Data', test: 'Blocked task treatment', expected: 'Red left border + inline "Blocked since [date]" banner with correct blocked_reason text' },
+  { cat: 'Data', test: 'Due-date highlighting', expected: 'Amber when soon, red when overdue, at exact boundaries' },
+  { cat: 'Actions', test: 'Row tap', expected: 'Opens Task detail' },
+]},
+
+{ part: 'Tech mobile', name: 'Task detail', file: 'odin-tech-task-detail.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Description + Details', expected: 'Renders correctly and is read-only' },
+  { cat: 'Actions', test: 'Mark Complete', expected: 'Transitions immediately with confirmation; emits a Task Event to admin Activity' },
+  { cat: 'Validation', test: 'Mark Blocked reason', expected: 'Opens required-reason modal; fails to save without a reason entered' },
+  { cat: 'Actions', test: 'Unblock toggle', expected: 'Button shows "Unblock" when already Blocked; unblocking returns status to In Progress' },
+  { cat: 'Data', test: 'Blocked-state banner', expected: 'Red-tinted banner with reason + timestamp at top when applicable' },
+  { cat: 'Data', test: 'My Activity scoping', expected: 'Shows only this tech\'s own history, not other techs\'' },
+  { cat: 'Permissions', test: 'Absent affordances', expected: 'No edit-description, reassign, comment thread, or delete-task anywhere on this screen' },
+]},
+
+{ part: 'Tech mobile', name: 'My Photos full grid', file: 'odin-tech-photos.html', platform: 'mobile', rows: [
+  { cat: 'Permissions', test: '"My photos only" scoping', expected: 'Another tech\'s uploads are not visible' },
+  { cat: 'Data', test: 'Date grouping', expected: 'Today, Yesterday, then specific dates, correctly ordered' },
+  { cat: 'Data', test: 'Count + storage header', expected: 'Matches actual totals ("N photos uploaded by you . X MB")' },
+  { cat: 'Actions', test: 'Tile tap + Add', expected: 'Tile opens full-size with caption/delete; Add opens picker and attaches to this project\'s library' },
+  { cat: 'Data', test: 'Photo source union', expected: 'Both daily-log-attached photos and standalone uploads appear correctly' },
+]},
+
+{ part: 'Tech mobile', name: 'Photo upload flow (Step 2)', file: 'odin-tech-photo-upload.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Preview grid + remove', expected: 'Correct thumbnails; remove (x) per photo updates the count live in header/button' },
+  { cat: 'Data', test: 'Default destination', expected: 'Site Photos folder is the default selection' },
+  { cat: 'Actions', test: 'Attach-to-log option', expected: 'Only enables when a draft exists (or auto-creates one); photos land in both the draft and Site Photos when selected' },
+  { cat: 'Data', test: 'Caption behavior', expected: 'Applies identically to the whole batch; editable per-photo afterward via the full-size viewer' },
+  { cat: 'Data', test: 'Upload button label', expected: 'Always matches the actual photo count ("Upload N Photos")' },
+  { cat: 'Actions', test: 'Cancel', expected: 'Discards the selection without uploading anything' },
+]},
+
+{ part: 'Tech mobile', name: 'Submit Timesheet (project variant)', file: 'odin-tech-time-submit.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Work Order to Project swap', expected: 'Field correctly shows Project instead of Work Order in project context' },
+  { cat: 'Data', test: 'Optional Task field', expected: 'Links time to a task without being required' },
+  { cat: 'Data', test: 'Base form parity', expected: 'Billable/Non-Billable toggle, hours entry, submit match the existing production timesheet form exactly' },
+  { cat: 'Permissions', test: 'Role scoping', expected: 'Reachable for Foreman/Supervisor only; not redundantly shown to Technicians' },
+]},
+
+// ---------------- PART 4: TECH DESKTOP ----------------
+{ part: 'Tech desktop', name: 'Tech Home (KPI scoreboard)', file: 'odin-tech-home-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Timesheets nav dropdown', expected: 'Opens/closes correctly; lists Submit Timesheet / Daily Timesheets / Weekly Timesheets' },
+  { cat: 'Desktop UX', test: 'Projects nav item', expected: 'Plain link (not a dropdown), landing on the full Projects list' },
+  { cat: 'Actions', test: 'My Hours card click', expected: 'Whole card navigates to the detailed hours view; period toggle switches independently without triggering navigation' },
+  { cat: 'Actions', test: 'Billable/Non-bil/OT tiles', expected: 'Each opens its own descriptive modal with correct data for the selected period; does not also trigger card navigation' },
+  { cat: 'Actions', test: 'Clients count', expected: 'Opens a modal listing every client with hours for the period, matching the header count exactly' },
+  { cat: 'Data', test: 'Team Scoreboard rings', expected: '4 rings in one row; After Hours is yellow with a plain call count; Emergency Service stays blue; Projects ring absent' },
+  { cat: 'Data', test: 'Work Orders tabs + rollup', expected: 'My Dept WO/Open/Closed switch correctly; rollup banner totals match sum of visible rows' },
+  { cat: 'Actions', test: 'Row expand', expected: 'Clicking a work order row expands the contributor breakdown in place' },
+  { cat: 'Data', test: 'Projects section removal', expected: 'Standalone Projects card/section fully absent from this page' },
+]},
+
+{ part: 'Tech desktop', name: 'Per-Project View', file: 'odin-tech-project-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Widget spotlight open', expected: '"View all" on any of the 4 widgets dims the backdrop and centers that widget with its own scrollbar' },
+  { cat: 'Desktop UX', test: 'Widget spotlight close', expected: 'Close (x), backdrop click, and Escape all restore the normal grid' },
+  { cat: 'Desktop UX', test: 'Single-focus enforcement', expected: 'Opening a second widget closes the first automatically' },
+  { cat: 'Desktop UX', test: 'Scroll lock', expected: 'Scrolling inside a focused widget does not scroll the page behind it' },
+]},
+
+{ part: 'Tech desktop', name: 'Daily Tech Log Composer', file: 'odin-tech-log-composer-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Drag-and-drop upload', expected: 'Replaces mobile Camera/Library; 6-column thumbnail grid with hover-to-remove' },
+  { cat: 'Desktop UX', test: 'Sticky summary rail', expected: 'Stays visible while scrolling the form; live summary matches form state' },
+  { cat: 'Data', test: 'Allocation + Other line parity', expected: 'Behaves identically to the mobile composer\'s logic' },
+  { cat: 'Actions', test: 'Save Draft vs. Submit', expected: 'Produces the correct record state, matching mobile behavior' },
+]},
+
+{ part: 'Tech desktop', name: 'Daily Tech Log Detail', file: 'odin-tech-log-detail-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Data', test: 'Header status + timeline', expected: 'Matches the record\'s actual state (Reviewed/Awaiting/Draft)' },
+  { cat: 'Desktop UX', test: 'Sticky rail accuracy', expected: 'Hours-on-Site and log-details card stay accurate and visible while scrolling' },
+  { cat: 'Desktop UX', test: 'Photo grid + Add Photos', expected: '5-column hover-to-preview works; Add Photos attaches to this specific log' },
+  { cat: 'Actions', test: 'Edit button', expected: 'Opens the composer desktop with all fields populated' },
+  { cat: 'Data', test: 'Draft-state variant', expected: 'NOT YET BUILT — flag if this screen is treated as complete without it' },
+]},
+
+{ part: 'Tech desktop', name: 'Project Tasks', file: 'odin-tech-task-list-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Search box', expected: 'Filters the task list correctly by name' },
+  { cat: 'Data', test: 'Filters + grouping parity', expected: 'Open/All/Complete chips and status grouping match mobile logic exactly' },
+  { cat: 'Desktop UX', test: 'Floating dropdown menu', expected: 'Three-dot menu opens a floating dropdown (not a bottom sheet) anchored correctly; closes on outside click' },
+  { cat: 'Data', test: 'Status-aware actions', expected: 'Blocked shows Unblock/Mark Complete/View RFI; others show Mark Complete/Mark Blocked' },
+  { cat: 'Data', test: 'Open-access scope', expected: 'Shows ALL project tasks, not filtered to "my tasks" like the mobile list' },
+  { cat: 'Permissions', test: 'No create/edit affordance', expected: 'No task-creation or edit-field control anywhere on this screen' },
+]},
+
+{ part: 'Tech desktop', name: 'Project Photos', file: 'odin-tech-photos-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: '7-column grid responsiveness', expected: 'Hover-to-scale works at various window widths without breaking layout' },
+  { cat: 'Data', test: 'Grouping + scoping parity', expected: 'Date grouping and "my photos only" scoping match mobile exactly' },
+  { cat: 'Actions', test: 'Add Photos button', expected: 'Opens the correct upload flow' },
+]},
+
+{ part: 'Tech desktop', name: 'Upload Photos (modal)', file: 'odin-tech-photo-upload-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Modal opens from every entry point', expected: 'Per-project Add Photos, log composer, and Project Photos page all correctly open this modal' },
+  { cat: 'Desktop UX', test: 'Preview tile scaling', expected: 'Fixed-size tiles display correctly for 1, 3, and 10+ photos (wrapping)' },
+  { cat: 'Data', test: 'Destination default + cancel', expected: 'Defaults to Site Photos; both Cancel controls close without uploading' },
+  { cat: 'Desktop UX', test: 'Backdrop click', expected: 'Clicking the dimmed backdrop closes the modal exactly like Cancel' },
+]},
+
+{ part: 'Tech desktop', name: 'Submit Time (Foreman/Supervisor)', file: 'odin-tech-time-submit-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Permissions', test: 'Role scoping', expected: 'Reachable only for Foreman/Supervisor; Technicians see no equivalent entry point' },
+  { cat: 'Data', test: 'Field layout + locking', expected: 'Timesheet Type/Project/Date lay out side-by-side; Project and Date locked when entered from per-project view' },
+  { cat: 'Data', test: 'Time model parity', expected: 'Time-block, stepper, allocation, and "Other" line match the Daily Log Composer\'s model exactly' },
+  { cat: 'Desktop UX', test: 'Sticky rail accuracy', expected: 'Live summary and Submit button stay accurate and visible while scrolling' },
+  { cat: 'Data', test: 'Single source of truth', expected: 'Submitted hours feed the regular Odin timesheet; no double-entry' },
+]},
+
+{ part: 'Tech desktop', name: 'Raise RFI', file: 'odin-tech-rfi-composer-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Data', test: 'Field set is exactly 5 fields', expected: 'Photos, subject, description, linked task, auto number/date — no recipient/priority/discipline fields leaked from the admin form' },
+  { cat: 'Desktop UX', test: 'Drag-and-drop photos', expected: 'Dropzone works; 6-column thumbnail grid with hover-remove' },
+  { cat: 'Permissions', test: 'Shared across field roles', expected: 'Identical composer for Technician, Foreman, Supervisor; only created_by_role differs' },
+  { cat: 'Validation', test: 'Linked task optional', expected: 'Submit succeeds with it left blank' },
+  { cat: 'Actions', test: 'Submit behavior', expected: 'Creates OPEN record, no approval gate, posts to Change Notices register, fires RFI_CREATED with created_by_role' },
+  { cat: 'Permissions', test: 'Absent affordances', expected: 'Cannot create a PCN, send to GC directly, or answer an RFI from this screen' },
+]},
+
+{ part: 'Tech desktop', name: 'Task Picker (shared component)', file: 'odin-tech-task-picker-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Desktop UX', test: 'Popover anchoring', expected: 'Opens anchored under the triggering field; closes on outside click or x, no full-screen takeover' },
+  { cat: 'Data', test: 'Search performance', expected: 'Filters live as typed, tested against a project with 40+ tasks' },
+  { cat: 'Data', test: 'No Mine/All chips', expected: 'Confirmed absent by design; status grouping and est-vs-actual bar render correctly per row' },
+  { cat: 'Actions', test: 'Selection + Other row', expected: 'Selecting shows blue border/checkmark and updates the triggering field; "Other" row is visually distinct and selects correctly' },
+  { cat: 'Permissions', test: 'No Create Task affordance', expected: 'Confirmed absent anywhere in this component' },
+]},
+
+];
+
+// ============================================================
+// STATE + RENDER
+// ============================================================
+const STATUS_CYCLE = ['notrun', 'pass', 'fail', 'blocked'];
+const STATUS_LABEL = { notrun: 'Not run', pass: 'Pass', fail: 'Fail', blocked: 'Blocked' };
+const STATUS_ICON = {
+  pass: '<svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+  fail: '<svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  blocked: '<svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+  notrun: ''
+};
+
+let currentFilter = 'all';
+const attachments = {};   // rowKey -> { name, url }
+const rowStatus = {};
+const rowNotes = {};
+const rowDevResponse = {};
+const openScreens = new Set(['0']);
+let API_ONLINE = false;
+
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+function rowKey(si, ri) {
+  const screen = SCREENS[si];
+  const row = screen.rows[ri];
+  return screen.file + '::' + slug(row.test);
+}
+
+function tallyForScreen(si) {
+  const rows = SCREENS[si].rows;
+  let pass = 0;
+  rows.forEach((_, ri) => { if (rowStatus[rowKey(si, ri)] === 'pass') pass++; });
+  return { pass, total: rows.length };
+}
+
+function renderScreens() {
+  const root = document.getElementById('screensRoot');
+  let html = '';
+
+  SCREENS.forEach((screen, si) => {
+    const tally = tallyForScreen(si);
+    const rowsWithIdx = screen.rows.map((r, ri) => ({ r, ri }));
+    const visibleRows = currentFilter === 'all' ? rowsWithIdx : rowsWithIdx.filter(({ ri }) => {
+      const st = rowStatus[rowKey(si, ri)] || 'notrun';
+      return st === currentFilter;
+    });
+    if (currentFilter !== 'all' && visibleRows.length === 0) return;
+
+    const isOpen = openScreens.has(String(si));
+
+    html += '<div class="screen-block' + (isOpen ? ' open' : '') + '" data-screen="' + si + '">';
+    html += '<div class="screen-head" onclick="toggleScreen(' + si + ')">';
+    html += '<svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>';
+    html += '<span class="screen-name">' + screen.name + '</span>';
+    html += '<span class="screen-file">' + screen.file + '</span>';
+    html += '<span class="platform-pill ' + screen.platform + '">' + screen.platform + '</span>';
+    html += '<span class="screen-tally"><strong>' + tally.pass + '</strong> of ' + tally.total + ' passed</span>';
+    html += '</div>';
+
+    html += '<div class="screen-table-wrap"><table class="tc-table"><thead><tr>';
+    html += '<th class="col-cat">Category</th><th class="col-test">Test case</th><th class="col-expected">Expected result</th><th class="col-status">Status</th><th class="col-notes">QA notes &amp; screenshot</th><th class="col-dev">Dev response</th>';
+    html += '</tr></thead><tbody>';
+
+    visibleRows.forEach(({ r, ri }) => {
+      const key = rowKey(si, ri);
+      const status = rowStatus[key] || 'notrun';
+      const rowClass = status === 'fail' ? 'row-fail' : (status === 'blocked' ? 'row-blocked' : '');
+      const note = rowNotes[key] || '';
+      const att = attachments[key];
+
+      html += '<tr class="' + rowClass + '">';
+      html += '<td class="col-cat">' + r.cat + '</td>';
+      html += '<td class="col-test">' + r.test + '</td>';
+      html += '<td class="col-expected">' + r.expected + '</td>';
+      html += '<td class="col-status"><button class="status-pill ' + status + '" onclick="cycleStatus(' + si + ',' + ri + ')">' + (STATUS_ICON[status] || '') + STATUS_LABEL[status] + '</button></td>';
+      html += '<td class="col-notes"><div class="notes-row">';
+      html += '<textarea class="notes-input" placeholder="Add a note..." onchange="setNote(' + si + ',' + ri + ',this.value)">' + note + '</textarea>';
+      html += '<label class="attach-btn" title="Attach screenshot">';
+      html += '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
+      html += '<input type="file" accept="image/*" style="display:none" onchange="attachFile(' + si + ',' + ri + ',this)">';
+      html += '</label>';
+      html += '</div>';
+      if (att) {
+        html += '<div class="thumb-chip"><img src="' + att.url + '" onclick="openLightbox(this.src)">';
+        html += '<span class="thumb-name">' + (att.name || 'screenshot') + '</span>';
+        html += '<span class="thumb-remove" onclick="removeAttachment(' + si + ',' + ri + ')"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span></div>';
+      }
+      html += '</td>';
+      html += '<td class="col-dev"><textarea class="dev-input" placeholder="Dev reply..." onchange="setDevResponse(' + si + ',' + ri + ',this.value)">' + (rowDevResponse[key] || '') + '</textarea></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div></div>';
+  });
+
+  root.innerHTML = html;
+}
+
+function toggleScreen(si) {
+  const key = String(si);
+  if (openScreens.has(key)) openScreens.delete(key);
+  else openScreens.add(key);
+  renderScreens();
+}
+
+function getReporterName() {
+  return document.getElementById('reporterName').value.trim() || 'Anonymous';
+}
+
+function postUpdate(si, ri, fields) {
+  const key = rowKey(si, ri);
+  const screen = SCREENS[si];
+  const payload = Object.assign({
+    row_key: key,
+    screen_name: screen.name,
+    screen_file: screen.file,
+    updated_by: getReporterName(),
+  }, fields);
+
+  setIoStatus('Saving…');
+  fetch('/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(function (r) { if (!r.ok) throw new Error('save failed (' + r.status + ')'); return r.json(); })
+    .then(function (res) {
+      setIoStatus('Saved.');
+      setConn(true);
+      if (res.result && res.result.screenshot_url) {
+        attachments[key] = { name: 'screenshot', url: res.result.screenshot_url };
+        renderScreens();
+      }
+    })
+    .catch(function (err) {
+      setIoStatus('Could not save (' + err.message + '). Your change is only local — check your connection and try again.');
+      setConn(false);
+    });
+}
+
+function cycleStatus(si, ri) {
+  const key = rowKey(si, ri);
+  const current = rowStatus[key] || 'notrun';
+  const idx = STATUS_CYCLE.indexOf(current);
+  const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+  rowStatus[key] = next;
+  renderScreens();
+  updateSummary();
+  postUpdate(si, ri, { status: next });
+}
+
+function setNote(si, ri, value) {
+  rowNotes[rowKey(si, ri)] = value;
+  postUpdate(si, ri, { qa_notes: value });
+}
+
+function setDevResponse(si, ri, value) {
+  rowDevResponse[rowKey(si, ri)] = value;
+  postUpdate(si, ri, { dev_response: value });
+}
+
+function setIoStatus(msg) {
+  document.getElementById('ioStatus').textContent = msg;
+}
+
+function setConn(online) {
+  API_ONLINE = online;
+  document.getElementById('connDot').style.background = online ? '#1f9e4a' : '#ed1c24';
+  document.getElementById('connText').textContent = online ? 'Connected — saving to Supabase' : 'Offline — changes are not being saved';
+}
+
+function attachFile(si, ri, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    // optimistic local preview while the upload is in flight
+    attachments[rowKey(si, ri)] = { name: file.name, url: e.target.result };
+    renderScreens();
+    postUpdate(si, ri, { screenshot_base64: e.target.result });
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeAttachment(si, ri) {
+  delete attachments[rowKey(si, ri)];
+  renderScreens();
+  postUpdate(si, ri, { clear_screenshot: true });
+}
+
+function applyServerRow(row) {
+  const key = row.row_key;
+  if (row.status) rowStatus[key] = row.status;
+  if (row.qa_notes) rowNotes[key] = row.qa_notes;
+  if (row.dev_response) rowDevResponse[key] = row.dev_response;
+  if (row.screenshot_url) attachments[key] = { name: 'screenshot', url: row.screenshot_url };
+}
+
+function isTyping() {
+  const el = document.activeElement;
+  return el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && el.type === 'text'));
+}
+
+function loadFromServer(manual) {
+  fetch('/api/results')
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (data) {
+      setConn(true);
+      if (manual || !isTyping()) {
+        Object.values(data.results || {}).forEach(applyServerRow);
+        renderScreens();
+        updateSummary();
+      }
+      if (manual) setIoStatus('Refreshed from server.');
+    })
+    .catch(function (err) {
+      setConn(false);
+      setIoStatus('Could not reach /api/results (' + err.message + '). If you\'re viewing this file locally rather than on the deployed site, the API is not available here.');
+    });
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+function updateSummary() {
+  let pass = 0, fail = 0, blocked = 0, notrun = 0, total = 0;
+  SCREENS.forEach((screen, si) => {
+    screen.rows.forEach((_, ri) => {
+      total++;
+      const st = rowStatus[rowKey(si, ri)] || 'notrun';
+      if (st === 'pass') pass++;
+      else if (st === 'fail') fail++;
+      else if (st === 'blocked') blocked++;
+      else notrun++;
+    });
+  });
+  const executed = pass + fail + blocked;
+  const pct = total ? Math.round(executed / total * 100) : 0;
+
+  document.getElementById('progressExec').textContent = executed + ' of ' + total + ' executed \u00b7 ' + pct + '%';
+  document.getElementById('cntPass').textContent = pass;
+  document.getElementById('cntFail').textContent = fail;
+  document.getElementById('cntBlocked').textContent = blocked;
+  document.getElementById('cntNotRun').textContent = notrun;
+  document.getElementById('segPass').style.width = (total ? pass / total * 100 : 0) + '%';
+  document.getElementById('segFail').style.width = (total ? fail / total * 100 : 0) + '%';
+  document.getElementById('segBlocked').style.width = (total ? blocked / total * 100 : 0) + '%';
+
+  const issueCount = fail + blocked;
+  document.getElementById('handoffCount').textContent = issueCount;
+  document.getElementById('handoffBtn').classList.toggle('disabled', issueCount === 0);
+
+  document.getElementById('headMeta').textContent = SCREENS.length + ' screens \u00b7 ' + total + ' test cases \u00b7 Updated Jul 30, 2026';
+}
+
+document.querySelectorAll('.filter-chip').forEach(function (chip) {
+  chip.addEventListener('click', function () {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.getAttribute('data-filter');
+    if (currentFilter !== 'all') {
+      SCREENS.forEach((_, si) => openScreens.add(String(si)));
+    }
+    renderScreens();
+  });
+});
+
+document.getElementById('handoffBtn').addEventListener('click', function () {
+  if (this.classList.contains('disabled')) return;
+  const body = document.getElementById('handoffBody');
+  let html = '';
+  let count = 0;
+  SCREENS.forEach((screen, si) => {
+    screen.rows.forEach((r, ri) => {
+      const key = rowKey(si, ri);
+      const st = rowStatus[key];
+      if (st === 'fail' || st === 'blocked') {
+        count++;
+        const note = rowNotes[key];
+        const devResp = rowDevResponse[key];
+        html += '<div class="hm-issue">';
+        html += '<div class="hm-issue-head"><span class="hm-issue-screen">' + screen.name + '</span><span class="status-pill ' + st + '" style="cursor:default;">' + STATUS_ICON[st] + STATUS_LABEL[st] + '</span></div>';
+        html += '<div class="hm-issue-title">' + r.test + '</div>';
+        html += '<div class="hm-issue-expected"><strong>Expected:</strong> ' + r.expected + '</div>';
+        html += '<div class="hm-issue-notes' + (note ? '' : ' empty') + '"><strong>QA notes:</strong> ' + (note || 'No notes added') + '</div>';
+        if (devResp) html += '<div class="hm-issue-notes" style="background:var(--blue-soft);"><strong>Dev response:</strong> ' + devResp + '</div>';
+        html += '</div>';
+      }
+    });
+  });
+  document.getElementById('handoffSub').textContent = count + ' issue' + (count === 1 ? '' : 's') + ' (Fail + Blocked)';
+  body.innerHTML = html || '<p style="color:var(--muted);padding:20px 0;">No Fail or Blocked test cases yet.</p>';
+  document.getElementById('handoffModal').classList.add('show');
+});
+
+function closeHandoff() {
+  document.getElementById('handoffModal').classList.remove('show');
+}
+
+function copyHandoff() {
+  let text = 'Odin Project Module \u2014 Dev Handoff\n\n';
+  let count = 0;
+  SCREENS.forEach((screen, si) => {
+    screen.rows.forEach((r, ri) => {
+      const key = rowKey(si, ri);
+      const st = rowStatus[key];
+      if (st === 'fail' || st === 'blocked') {
+        count++;
+        text += '[' + STATUS_LABEL[st].toUpperCase() + '] ' + screen.name + ' (' + screen.file + ')\n';
+        text += '  Test: ' + r.test + '\n';
+        text += '  Expected: ' + r.expected + '\n';
+        text += '  QA notes: ' + (rowNotes[key] || '(none)') + '\n';
+        if (rowDevResponse[key]) text += '  Dev response: ' + rowDevResponse[key] + '\n';
+        text += '\n';
+      }
+    });
+  });
+  navigator.clipboard.writeText(text).then(function () {
+    alert('Copied ' + count + ' issues to clipboard.');
+  }).catch(function () {
+    alert('Could not copy automatically \u2014 select and copy the text manually.');
+  });
+}
+
+renderScreens();
+updateSummary();
+
+// Reporter name persists in this browser only (a convenience label, not app data)
+(function () {
+  const input = document.getElementById('reporterName');
+  const saved = localStorage.getItem('odin-test-plan-reporter');
+  if (saved) input.value = saved;
+  input.addEventListener('change', function () {
+    localStorage.setItem('odin-test-plan-reporter', input.value.trim());
+  });
+})();
+
+loadFromServer(false);
+setInterval(function () { loadFromServer(false); }, 20000); // near-real-time: poll every 20s
+</script>
+
+</body>
+</html>

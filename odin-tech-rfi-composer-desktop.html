@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Raise RFI (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1320px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* Header */
+  .composer-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; gap: 20px; }
+  .composer-header h1 { font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.3px; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); }
+  .project-context svg { width: 12px; height: 12px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+  .stage-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-dark); font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 4px; }
+  .stage-pill svg { width: 12px; height: 12px; }
+
+  /* Intro banner */
+  .intro-card { display: flex; gap: 12px; align-items: flex-start; background: var(--blue-soft); border: 1px solid #cfe0fa; border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+  .intro-card-icon { width: 32px; height: 32px; border-radius: 9px; background: var(--blue); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .intro-card-icon svg { width: 16px; height: 16px; }
+  .intro-card-body { font-size: 13.5px; color: var(--ink-light); line-height: 1.55; }
+  .intro-card-body strong { color: var(--ink); font-weight: 600; }
+
+  /* Body grid: form column + sticky rail */
+  .composer-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.85fr); gap: 20px; align-items: start; }
+  .form-col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--white); border-radius: 14px; padding: 24px 26px; border: 1px solid var(--line); }
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-label .hint { font-size: 11px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  /* Photos */
+  .photo-dropzone { display: flex; align-items: center; gap: 16px; padding: 20px 22px; border-radius: 12px; border: 1.5px dashed var(--line); background: var(--bg-2); cursor: pointer; margin-bottom: 18px; transition: border-color 0.12s, background 0.12s; }
+  .photo-dropzone:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .photo-dropzone .dz-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--white); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--ink-light); }
+  .photo-dropzone .dz-icon svg { width: 20px; height: 20px; }
+  .photo-dropzone .dz-title { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .photo-dropzone .dz-sub { font-size: 12.5px; color: var(--muted); }
+
+  .photo-thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .photo-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-thumb-remove { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.65); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.12s; }
+  .photo-thumb:hover .photo-thumb-remove { opacity: 1; }
+  .photo-thumb-remove svg { width: 11px; height: 11px; }
+
+  /* Inputs */
+  .input-text { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: inherit; color: var(--ink); background: white; }
+  .input-text:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  textarea.input-text { resize: vertical; min-height: 120px; line-height: 1.6; }
+  .ta-wrap { position: relative; }
+  .ta-wrap > textarea { padding-right: 48px; }
+  .mic-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #cfe0fa; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .mic-btn svg { width: 15px; height: 15px; color: var(--blue); }
+  .input-counter { text-align: right; font-size: 11.5px; color: var(--muted-2); margin-top: 8px; }
+  .help-note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* Task picker */
+  .task-picker { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 10px; background: white; cursor: pointer; }
+  .task-picker:hover { border-color: var(--blue); }
+  .task-picker-body { flex: 1; min-width: 0; }
+  .task-picker-label { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .task-picker-value { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .task-picker-chev { color: var(--muted-2); flex-shrink: 0; }
+  .task-picker-chev svg { width: 17px; height: 17px; }
+
+  /* Sticky summary rail */
+  .summary-rail { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .summary-card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .summary-card .sc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 14px; }
+  .sc-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+  .sc-row:last-child { border-bottom: none; }
+  .sc-row .k { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .sc-row .v { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
+
+  .rail-actions { display: flex; flex-direction: column; gap: 10px; }
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: 999px; font-size: 14.5px; font-weight: 700; cursor: pointer; border: none; width: 100%; }
+  .btn-pill.secondary { background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .btn-pill.secondary:hover { background: var(--bg-2); }
+  .btn-pill.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 4px 14px rgba(237, 28, 36, 0.28); }
+  .btn-pill.primary:hover { box-shadow: 0 6px 18px rgba(237, 28, 36, 0.34); }
+  .btn-pill svg { width: 14px; height: 14px; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <a>Fairmont Hotel Renovation</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="current">Raise RFI</span>
+      </div>
+
+      <!-- Header -->
+      <div class="composer-header">
+        <div>
+          <h1>Raise RFI</h1>
+          <div class="project-context">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <strong>Fairmont Hotel Renovation</strong> · 9059
+          </div>
+        </div>
+        <div class="stage-pill">
+          <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Internal capture
+        </div>
+      </div>
+
+      <!-- Intro banner -->
+      <div class="intro-card">
+        <div class="intro-card-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="intro-card-body">
+          <strong>Submit posts this RFI to the project.</strong> The PM takes it from there and emails the GC. There is no approval step. Don't worry about phrasing or who to send it to. Just capture the question.
+        </div>
+      </div>
+
+      <!-- Composer grid: form + sticky rail -->
+      <div class="composer-grid">
+
+        <!-- FORM COLUMN -->
+        <div class="form-col">
+
+          <!-- PHOTOS -->
+          <div class="card">
+            <div class="field-label">
+              <span>Photos <span class="hint">2 added</span></span>
+            </div>
+
+            <div class="photo-dropzone">
+              <div class="dz-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div>
+                <div class="dz-title">Add photos</div>
+                <div class="dz-sub">Drag &amp; drop, or click to browse your computer</div>
+              </div>
+            </div>
+
+            <div class="photo-thumbs">
+              <div class="photo-thumb">
+                <svg class="scene" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="100" height="100" fill="#3a4150"/>
+                  <rect x="10" y="32" width="80" height="36" fill="#6b7a8a" stroke="#2a2f3a" stroke-width="1"/>
+                  <circle cx="50" cy="50" r="8" fill="#a0a8b5"/>
+                  <rect x="35" y="48" width="30" height="4" fill="#2a2f3a"/>
+                  <rect x="45" y="35" width="10" height="30" fill="#2a2f3a"/>
+                  <rect x="0" y="0" width="100" height="20" fill="#1c2028"/>
+                  <text x="50" y="13" text-anchor="middle" fill="#d0d4dc" font-family="Inter, sans-serif" font-size="8" font-weight="600">SPEC CONFLICT</text>
+                </svg>
+                <div class="photo-thumb-remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="photo-thumb">
+                <svg class="scene" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="100" height="100" fill="#e8e4d8"/>
+                  <rect x="10" y="20" width="80" height="60" fill="white" stroke="#c0bcb0" stroke-width="1"/>
+                  <rect x="18" y="28" width="50" height="2" fill="#9a978d"/>
+                  <rect x="18" y="34" width="64" height="1.5" fill="#c0bcb0"/>
+                  <rect x="18" y="40" width="60" height="1.5" fill="#c0bcb0"/>
+                  <rect x="18" y="46" width="40" height="1.5" fill="#c0bcb0"/>
+                  <rect x="18" y="55" width="64" height="6" fill="#fdf2dd" stroke="#d99316" stroke-width="0.8"/>
+                  <rect x="18" y="65" width="50" height="1.5" fill="#c0bcb0"/>
+                  <rect x="18" y="71" width="55" height="1.5" fill="#c0bcb0"/>
+                </svg>
+                <div class="photo-thumb-remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBJECT -->
+          <div class="card">
+            <div class="field-label">
+              <span>Subject <span class="req">*</span></span>
+              <span class="hint">one line</span>
+            </div>
+            <input type="text" class="input-text" value="Backflow preventer 14-week lead time, need substitute approval">
+            <div class="help-note">Short. What's the question in five to ten words.</div>
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="card">
+            <div class="field-label">
+              <span>Description <span class="req">*</span></span>
+            </div>
+            <div class="ta-wrap">
+              <textarea class="input-text">Spec'd Watts 909 RPZ has a 14-week lead time, won't make schedule. Apollo 4ALF-LF and Wilkins 975XL are both in stock locally. Need approval to swap.</textarea>
+              <button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+            </div>
+            <div class="input-counter">183 / 500</div>
+            <div class="help-note">In your own words. The PM will rewrite this for the GC if needed.</div>
+          </div>
+
+          <!-- LINKED TASK -->
+          <div class="card">
+            <div class="field-label">
+              <span>Linked task</span>
+              <span class="hint">optional</span>
+            </div>
+            <div class="task-picker">
+              <div class="task-picker-body">
+                <div class="task-picker-label">Related to</div>
+                <div class="task-picker-value">Backflow preventer install</div>
+              </div>
+              <div class="task-picker-chev">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+            </div>
+            <div class="help-note">Helps the PM see which task this might block. Skip if not sure.</div>
+          </div>
+
+        </div>
+
+        <!-- STICKY SUMMARY RAIL -->
+        <div class="summary-rail">
+          <div class="summary-card">
+            <div class="sc-label">RFI summary</div>
+            <div class="sc-row"><span class="k">Project</span><span class="v">Fairmont Hotel Renovation</span></div>
+            <div class="sc-row"><span class="k">Subject</span><span class="v">Backflow preventer lead time</span></div>
+            <div class="sc-row"><span class="k">Linked task</span><span class="v">Backflow preventer install</span></div>
+            <div class="sc-row"><span class="k">Photos</span><span class="v">2 added</span></div>
+          </div>
+
+          <div class="rail-actions">
+            <button class="btn-pill primary">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Submit RFI
+            </button>
+            <button class="btn-pill secondary">Cancel</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 6.6.3 · Raise RFI</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup</span>
+      Built from the mobile Raise RFI composer, adapted to the established desktop chrome and the same form + sticky summary rail pattern used for the Daily Tech Log Composer and Submit Time conversions.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Five fields only (unchanged)</span>
+      Matches the lean intake spec: photos, subject, description, linked task. Number and date auto-populate on submit — not asked. No recipient, due date, priority, discipline, drawing reference, spec section, or blocking-task toggle. Field user captures; PM handles the rest.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Shared by all field roles (D-038)</span>
+      Same composer for Technicians, Foremen, and Supervisors — only <code>created_by_role</code> differs on the record, the form is identical.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Photo capture — dropzone replaces Camera/Gallery</span>
+      Mobile leads with two big buttons (Camera primary, Gallery secondary) because "look at this" is the most common way these start, and there's no keyboard-first alternative on a phone. Desktop swaps this for the same drag-and-drop upload zone used on the Daily Tech Log Composer and this project's other conversions — no camera affordance needed. Thumbnail grid widened to 6 columns.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Intro card sets expectation (unchanged)</span>
+      "Submit posts this RFI to the project. The PM takes it from there and emails the GC. There is no approval step." Removes the anxiety of "am I sending this to the GC directly," without implying a gate that doesn't exist.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Stage pill (unchanged)</span>
+      "Internal capture" in the header reinforces this is the casual capture step, not the formal outbound send. Moved from the app bar (mobile) into the page header, next to the title, matching the composer conversions' header pattern.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Subject &amp; Description hints (unchanged)</span>
+      Subject: "one line" hint + "Short. What's the question in five to ten words." Description: "In your own words. The PM will rewrite this for the GC if needed." Both keep the field user from overthinking phrasing. 500-char counter on description carried over.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Linked task — optional (unchanged)</span>
+      "Skip if not sure" helper text. Opens the same project-task picker pattern used elsewhere. Pre-fills the PM's mental model of what this might block.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Sticky rail replaces the mobile footer</span>
+      Mobile pins Cancel/Submit RFI to a two-column footer bar. Desktop moves these into the sticky right rail, with a running RFI summary (project, subject, linked task, photo count) above them — consistent with the other composer conversions.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">What happens on Submit (unchanged)</span>
+      Record created as <code>OPEN</code> (D-038, no approval gate, no Draft state) — posts straight to the project's Change Notices register. Confirmation toast, then return to the per-project view. PM handles the outbound GC email from their own client and later captures the response back into the desktop RFI detail. <code>RFI_CREATED</code> activity event fires with <code>created_by_role</code>.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">What field roles still do NOT do (unchanged)</span>
+      No PCN creation (inbound GC documents only — forward the email to the PM instead). No compose-and-send to the GC. No answering RFIs — the PM captures the GC's response on desktop.
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+</script>
+</body>
+</html>

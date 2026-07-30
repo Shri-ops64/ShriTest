@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Tech · Project Tasks (desktop)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-2:      #3b3d40;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #ffffff;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --annot-bg: #fef9c3;
+    --annot-border: #fde047;
+    --annot-ink: #713f12;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+
+  .page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; min-height: 100vh; }
+  .design { background: var(--bg); }
+  .annot-col { background: #fafbfc; padding: 28px 28px 80px 28px; border-left: 1px solid var(--line); overflow-y: auto; }
+
+  /* Top nav */
+  .topnav { background: #f4f4f4; padding: 16px 36px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-bottom: 1px solid var(--line); }
+  .logo { display: inline-block; line-height: 0; }
+  .logo svg { height: 28px; width: auto; display: block; }
+  .nav-center { display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; }
+  .nav-right { justify-self: end; }
+  .nav-item { color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; position: relative; white-space: nowrap; }
+
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 5px; color: var(--ink); font-size: 14px; cursor: pointer; padding: 6px 0; white-space: nowrap; }
+  .nav-dropdown-trigger .chev { width: 11px; height: 11px; color: var(--muted); transition: transform 0.15s; }
+  .nav-dropdown.open .nav-dropdown-trigger .chev { transform: rotate(180deg); }
+  .nav-dropdown.open .nav-dropdown-trigger { color: var(--ink); font-weight: 600; }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%);
+    background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.14); min-width: 220px; padding: 8px;
+    display: none; z-index: 40;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu .dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13.5px; color: var(--ink); cursor: pointer; }
+  .nav-dropdown-menu .dd-item:hover { background: var(--bg-2); }
+
+  .page-body { padding: 24px 36px 60px 36px; max-width: 1180px; margin: 0 auto; }
+
+  /* Breadcrumb */
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--blue); text-decoration: none; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb svg { width: 12px; height: 12px; color: var(--muted-2); }
+  .crumb .current { color: var(--ink-light); font-weight: 500; }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 20px; flex-wrap: wrap; }
+  .page-header h1 { font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.3px; }
+  .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); }
+  .project-context svg { width: 12px; height: 12px; color: var(--blue); }
+  .project-context strong { font-weight: 600; }
+
+  .task-search { display: flex; align-items: center; gap: 9px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; width: 260px; margin-top: 4px; }
+  .task-search svg { width: 14px; height: 14px; color: var(--muted-2); flex-shrink: 0; }
+  .task-search input { border: none; background: transparent; outline: none; font-size: 13.5px; color: var(--ink); font-family: inherit; width: 100%; }
+  .task-search input::placeholder { color: var(--muted-2); }
+
+  /* Filter row */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 22px; }
+  .filter-chip { padding: 9px 18px; border-radius: 999px; background: white; border: 1px solid var(--line); color: var(--ink-light); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .filter-chip:hover { background: var(--bg-2); }
+  .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .filter-chip .count { font-size: 11.5px; opacity: 0.7; }
+  .filter-chip.active .count { opacity: 0.9; }
+
+  /* Status groups */
+  .status-group { margin-bottom: 22px; }
+  .status-group-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 10px; }
+  .status-group-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .status-group-label .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .status-group-label .dot.in-progress { background: var(--blue); }
+  .status-group-label .dot.blocked { background: var(--red); }
+  .status-group-label .dot.not-started { background: var(--muted-2); }
+  .status-group-label .dot.complete { background: var(--green); }
+  .status-group-count { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+
+  /* Task card */
+  .task-card { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; cursor: pointer; position: relative; }
+  .task-card:hover { background: var(--bg-2); }
+  .task-card.blocked { border-left: 3px solid var(--red); padding-left: 17px; }
+  .task-row1 { display: flex; align-items: flex-start; gap: 14px; }
+  .task-status-icon { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--muted-2); margin-top: 1px; }
+  .task-status-icon.in-progress { background: white; border-color: var(--blue); position: relative; }
+  .task-status-icon.in-progress::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--blue); }
+  .task-status-icon.blocked { background: var(--red); border-color: var(--red); position: relative; }
+  .task-status-icon.blocked::after { content: ''; position: absolute; inset: 4px 2px; background: white; transform: rotate(-45deg); height: 2px; top: 50%; margin-top: -1px; }
+  .task-status-icon.complete { background: var(--green); border-color: var(--green); position: relative; }
+  .task-status-icon.complete::after { content: '✓'; position: absolute; inset: 0; color: white; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .task-content { flex: 1; min-width: 0; }
+  .task-title { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .task-title.complete { color: var(--muted); text-decoration: line-through; font-weight: 500; }
+  .task-meta-row { font-size: 12.5px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .task-meta-row svg { width: 11px; height: 11px; vertical-align: -1px; margin-right: 4px; }
+  .due-soon { color: var(--amber); font-weight: 600; }
+  .overdue { color: var(--red); font-weight: 600; }
+  .blocked-reason { background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 9px 12px; font-size: 12.5px; margin-top: 10px; display: flex; align-items: flex-start; gap: 7px; }
+  .blocked-reason svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 1px; }
+  .blocked-reason strong { font-weight: 700; }
+
+  /* Three-dot menu → floating dropdown (desktop pattern, replaces mobile's inline action sheet) */
+  .task-menu-wrap { position: relative; flex-shrink: 0; }
+  .task-menu { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); margin-top: -3px; margin-right: -6px; }
+  .task-menu:hover { background: var(--line-2); color: var(--ink); }
+  .task-menu svg { width: 16px; height: 16px; display: block; }
+
+  .action-menu {
+    position: absolute; top: calc(100% + 4px); right: 0;
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(20, 20, 30, 0.16); min-width: 240px; padding: 6px;
+    display: none; z-index: 30;
+  }
+  .action-menu.open { display: block; }
+  .action-menu-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 7px; }
+  .action-menu-row:hover { background: var(--bg-2); }
+  .action-menu-row svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--muted); }
+  .action-menu-row.primary { background: var(--blue-soft); color: var(--blue-dark); font-weight: 600; }
+  .action-menu-row.primary svg { color: var(--blue); }
+  .action-menu-row.primary:hover { background: #d4e4f8; }
+  .action-menu-row.danger { color: var(--red); }
+  .action-menu-row.danger svg { color: var(--red); }
+  .action-menu-label { flex: 1; font-size: 13.5px; }
+  .action-menu-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* Annotations */
+  .annot-col h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+  .annot-col h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .changed-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); text-transform: uppercase; letter-spacing: 0.4px; }
+  .annot { background: var(--annot-bg); border: 1px solid var(--annot-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--annot-ink); line-height: 1.5; }
+  .annot-title { display: block; font-weight: 700; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============== DESIGN COLUMN ============== -->
+  <div class="design">
+
+    <!-- Top nav -->
+    <div class="topnav">
+      <div class="logo">
+        <svg viewBox="0 0 180 72" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+          <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+          <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+          <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+        </svg>
+      </div>
+      <div class="nav-center">
+        <div class="nav-item">Home</div>
+
+        <div class="nav-dropdown" id="timesheetsDropdown">
+          <div class="nav-dropdown-trigger" onclick="toggleNavDropdown('timesheetsDropdown')">
+            Timesheets
+            <svg class="chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="nav-dropdown-menu">
+            <div class="dd-item">Submit Timesheet</div>
+            <div class="dd-item">Daily Timesheets</div>
+            <div class="dd-item">Weekly Timesheets</div>
+          </div>
+        </div>
+
+        <div class="nav-item">Equipment</div>
+        <div class="nav-item">Profile</div>
+        <div class="nav-item">Team</div>
+        <div class="nav-item">Notes</div>
+        <div class="nav-item">Projects</div>
+        <div class="nav-item">Admin</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item">Log out</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="crumb">
+        <a>Projects</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <a>Fairmont Hotel Renovation</a>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        <span class="current">Project Tasks</span>
+      </div>
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h1>Project Tasks</h1>
+          <div class="project-context">
+            <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <strong>Fairmont Hotel Renovation</strong>
+          </div>
+        </div>
+        <div class="task-search">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search tasks…">
+        </div>
+      </div>
+
+      <!-- Filter row -->
+      <div class="filter-row">
+        <div class="filter-chip active">Open <span class="count">3</span></div>
+        <div class="filter-chip">All <span class="count">7</span></div>
+        <div class="filter-chip">Complete <span class="count">4</span></div>
+      </div>
+
+      <!-- Blocked group first (most urgent) -->
+      <div class="status-group">
+        <div class="status-group-head">
+          <span class="status-group-label"><span class="dot blocked"></span>Blocked</span>
+          <span class="status-group-count">1</span>
+        </div>
+
+        <div class="task-card blocked">
+          <div class="task-row1">
+            <div class="task-status-icon blocked"></div>
+            <div class="task-content">
+              <div class="task-title">Install main supply line</div>
+              <div class="task-meta-row">
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Due May 27</span>
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>0 / 12 hrs</span>
+              </div>
+              <div class="blocked-reason">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span><strong>Blocked since May 19:</strong> Waiting on revised P&amp;ID drawings from engineer of record</span>
+              </div>
+            </div>
+            <div class="task-menu-wrap">
+              <div class="task-menu" onclick="toggleActionMenu('menuBlocked', event)" title="Actions">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
+              </div>
+              <div class="action-menu open" id="menuBlocked">
+                <div class="action-menu-row primary">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/></svg>
+                  <div>
+                    <div class="action-menu-label">Unblock</div>
+                    <div class="action-menu-sub">Resume work; status returns to In Progress</div>
+                  </div>
+                </div>
+                <div class="action-menu-row">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  <div class="action-menu-label">Mark Complete</div>
+                </div>
+                <div class="action-menu-row">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                  <div class="action-menu-label">View linked RFI</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In Progress group -->
+      <div class="status-group">
+        <div class="status-group-head">
+          <span class="status-group-label"><span class="dot in-progress"></span>In Progress</span>
+          <span class="status-group-count">1</span>
+        </div>
+
+        <div class="task-card">
+          <div class="task-row1">
+            <div class="task-status-icon in-progress"></div>
+            <div class="task-content">
+              <div class="task-title">West wall rough-in</div>
+              <div class="task-meta-row">
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg><span class="due-soon">Due May 22 (2 days)</span></span>
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>9 / 16 hrs</span>
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>21.5 hrs logged</span>
+              </div>
+            </div>
+            <div class="task-menu-wrap">
+              <div class="task-menu" onclick="toggleActionMenu('menuInProgress', event)" title="Actions">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
+              </div>
+              <div class="action-menu" id="menuInProgress">
+                <div class="action-menu-row">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  <div class="action-menu-label">Mark Complete</div>
+                </div>
+                <div class="action-menu-row danger">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                  <div class="action-menu-label">Mark Blocked</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Not Started -->
+      <div class="status-group">
+        <div class="status-group-head">
+          <span class="status-group-label"><span class="dot not-started"></span>Not Started</span>
+          <span class="status-group-count">1</span>
+        </div>
+
+        <div class="task-card">
+          <div class="task-row1">
+            <div class="task-status-icon"></div>
+            <div class="task-content">
+              <div class="task-title">Pressure testing supply lines</div>
+              <div class="task-meta-row">
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Due May 24</span>
+                <span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>5 / 6 hrs</span>
+              </div>
+            </div>
+            <div class="task-menu-wrap">
+              <div class="task-menu" onclick="toggleActionMenu('menuNotStarted', event)" title="Actions">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
+              </div>
+              <div class="action-menu" id="menuNotStarted">
+                <div class="action-menu-row">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  <div class="action-menu-label">Mark Complete</div>
+                </div>
+                <div class="action-menu-row danger">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                  <div class="action-menu-label">Mark Blocked</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============== ANNOTATIONS ============== -->
+  <div class="annot-col">
+    <h2>Section 7.7 · Project Tasks (full list)</h2>
+    <h3>Desktop conversion<span class="changed-pill">v1</span></h3>
+
+    <div class="annot">
+      <span class="annot-title">Converted from mobile mockup</span>
+      Built from the mobile Project Tasks list, adapted to the established desktop chrome (nav, breadcrumb, annotation rail) while keeping every content decision from the mobile version intact.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Scoped to "all tasks on this project"</span>
+      Per the June 2 direction: tasks aren't assigned to individuals. They belong to the project, and any staff — including techs not officially on it — can see them and log time. This desktop list shows the same set any tech would see, not a personalized subset.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Search box added for desktop</span>
+      Mobile relies on scrolling through a short list. Desktop adds a search box in the header, since the extra width has room for it and a project can have far more than 7 tasks.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Filter chips + status grouping (unchanged)</span>
+      Open (default: Not Started + In Progress + Blocked) / All / Complete, with counts. Groups render in priority order — Blocked, then In Progress, then Not Started — with Complete tasks appearing only when that filter is active.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Three-dot menu → floating dropdown</span>
+      Mobile opens an inline action sheet below the card because there's no room to float a menu. Desktop replaces this with a standard floating dropdown anchored to the three-dot button — same actions, more standard desktop interaction. Shown open here on "Install main supply line" to demonstrate the Blocked-state menu (Unblock primary, Mark Complete, View linked RFI).
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Actions adapt to status (unchanged)</span>
+      Blocked → Unblock (primary), Mark Complete, View linked RFI/PCN. In Progress / Not Started → Mark Complete, Mark Blocked. Complete → Reopen (not shown; only visible under the Complete filter).
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">Anyone can change task status</span>
+      Per June 2 direction: any staff member can mark a task Complete or Blocked, not just an assignee — there's no "owner" concept on tasks.
+    </div>
+
+    <div class="annot">
+      <span class="annot-title">No task detail page — still true on desktop tech</span>
+      Editing task name, estimate, due date, or Task ID stays PM territory on the admin side, not this tech surface. These tech actions remain operational only (status changes). A tech who spots a problem needing PM attention raises an RFI instead.
+    </div>
+  </div>
+
+</div>
+<script>
+  function toggleNavDropdown(id) {
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    document.querySelectorAll('.action-menu.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  function toggleActionMenu(id, evt) {
+    evt.stopPropagation();
+    var target = document.getElementById(id);
+    var isOpen = target.classList.contains('open');
+    document.querySelectorAll('.action-menu.open').forEach(function(el) { el.classList.remove('open'); });
+    document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) target.classList.add('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      document.querySelectorAll('.nav-dropdown.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+    if (!e.target.closest('.task-menu-wrap')) {
+      document.querySelectorAll('.action-menu.open').forEach(function(el) { el.classList.remove('open'); });
+    }
+  });
+</script>
+</body>
+</html>
