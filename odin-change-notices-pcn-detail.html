@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · PCN Detail</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn-danger { background: white; color: var(--red); border: 1px solid #f4c5c8; }
+  .btn-danger:hover { background: var(--red-soft); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+  .tab .count { font-size: 11px; background: var(--bg); padding: 1px 7px; border-radius: 999px; color: var(--muted); }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  .page-title-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 8px; background: var(--amber-soft); color: var(--amber); display: flex; align-items: center; justify-content: center; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { flex: 1; }
+  .pt-text h2 { font-size: 17px; font-weight: 600; color: var(--ink); }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { font-size: 12px; color: var(--muted); padding: 5px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; }
+
+  /* State stage label */
+  .state-stage { background: linear-gradient(to right, var(--amber-soft), white 60%); border-left: 3px solid var(--amber); padding: 10px 16px; margin: 24px 0 14px; border-radius: 0 8px 8px 0; }
+  .state-stage.voided { background: linear-gradient(to right, var(--red-soft), white 60%); border-left-color: var(--red); }
+  .state-stage.voided h3 { color: var(--red); }
+  .state-stage h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--amber); }
+  .state-stage p { font-size: 13px; color: var(--ink-light); margin-top: 4px; }
+
+  /* Detail panel */
+  .detail-panel { background: white; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .dp-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 16px; }
+  .dp-head-left { flex: 1; min-width: 0; }
+  .dp-head-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .dp-head-meta .type-pill { padding: 3px 10px; font-size: 11px; font-weight: 700; border-radius: 4px; background: var(--amber-soft); color: var(--amber); font-family: 'IBM Plex Mono', Menlo, monospace; }
+  .dp-head-meta .status-pill { padding: 3px 10px; font-size: 11px; font-weight: 600; border-radius: 999px; }
+  .dp-head-meta .status-pill.approved { background: var(--green-soft); color: var(--green); }
+  .dp-head-meta .status-pill.voided { background: var(--red-soft); color: var(--red); }
+  .dp-head-meta .billing-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .dp-head-meta .billing-pill.fixed { background: var(--bg); color: var(--ink-light); }
+  .dp-head-meta .billing-pill.tm { background: #fdf2dd; color: var(--amber); border: 1px solid #f0d597; }
+  .dp-head-meta .num { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 13px; color: var(--ink); font-weight: 600; }
+  .dp-head-meta .rfi-back { font-size: 11px; padding: 3px 10px; border-radius: 4px; background: var(--blue-soft); color: var(--blue-dark); font-family: 'IBM Plex Mono', Menlo, monospace; font-weight: 600; text-decoration: none; }
+  .dp-head-meta .rfi-back:hover { background: var(--blue); color: white; }
+  .dp-head h1 { font-size: 19px; font-weight: 600; color: var(--ink); margin-bottom: 6px; line-height: 1.3; }
+  .dp-head .ingested-by { font-size: 12.5px; color: var(--muted); }
+  .dp-head .ingested-by .av { display: inline-block; width: 18px; height: 18px; border-radius: 50%; font-size: 8px; vertical-align: middle; color: white; font-weight: 700; line-height: 18px; text-align: center; margin: 0 4px 1px 0; }
+  .av-mp { background: #c95a5a; }
+  .av-ac { background: #4a90e2; }
+  .av-jt { background: #c89a37; }
+  .av-bh { background: #5d2a99; }
+  .av-kt { background: #2f8a6a; }
+  .av-sp { background: #9b59b6; }
+
+  .dp-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-icon { padding: 8px; width: 34px; justify-content: center; }
+
+  .dp-body { padding: 22px; }
+  .dp-section { margin-bottom: 22px; }
+  .dp-section:last-child { margin-bottom: 0; }
+  .dp-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .dp-section-label .pill-mini { padding: 1px 7px; border-radius: 999px; font-size: 10px; background: var(--bg); color: var(--ink-light); font-weight: 600; }
+
+  .dp-description { font-size: 14px; color: var(--ink); line-height: 1.6; padding: 14px 16px; background: var(--bg-2); border-radius: 6px; border-left: 3px solid var(--muted-2); }
+
+  /* Document attachment (prominent on PCN since signed doc is source of truth) */
+  .pdf-prominent { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: white; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); }
+  .pdf-prominent-icon { width: 48px; height: 56px; border-radius: 6px; background: var(--red-soft); color: var(--red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .pdf-prominent-body { flex: 1; min-width: 0; }
+  .pdf-prominent-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .pdf-prominent-meta { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .pdf-prominent-meta strong { color: var(--ink-light); font-weight: 600; }
+  .pdf-prominent-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* Impact summary tiles */
+  .impact-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .impact-tile { padding: 14px 18px; background: var(--bg-2); border-radius: 8px; border: 1px solid var(--line); }
+  .impact-tile .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 6px; }
+  .impact-tile .value { font-size: 22px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .impact-tile .value.green { color: var(--green); }
+  .impact-tile .sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+  /* T&M impact block (no estimates, hours-only) */
+  .tm-impact-block { background: linear-gradient(to bottom right, #fdf2dd, #fefaf0); border: 1px solid #f0d597; border-radius: 8px; padding: 16px 20px; }
+  .tm-impact-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0d597; }
+  .tm-impact-head svg { width: 18px; height: 18px; color: var(--amber); margin-top: 1px; flex-shrink: 0; }
+  .tm-impact-head .title { font-size: 14px; font-weight: 600; color: #7a4e08; }
+  .tm-impact-head .subtitle { font-size: 12px; color: var(--ink-light); margin-top: 2px; line-height: 1.45; }
+  .tm-impact-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .tm-stat { background: white; border-radius: 6px; padding: 12px 14px; border: 1px solid #f0d597; }
+  .tm-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 6px; }
+  .tm-stat-value { font-size: 22px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .tm-stat-value .unit { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .tm-stat-value-text { font-size: 16px; font-weight: 600; color: var(--ink); font-feature-settings: 'tnum'; }
+  .tm-stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+  .tm-tasks-helper { font-size: 12px; color: var(--ink-light); margin-top: 10px; padding: 10px 14px; background: var(--bg-2); border-radius: 6px; line-height: 1.5; }
+
+  /* Linked tasks list */
+  .linked-tasks { background: var(--bg-2); border-radius: 8px; padding: 6px; border: 1px solid var(--line); }
+  .lt-row { display: grid; grid-template-columns: 110px 1fr 160px 100px 28px; gap: 12px; align-items: center; padding: 12px 14px; background: white; border-radius: 6px; margin-bottom: 6px; }
+  .lt-row:last-child { margin-bottom: 0; }
+  .lt-row.subtask { padding-left: 38px; background: var(--bg-2); box-shadow: inset 2px 0 0 var(--line); }
+  .lt-status { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; text-align: center; }
+  .lt-status.not-started { background: var(--bg); color: var(--ink-light); }
+  .lt-status.in-progress { background: var(--blue-soft); color: var(--blue); }
+  .lt-status.complete { background: var(--green-soft); color: var(--green); }
+  .lt-status.blocked { background: var(--red-soft); color: var(--red); }
+  .lt-status.cancelled { background: var(--bg); color: var(--muted); text-decoration: line-through; }
+  .lt-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .lt-name.sub { font-weight: 400; color: var(--ink-light); font-size: 12.5px; }
+  .lt-assignees { display: flex; align-items: center; }
+  .lt-assignees .a-av { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; border: 2px solid white; margin-left: -6px; }
+  .lt-assignees .a-av:first-child { margin-left: 0; }
+  .lt-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .lt-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+  .lt-bar-fill { height: 100%; background: linear-gradient(to right, var(--blue), var(--blue-dark)); border-radius: 999px; }
+  .lt-bar-fill.complete { background: linear-gradient(to right, var(--green), #167a39); }
+  .lt-hours { font-size: 12px; color: var(--ink); font-weight: 600; font-feature-settings: 'tnum'; min-width: 60px; text-align: right; }
+  .lt-menu { color: var(--muted); cursor: pointer; }
+  .lt-menu svg { width: 14px; height: 14px; }
+
+  .lt-rollup { background: white; border-radius: 6px; padding: 12px 16px; margin-top: 8px; display: flex; align-items: center; gap: 18px; border: 1px dashed var(--line); }
+  .lt-rollup-stat { font-size: 12px; color: var(--muted); }
+  .lt-rollup-stat strong { color: var(--ink); font-weight: 700; font-size: 14px; font-feature-settings: 'tnum'; margin-right: 4px; }
+
+  /* Cancelled cluster (voided PCN) */
+  .lt-cancelled-banner { background: var(--red-soft); border: 1px solid #f4c5c8; border-radius: 6px; padding: 12px 16px; margin-bottom: 12px; font-size: 12.5px; color: #a01620; }
+  .lt-cancelled-banner strong { color: #2a0708; font-weight: 600; }
+  .linked-tasks.cancelled { opacity: 0.55; }
+  .add-task-link { padding: 10px 14px; background: white; border: 1px dashed var(--line); border-radius: 6px; display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--blue); cursor: pointer; font-weight: 500; margin-top: 6px; }
+  .add-task-link svg { width: 12px; height: 12px; }
+  .add-task-link:hover { border-color: var(--blue); background: var(--blue-soft); }
+
+  /* Void reason box */
+  .void-box { background: var(--red-soft); border: 1px solid #f4c5c8; border-radius: 10px; padding: 16px 20px; }
+  .void-box .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .void-box .head svg { width: 16px; height: 16px; color: var(--red); }
+  .void-box .title { font-size: 13px; font-weight: 600; color: var(--red); }
+  .void-box .ts { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .void-box .body { font-size: 13.5px; color: var(--ink); line-height: 1.55; }
+
+  /* kv */
+  .kv-row { display: grid; grid-template-columns: 180px 1fr; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-row .k { font-size: 12px; color: var(--muted); }
+  .kv-row .v { font-size: 13px; color: var(--ink); }
+  .kv-row .v.mono { font-family: 'IBM Plex Mono', Menlo, monospace; }
+
+  /* Audit trail */
+  .audit { background: var(--bg-2); border-radius: 8px; padding: 14px 18px; }
+  .audit-item { display: flex; gap: 10px; padding: 6px 0; font-size: 12px; color: var(--ink-light); align-items: baseline; }
+  .audit-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); flex-shrink: 0; margin-top: 6px; }
+  .audit-item .dot.current { background: var(--blue); }
+  .audit-item .dot.red { background: var(--red); }
+  .audit-item .ts { color: var(--muted); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; min-width: 100px; flex-shrink: 0; }
+  .audit-item strong { color: var(--ink); font-weight: 600; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; color: #7a6620; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations code { background: white; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'IBM Plex Mono', Menlo, monospace; color: #4a3d10; }
+  .status-pill.open, .dp-head-meta .status-pill.open { background: var(--blue-soft); color: var(--blue); }
+  .status-pill.closed, .dp-head-meta .status-pill.closed { background: var(--green-soft); color: var(--green); }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span><a href="#">Fairmont Hotel</a><span class="crumb-sep">/</span>Change Notices<span class="crumb-sep">/</span>PCN Detail
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 to 30 Jun 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Project Logs <span class="count">23</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>PCN Detail</h2>
+          <div class="pt-sub">Inbound change notice from the General Contractor. Two states shown below: Open (with linked tasks in flight) and Closed (a voided PCN).</div>
+        </div>
+        <div class="pt-counter">PCN lifecycle: recorded on ingest (Fixed or T&amp;M billing type), Open while work is in flight, Closed when complete or voided</div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- STATE 1: OPEN, FIXED    (the most common case)         -->
+      <!-- ====================================================== -->
+      <div class="state-stage">
+        <h3>State 1 of 3 · Open · Fixed billing (the most common case)</h3>
+        <p>PCN was ingested earlier today by Adam Coey from the signed GC document. Fixed billing type: PCN came with an agreed cost and hours estimate. Five tasks were spawned in the Tasks tab. One is complete, one in progress, three not started. PM opens the record to see how the spawned work is progressing or to refer back to the original GC document.</p>
+      </div>
+
+      <div class="detail-panel">
+        <div class="dp-head">
+          <div class="dp-head-left">
+            <div class="dp-head-meta">
+              <span class="type-pill">PCN</span>
+              <span class="num">PCN-005</span>
+              <span class="status-pill open">Open</span>
+              <span class="billing-pill fixed">Fixed</span>
+              <a class="rfi-back" href="#" title="This PCN was triggered by RFI-007">From RFI-007 ↗</a>
+            </div>
+            <h1>Substitute Apollo 4ALF-LF backflow preventer (Watts 909 RPZ on order, 14-week lead time)</h1>
+            <div class="ingested-by">
+              Ingested by <span class="av av-ac">AC</span> Adam Coey · 03 Jun 2026 at 14:18 · Signed by Brett Hartnell (Fairmont GC) on 02 Jun 2026
+            </div>
+          </div>
+          <div class="dp-actions">
+            <button class="btn btn-primary btn-primary-prominent" title="Close PCN: all linked tasks complete, change is finished">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+              Close PCN
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Edit metadata (signed document remains source of truth)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Export PDF">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Archive">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+            </button>
+            <button class="btn btn-danger" title="Void this PCN (closes it; used only if the GC retracts the change after ingest)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              Void
+            </button>
+          </div>
+        </div>
+
+        <div class="dp-body">
+
+          <div class="dp-section">
+            <div class="dp-section-label">Signed PCN document <span class="pill-mini">Source of truth</span></div>
+            <div class="pdf-prominent">
+              <div class="pdf-prominent-icon">PDF</div>
+              <div class="pdf-prominent-body">
+                <div class="pdf-prominent-name">PCN-005-FairmontBackflowSubstitution-signed.pdf</div>
+                <div class="pdf-prominent-meta">316 KB · Signed by <strong>Brett Hartnell</strong> (Fairmont GC) on 02 Jun 2026 · Recorded value: <strong>$0.00</strong> · Uploaded by Adam Coey 03 Jun 14:18</div>
+              </div>
+              <div class="pdf-prominent-actions">
+                <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg> View</button>
+                <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Download</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Description</div>
+            <div class="dp-description">
+              GC has authorized substitution of Watts Series 909 RPZ backflow preventer (originally spec'd per 22 11 16, Part 2.4.A) with Apollo 4ALF-LF. Substitution is in response to RFI-007 raised by Thor due to 14-week lead time on the original unit. Apollo 4ALF-LF meets ASSE 1013 standards and is preferred per the building owner's standardization list. Substitution to be noted on as-builts. No cost impact; minor labor adjustment for revised mounting.
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Impact</div>
+            <div class="impact-tiles">
+              <div class="impact-tile">
+                <div class="label">Cost impact</div>
+                <div class="value green">$0.00</div>
+                <div class="sub">Owner standardization; no cost change passed through</div>
+              </div>
+              <div class="impact-tile">
+                <div class="label">Hours impact</div>
+                <div class="value">+2.5 hrs</div>
+                <div class="sub">Sums to the spawned tasks: 0.5 + 1.5 + 0.5 = 2.5 est. hrs</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Linked work tasks <span class="pill-mini">5 tasks spawned at ingest</span></div>
+            <div class="linked-tasks">
+
+              <div class="lt-row">
+                <div class="lt-status complete">Complete</div>
+                <div class="lt-name">Order Apollo 4ALF-LF and confirm delivery</div>
+                <div class="lt-assignees"><div class="a-av av-ac">AC</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill complete" style="width: 100%;"></div></div>
+                </div>
+                <div class="lt-hours">0.5 / 0.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row">
+                <div class="lt-status in-progress">In Progress</div>
+                <div class="lt-name">Install Apollo 4ALF-LF on west wall</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div><div class="a-av av-kt">KT</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 60%;"></div></div>
+                </div>
+                <div class="lt-hours">0.9 / 1.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row subtask">
+                <div class="lt-status complete">Complete</div>
+                <div class="lt-name sub">Demo existing rough-in for Watts unit</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill complete" style="width: 100%;"></div></div>
+                </div>
+                <div class="lt-hours">0.6 / 0.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row subtask">
+                <div class="lt-status in-progress">In Progress</div>
+                <div class="lt-name sub">Mount and connect new unit</div>
+                <div class="lt-assignees"><div class="a-av av-kt">KT</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 30%;"></div></div>
+                </div>
+                <div class="lt-hours">0.3 / 1.0</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row">
+                <div class="lt-status not-started">Not Started</div>
+                <div class="lt-name">Pressure test and inspect</div>
+                <div class="lt-assignees"><div class="a-av av-sp">SP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 0%;"></div></div>
+                </div>
+                <div class="lt-hours">0 / 0.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-rollup">
+                <div class="lt-rollup-stat"><strong>1.4</strong> of 2.5 hrs logged</div>
+                <div class="lt-rollup-stat" style="color: var(--muted-2);">·</div>
+                <div class="lt-rollup-stat"><strong>56%</strong> complete</div>
+                <div class="lt-rollup-stat" style="color: var(--muted-2);">·</div>
+                <div class="lt-rollup-stat"><strong>0.6 hrs</strong> over estimate on demo subtask, watching it</div>
+              </div>
+
+              <button class="add-task-link">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                Add another task to this PCN
+              </button>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Source &amp; references</div>
+            <div class="kv-row">
+              <div class="k">Originating RFI</div>
+              <div class="v"><a href="#" style="color: var(--blue); text-decoration: none;">RFI-007 · Backflow preventer has 14-week lead time</a> (closed 03 Jun)</div>
+            </div>
+            <div class="kv-row">
+              <div class="k">GC contact</div>
+              <div class="v">Brett Hartnell, Fairmont Project Manager &lt;brett@fairmontconstructors.com&gt;</div>
+            </div>
+            <div class="kv-row">
+              <div class="k">PCN number on GC's system</div>
+              <div class="v mono">FCO-2026-0317</div>
+            </div>
+            <div class="kv-row">
+              <div class="k">Date on document</div>
+              <div class="v">02 Jun 2026</div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Audit trail</div>
+            <div class="audit">
+              <div class="audit-item"><div class="dot"></div><div class="ts">03 Jun 14:18</div><div><strong>Adam Coey</strong> ingested PCN, recorded</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">03 Jun 14:18</div><div><strong>System</strong> spawned 5 tasks under PCN-005 cluster on Tasks tab</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">03 Jun 14:18</div><div><strong>System</strong> closed RFI-007 with outcome = TRIGGERED_PCN (PCN-005)</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">03 Jun 15:32</div><div><strong>Mark Panteluk</strong> submitted 0.6 hrs to "Demo existing rough-in for Watts unit"</div></div>
+              <div class="audit-item"><div class="dot current"></div><div class="ts">currently</div><div>Work in progress; 1.4 of 2.5 hrs logged</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- STATE 2: OPEN, T&M     (added June 2)                   -->
+      <!-- ====================================================== -->
+      <div class="state-stage">
+        <h3>State 2 of 3 · Open · Time &amp; Materials billing</h3>
+        <p>PCN was ingested as Time &amp; Materials: GC has authorized the work without a fixed budget. No cost or hours estimate captured at intake. Hours track via the spawned task; project totals reflect actual hours logged, not an upfront budget. Per Justin's June 2 direction: no revenue calculations, no labor rates, no dollar conversions in Odin. Justin derives analytics from the hours data.</p>
+      </div>
+
+      <div class="detail-panel">
+        <div class="dp-head">
+          <div class="dp-head-left">
+            <div class="dp-head-meta">
+              <span class="type-pill">PCN</span>
+              <span class="num">PCN-006</span>
+              <span class="status-pill open">Open</span>
+              <span class="billing-pill tm">Time &amp; Materials</span>
+            </div>
+            <h1>Investigate and repair intermittent recirculation pump cycling on Level 8</h1>
+            <div class="ingested-by">
+              Ingested by <span class="av av-ac">AC</span> Adam Coey · 04 Jun 2026 at 11:22 · Signed T&amp;M authorization from Brett Hartnell (Fairmont GC)
+            </div>
+          </div>
+          <div class="dp-actions">
+            <button class="btn btn-primary btn-primary-prominent" title="Close PCN: work is complete, mark this T&M PCN closed">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+              Close PCN
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Edit metadata (signed document remains source of truth)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Export PDF">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </button>
+            <button class="btn btn-danger" title="Void this PCN (closes it; used only if the GC retracts the change after ingest)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              Void
+            </button>
+          </div>
+        </div>
+
+        <div class="dp-body">
+
+          <div class="dp-section">
+            <div class="dp-section-label">Signed PCN document <span class="pill-mini">T&amp;M authorization</span></div>
+            <div class="pdf-prominent">
+              <div class="pdf-prominent-icon">PDF</div>
+              <div class="pdf-prominent-body">
+                <div class="pdf-prominent-name">PCN-006-RecircPumpTM-signed.pdf</div>
+                <div class="pdf-prominent-meta">218 KB · Signed by <strong>Brett Hartnell</strong> (Fairmont GC) on 04 Jun 2026 · Authorization to investigate and repair on T&amp;M basis · Not-to-exceed: N/A</div>
+              </div>
+              <div class="pdf-prominent-actions">
+                <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg> View</button>
+                <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Download</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Description</div>
+            <div class="dp-description">
+              Building owner reported that the recirculation pump on Level 8 has been cycling intermittently for the past two weeks, causing inconsistent hot water delivery to suites 801-816. GC has authorized Thor to investigate the root cause and perform necessary repairs on a Time &amp; Materials basis. Scope undefined upfront pending diagnostic findings; likely candidates include pump impeller, check valves, or temperature sensor. Thor to bill actual hours and materials.
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Billing &amp; impact</div>
+            <div class="tm-impact-block">
+              <div class="tm-impact-head">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <div>
+                  <div class="title">Time &amp; Materials</div>
+                  <div class="subtitle">No upfront estimate. Hours accrue via the spawned task; reconcile via Jonas export.</div>
+                </div>
+              </div>
+              <div class="tm-impact-stats">
+                <div class="tm-stat">
+                  <div class="tm-stat-label">Hours logged so far</div>
+                  <div class="tm-stat-value">8.5 <span class="unit">hrs</span></div>
+                  <div class="tm-stat-sub">Across 1 task, 2 techs, 3 days</div>
+                </div>
+                <div class="tm-stat">
+                  <div class="tm-stat-label">Last logged</div>
+                  <div class="tm-stat-value-text">06 Jun · 14:00</div>
+                  <div class="tm-stat-sub">Mark Panteluk · 3.0 hrs</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Linked work tasks <span class="pill-mini">1 task spawned at ingest</span></div>
+            <div class="linked-tasks">
+              <div class="lt-row">
+                <div class="lt-status in-progress">In Progress</div>
+                <div class="lt-name">Investigate &amp; repair Level 8 recirc pump cycling</div>
+                <div class="lt-task-id" style="font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; color: var(--ink-light);">9059-00542</div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 100%;"></div></div>
+                </div>
+                <div class="lt-hours">8.5 hrs</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+            </div>
+            <div class="tm-tasks-helper">
+              T&amp;M tasks have no estimate set in Odin. The bar above shows total hours accrued, not progress against an estimate. PM marks the task Complete when GC indicates work is done; PM marks the PCN Closed when ready to export hours to Jonas for invoicing.
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Audit trail</div>
+            <div class="audit">
+              <div class="audit-item"><div class="dot"></div><div class="ts">04 Jun 11:22</div><div><strong>Adam Coey</strong> ingested T&amp;M PCN, recorded · No estimate fields captured</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">04 Jun 11:22</div><div><strong>System</strong> spawned 1 task under PCN-006 cluster on Tasks tab (no hours estimate)</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">04 Jun 13:45</div><div><strong>Sam Paterson</strong> submitted 2.0 hrs to "Investigate &amp; repair Level 8 recirc pump cycling"</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">05 Jun 09:30</div><div><strong>Mark Panteluk</strong> submitted 3.5 hrs to the same task</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">06 Jun 14:00</div><div><strong>Mark Panteluk</strong> submitted 3.0 hrs</div></div>
+              <div class="audit-item"><div class="dot current"></div><div class="ts">currently</div><div>Work in progress; 8.5 hrs accrued (no estimate to compare against)</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- STATE 3: VOIDED/CLOSED (rare but real)                       -->
+      <!-- ====================================================== -->
+      <div class="state-stage voided">
+        <h3>State 3 of 3 · Closed (PCN voided after ingest, rare)</h3>
+        <p>The PCN was ingested last week. Two days later the GC retracted it via email because of an internal change on the owner's side. The PM opens the record and voids it with a reason, which closes the PCN. Tasks that were spawned from this PCN are visible but marked Cancelled.</p>
+      </div>
+
+      <div class="detail-panel">
+        <div class="dp-head">
+          <div class="dp-head-left">
+            <div class="dp-head-meta">
+              <span class="type-pill">PCN</span>
+              <span class="num">PCN-004</span>
+              <span class="status-pill closed">Closed</span>
+              <span class="billing-pill fixed">Fixed</span>
+            </div>
+            <h1>Add supplemental vent to mechanical room</h1>
+            <div class="ingested-by">
+              Ingested by <span class="av av-ac">AC</span> Adam Coey · 20 May 2026 at 09:42 · Voided by <span class="av av-jt">JT</span> Justin Thorsteinson on 28 May 2026
+            </div>
+          </div>
+          <div class="dp-actions">
+            <button class="btn btn-secondary btn-icon" title="Export PDF">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-icon" title="Archive">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="dp-body">
+
+          <div class="dp-section">
+            <div class="dp-section-label">Voidion reason</div>
+            <div class="void-box">
+              <div class="head">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                <div class="title">Voided by Justin Thorsteinson</div>
+                <div class="ts">28 May 2026 at 16:08</div>
+              </div>
+              <div class="body">
+                Brett emailed today to retract this PCN. Fairmont's owner pulled back the mechanical scope change after consulting with their engineer of record. Original venting is now confirmed sufficient. PCN-004 voided; no work to be performed.
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Signed PCN document <span class="pill-mini">Retained for record</span></div>
+            <div class="pdf-prominent" style="opacity: 0.7;">
+              <div class="pdf-prominent-icon">PDF</div>
+              <div class="pdf-prominent-body">
+                <div class="pdf-prominent-name">PCN-004-MechanicalRoomVent-signed.pdf</div>
+                <div class="pdf-prominent-meta">312 KB · Signed by <strong>Brett Hartnell</strong> on 19 May 2026 · Recorded value: <strong>$850.00</strong> · Document retained even after voiding for audit purposes</div>
+              </div>
+              <div class="pdf-prominent-actions">
+                <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg> View</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Original description</div>
+            <div class="dp-description" style="opacity: 0.7;">
+              Field condition required additional ventilation in the mechanical room due to commercial water heater BTU rating exceeding original assumptions. Add 4" vent through exterior wall with weatherproof termination.
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Original impact <span class="pill-mini">Voided</span></div>
+            <div class="impact-tiles">
+              <div class="impact-tile" style="opacity: 0.7;">
+                <div class="label">Cost impact</div>
+                <div class="value" style="text-decoration: line-through; color: var(--muted);">$850.00</div>
+                <div class="sub">Not billable; PCN voided</div>
+              </div>
+              <div class="impact-tile" style="opacity: 0.7;">
+                <div class="label">Hours impact</div>
+                <div class="value" style="text-decoration: line-through; color: var(--muted);">+6 hrs</div>
+                <div class="sub">Work not performed</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Linked tasks <span class="pill-mini">Cancelled</span></div>
+
+            <div class="lt-cancelled-banner">
+              <strong>4 tasks were spawned when this PCN was ingested.</strong> When the PCN was voided, all linked tasks were auto-cancelled. The 0.5 hrs that Mark Panteluk had already logged remain on the timesheet (you can see them in the audit trail) but the tasks themselves are closed out as Cancelled and removed from the Tasks tab's active view.
+            </div>
+
+            <div class="linked-tasks cancelled">
+
+              <div class="lt-row">
+                <div class="lt-status cancelled">Cancelled</div>
+                <div class="lt-name">PCN-004: Add supplemental vent to mechanical room</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 8%; background: var(--muted-2);"></div></div>
+                </div>
+                <div class="lt-hours">0.5 / 6.0</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row subtask">
+                <div class="lt-status cancelled">Cancelled</div>
+                <div class="lt-name sub">Cut and frame exterior wall opening</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 25%; background: var(--muted-2);"></div></div>
+                </div>
+                <div class="lt-hours">0.5 / 2.0</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row subtask">
+                <div class="lt-status cancelled">Cancelled</div>
+                <div class="lt-name sub">Run vent piping and install weatherproof termination</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 0%;"></div></div>
+                </div>
+                <div class="lt-hours">0 / 3.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+              <div class="lt-row subtask">
+                <div class="lt-status cancelled">Cancelled</div>
+                <div class="lt-name sub">Patch and finish interior wall</div>
+                <div class="lt-assignees"><div class="a-av av-mp">MP</div></div>
+                <div class="lt-bar-wrap">
+                  <div class="lt-bar"><div class="lt-bar-fill" style="width: 0%;"></div></div>
+                </div>
+                <div class="lt-hours">0 / 0.5</div>
+                <div class="lt-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="dp-section">
+            <div class="dp-section-label">Audit trail</div>
+            <div class="audit">
+              <div class="audit-item"><div class="dot"></div><div class="ts">20 May 09:42</div><div><strong>Adam Coey</strong> ingested PCN, recorded · 4 tasks spawned</div></div>
+              <div class="audit-item"><div class="dot"></div><div class="ts">25 May 11:08</div><div><strong>Mark Panteluk</strong> logged 0.5 hrs to "Cut and frame exterior wall opening"</div></div>
+              <div class="audit-item"><div class="dot red"></div><div class="ts">28 May 16:08</div><div><strong>Justin Thorsteinson</strong> voided PCN with reason; 4 tasks moved to Cancelled state</div></div>
+              <div class="audit-item"><div class="dot red"></div><div class="ts">28 May 16:08</div><div><strong>System</strong> closed out PCN-005 cluster on Tasks tab; logged hours (0.5) retained on timesheet for audit</div></div>
+              <div class="audit-item"><div class="dot current"></div><div class="ts">currently</div><div>Record retained for audit; no further action available</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- Annotations                                            -->
+      <!-- ====================================================== -->
+      <div class="annotations">
+        <h3>PCN detail panel notes</h3>
+        <ul>
+          <li><strong>Three states on one page for review purposes.</strong> In production, this is one panel that renders different content based on the PCN's status and billing type. State 1 (Fixed, Open) is the most common case; State 2 (T&amp;M, Open) is the new June 2 variant; State 3 (Voided/Closed) is rare but needed for the edge case where a GC retracts a previously-signed PCN.</li>
+          <li><strong>Billing type pill in the header.</strong> Per June 2 direction: PCNs come in two flavors. The pill renders next to the status pill to make the billing type immediately visible. Fixed = grey pill (standard); T&amp;M = amber pill (alert color, since the dollar amount is not fixed at intake and accrues via hours logged).</li>
+          <li><strong>Signed PCN document is the source of truth.</strong> Treated visually as the most important element on the page: prominent card with red PDF icon, signer name, signed date, and inline View / Download actions. The metadata fields below are convenience indexes around the document.</li>
+          <li><strong>Header carries the RFI back-reference badge</strong> when the PCN was triggered by an RFI (the most common path per the directional model). Clicking jumps to the source RFI. In this example, State 1's "From RFI-007" is shown because PCN-005 came back from the RFI Adam raised on May 28.</li>
+        </ul>
+
+        <h4>State 1: Open · Fixed billing (the most common case)</h4>
+        <ul>
+          <li><strong>Impact shown as two big tiles</strong>: Cost impact, Hours impact. Cost is green when $0 (no billable change) to subtly highlight the "no cost" case is intentional, not missing data.</li>
+          <li><strong>Linked tasks section is the dynamic heart of the panel.</strong> Lists each task spawned from this PCN with its current status, est-vs-act bar, and hours used vs estimate. Updates as work progresses; PM can come back to this view a month later to see how the PCN's work is tracking.</li>
+          <li><strong>"Add another task to this PCN" affordance</strong> below the list. Used when work emerges during execution that wasn't in the original intake composer. Spawned tasks are still tagged with this PCN's <code>pcn_id</code> so they appear in the right Tasks tab cluster.</li>
+          <li><strong>Action row in the header</strong>: Close PCN (primary, when work is complete), Edit (for metadata only; signed doc never changes), Export PDF, Archive, Void. Void is the secondary danger action.</li>
+        </ul>
+
+        <h4>State 2: Open · Time &amp; Materials billing (added June 2)</h4>
+        <ul>
+          <li><strong>No cost or hours estimate fields.</strong> Per Justin's June 2 lock: T&amp;M PCNs don't carry upfront budget values in Odin. The two big tile values from the Fixed state are replaced with a "Time &amp; Materials" impact block showing hours accrued so far and the last-logged entry.</li>
+          <li><strong>No revenue calculations.</strong> Odin does not multiply hours by labor rates. No dollar values appear anywhere on a T&amp;M PCN inside Odin. Hours data exports to Jonas; Andrea computes the billable revenue on the accounting side.</li>
+          <li><strong>Why this restraint matters.</strong> Building dollar conversions in Odin would require storing labor rates per employee (or per role), handling overtime multipliers, handling different rates for billable vs non-billable hours, etc. That's an accounting feature, not Odin's scope. The June 2 framing keeps Odin firmly in the "operational" lane.</li>
+          <li><strong>Justin can still derive sales analytics</strong> from the hours data: "which techs are generating the most hours through T&amp;M PCNs that came from RFIs", "average hours per T&amp;M PCN on this project", etc. The raw hours field is enough for those questions.</li>
+          <li><strong>Spawned tasks carry no estimate.</strong> The bar shows total accrued hours, not progress against a budget. PM marks the task Complete when GC indicates work is done; PM marks the PCN Closed when ready to export hours to Jonas for invoicing.</li>
+          <li><strong>Linked tasks helper text</strong> below the task list reminds the PM that T&amp;M tasks lack an estimate, and walks through the close-out flow (task Complete first, then PCN Closed when hours are ready to export). Reduces the chance of accidentally closing a T&amp;M PCN before all hours are logged.</li>
+          <li><strong>Audit trail captures every logged entry,</strong> not just status transitions. T&amp;M PCNs need a clean record of who worked, when, and how many hours, because that record IS the invoice basis.</li>
+        </ul>
+
+        <h4>State 3: Closed (PCN voided after ingest, rare)</h4>
+        <ul>
+          <li><strong>Void reason captured prominently</strong> in a red-tinted box at the top, with the name and timestamp of who voided it. The reason is required when an admin clicks Void; PM has to explain what happened (GC retraction, owner-side change, dispute, etc.).</li>
+          <li><strong>Signed document remains visible</strong> but dimmed, with a "Retained for record" pill. Critical for audit purposes.</li>
+          <li><strong>Original impact values shown with strikethrough.</strong> Reader immediately sees "this WAS $850 / 6 hrs, but no longer applies."</li>
+          <li><strong>Linked tasks were auto-cancelled</strong> when the PCN was voided. Banner explains that any hours already logged are retained on timesheets for audit but the tasks themselves are closed out as Cancelled status.</li>
+          <li><strong>No Edit action available</strong> on a voided PCN. Locked from further changes.</li>
+          <li><strong>Voiding works the same for Fixed and T&amp;M PCNs.</strong> The state 3 example shows a Fixed PCN being voided (with a dollar amount struck through); a T&amp;M PCN being voided would have any logged hours retained on timesheets and the spawned task marked Cancelled.</li>
+        </ul>
+
+        <h4>Data model additions for PCN detail support</h4>
+        <ul>
+          <li>PCN-specific fields: <code>pcn_billing_type</code> enum (<code>FIXED</code>, <code>TIME_AND_MATERIALS</code>) (new June 2); <code>gc_pcn_number</code> (the GC's reference); <code>gc_signed_by</code> (signer name from the document); <code>gc_signed_date</code> (vs. <code>ingested_at</code>); <code>gc_contact_id</code> (foreign key to project's external_contacts entry).</li>
+          <li>For Fixed PCNs: <code>cost_impact</code> (decimal), <code>hours_impact</code> (decimal). Nullable for T&amp;M PCNs.</li>
+          <li>For T&amp;M PCNs: no estimate fields. Hours accrue via the spawned task(s) linked by <code>pcn_id</code>. Computed values like "hours_logged_so_far" are derived from time entries, not stored.</li>
+          <li>Voidion: <code>voided_at</code>, <code>voided_by_user_id</code>, <code>void_reason</code> (required text when status moves to Voided).</li>
+          <li>Task entity: <code>CANCELLED</code> status used when a parent PCN is voided. Tasks under T&amp;M PCNs have <code>estimated_hours = NULL</code>.</li>
+          <li>Activity event types: <code>PCN_INGESTED</code> (metadata includes billing_type), <code>PCN_VOIDED</code> (metadata includes void_reason), <code>PCN_CLOSED</code>, <code>TASK_CANCELLED</code>.</li>
+        </ul>
+
+        <h4>Out of scope for v1</h4>
+        <ul>
+          <li>Labor rate storage and dollar calculations on T&amp;M PCNs (Andrea computes this in Jonas)</li>
+          <li>Margin tracking or profitability analytics per PCN</li>
+          <li>PCN versioning / amendments (if the GC sends a revised PCN, Thor ingests it as a new PCN with a back-reference, rather than amending in place)</li>
+          <li>Bulk export of all PCN documents for a project as a single archive</li>
+          <li>External GC visibility of how Thor's tasks under their PCN are progressing (parked for v2 client portal)</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

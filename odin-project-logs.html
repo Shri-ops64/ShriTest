@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Project Logs</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4;
+  }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); border-bottom-width: 3px; font-weight: 700; font-size: 14px; }
+  .tab .count { background: var(--bg); color: var(--ink-light); padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* Page title bar (below tabs) */
+  .page-title-bar { background: white; border-radius: 8px; padding: 14px 20px; margin-bottom: 18px; border: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { display: flex; flex-direction: column; min-width: 0; }
+  .pt-text h2 { font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.2; margin: 0; }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { margin-left: auto; font-size: 12px; color: var(--ink-light); font-weight: 500; }
+  .pt-counter strong { color: var(--ink); font-weight: 700; }
+
+  /* Compose Report dropdown button */
+  .compose-btn-wrap { position: relative; }
+  .compose-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; background: var(--blue); color: white; border: none; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .compose-btn:hover { background: var(--blue-dark); }
+  .compose-btn svg { width: 12px; height: 12px; }
+  .compose-dropdown { position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12); min-width: 260px; overflow: hidden; z-index: 50; }
+  .compose-dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--line-2); }
+  .compose-dropdown-item:last-child { border-bottom: none; }
+  .compose-dropdown-item:hover { background: var(--bg-2); }
+  .compose-dropdown-item .ic { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .compose-dropdown-item .ic.tech { background: var(--blue-soft); color: var(--blue-dark); }
+  .compose-dropdown-item .ic.foreman { background: var(--purple-soft); color: var(--purple); }
+  .compose-dropdown-item .ic.supervisor { background: var(--amber-soft); color: var(--amber); }
+  .compose-dropdown-item .ic svg { width: 13px; height: 13px; }
+  .compose-dropdown-item .lbl { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .compose-dropdown-item .sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* ============ Daily Logs surface ============ */
+
+  /* Filter bar */
+  .filter-bar { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .filter-bar-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .filter-input { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .filter-input svg { width: 12px; height: 12px; color: var(--muted); }
+  .filter-input.active { background: var(--blue-soft); border-color: #b3cdef; color: var(--blue-dark); }
+  .filter-input.active svg { color: var(--blue); }
+  .filter-search { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; flex: 1; min-width: 200px; }
+  .filter-search input { border: none; background: transparent; outline: none; flex: 1; font-size: 13px; color: var(--ink); }
+  .filter-search svg { width: 13px; height: 13px; color: var(--muted); }
+  .filter-clear { font-size: 12px; color: var(--blue); cursor: pointer; margin-left: auto; }
+
+  /* Summary strip */
+  .summary-strip { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .summary-item { padding: 0 8px; }
+  .summary-item:not(:last-child) { border-right: 1px solid var(--line); }
+  .summary-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .summary-value { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+  .summary-value.alert { color: var(--amber); }
+  .summary-sub { font-size: 11px; color: var(--muted-2); margin-top: 2px; }
+
+  /* Report-type sub-tabs (All / Daily Tech Logs / Foreman Reports / Supervisor Reports) */
+  .type-tabs { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 4px; margin-bottom: 14px; display: flex; gap: 2px; }
+  .type-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-light); }
+  .type-tab:hover { background: var(--bg-2); }
+  .type-tab.active { background: var(--ink); color: white; }
+  .type-tab .type-tab-count { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--bg); color: var(--ink-light); }
+  .type-tab.active .type-tab-count { background: rgba(255, 255, 255, 0.18); color: white; }
+  .type-tab svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  /* Report-type badge on each row */
+  .report-type-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .report-type-badge.tech { background: var(--blue-soft); color: var(--blue-dark); }
+  .report-type-badge.foreman { background: var(--purple-soft); color: var(--purple); }
+  .report-type-badge.supervisor { background: var(--amber-soft); color: var(--amber); }
+  .report-type-badge svg { width: 10px; height: 10px; }
+
+  /* Workspace split */
+  .workspace { display: block; }
+
+  /* List card */
+  .list-card { background: white; border: 1px solid var(--line); border-radius: 8px; }
+  .list-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .list-head h3 { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .list-head .head-meta { font-size: 12px; color: var(--muted); }
+
+  /* List rows */
+  .log-row {
+    display: grid;
+    grid-template-columns: 78px 1fr auto;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-2);
+    cursor: pointer;
+    align-items: start;
+    text-decoration: none;
+    color: inherit;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--bg-2); }
+
+  .log-date { text-align: center; padding-top: 2px; }
+  .log-date-month { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--red); }
+  .log-date-day { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+  .log-date-weekday { font-size: 11px; color: var(--muted); }
+
+  .log-body { min-width: 0; }
+  .log-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .log-tech-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
+  .av-1 { background: #5b8def; }
+  .av-2 { background: #c97a4a; }
+  .av-3 { background: #7a6cd9; }
+  .av-4 { background: #4a8a5e; }
+  .log-tech-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .log-time { font-size: 11px; color: var(--muted); }
+
+  .log-summary { font-size: 13px; color: var(--ink-light); line-height: 1.5; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .log-meta { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .log-meta .chip { background: var(--bg); padding: 2px 8px; border-radius: 999px; color: var(--ink-light); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+  .log-meta .chip svg { width: 10px; height: 10px; }
+
+  .log-photos { display: flex; gap: 4px; flex-shrink: 0; align-self: start; padding-top: 26px; }
+  .log-photo { width: 52px; height: 52px; border-radius: 4px; flex-shrink: 0; position: relative; overflow: hidden; border: 1px solid var(--line); }
+  .log-photo svg.scene { width: 100%; height: 100%; display: block; }
+  .log-photo .cam-badge { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: rgba(0,0,0,0.6); border-radius: 3px; display: flex; align-items: center; justify-content: center; color: white; }
+  .log-photo .cam-badge svg { width: 8px; height: 8px; }
+  .log-photo-more { width: 52px; height: 52px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink-light); font-weight: 600; }
+
+  /* Compact row variant for older logs - reduces visual noise */
+  .log-row.compact { padding: 11px 18px; gap: 12px; align-items: center; }
+  .log-row.compact .log-date { padding-top: 0; }
+  .log-row.compact .log-date-day { font-size: 17px; }
+  .log-row.compact .log-summary { -webkit-line-clamp: 1; margin-bottom: 0; }
+  .log-row.compact .log-row1 { margin-bottom: 3px; }
+  .log-row.compact .log-meta { display: none; }
+  .log-row.compact .log-photos { padding-top: 0; gap: 3px; }
+  .log-row.compact .log-photo, .log-row.compact .log-photo-more { width: 36px; height: 36px; }
+  .log-row.compact .log-photo .cam-badge { width: 11px; height: 11px; }
+  .log-row.compact .log-photo .cam-badge svg { width: 6px; height: 6px; }
+
+  /* Date group header */
+  .date-group { padding: 10px 18px; background: var(--bg-2); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); border-bottom: 1px solid var(--line-2); border-top: 1px solid var(--line-2); }
+  .date-group:first-child { border-top: none; }
+
+  /* ============ Detail Panel (right side) ============ */
+  .detail-panel { background: white; border: 1px solid var(--line); border-radius: 8px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  .detail-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 12px; }
+  .detail-head-info { flex: 1; min-width: 0; }
+  .detail-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .detail-subtitle { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .detail-close { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-light); }
+  .detail-close:hover { background: var(--bg); }
+  .detail-close svg { width: 14px; height: 14px; }
+  .detail-actions { padding: 12px 22px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; background: var(--bg-2); }
+  .detail-actions .btn { padding: 6px 12px; font-size: 12px; }
+
+  .detail-section { padding: 18px 22px; border-bottom: 1px solid var(--line); }
+  .detail-section:last-child { border-bottom: none; }
+  .detail-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 10px; }
+  .detail-body { font-size: 13.5px; color: var(--ink); line-height: 1.6; white-space: pre-line; }
+
+  /* Photo gallery */
+  .photo-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .gallery-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--line); }
+  .gallery-photo svg.scene { width: 100%; height: 100%; display: block; }
+  .gallery-photo .cam-badge { position: absolute; bottom: 4px; right: 4px; width: 16px; height: 16px; background: rgba(0,0,0,0.6); border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .gallery-photo .cam-badge svg { width: 9px; height: 9px; color: white; }
+  .gallery-photo:hover { transform: scale(1.02); transition: transform .15s; }
+
+  /* Tasks list in detail */
+  .detail-task-list { display: flex; flex-direction: column; gap: 8px; }
+  .detail-task { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-2); border-radius: 6px; cursor: pointer; }
+  .detail-task:hover { background: var(--bg); }
+  .detail-task svg { width: 13px; height: 13px; color: var(--blue); flex-shrink: 0; }
+  .detail-task-name { font-size: 13px; color: var(--ink); flex: 1; }
+  .detail-task-status { font-size: 11px; color: var(--muted); }
+
+  /* Time entry inside detail */
+  .detail-time { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg-2); border-radius: 6px; font-size: 13px; }
+  .detail-time svg { width: 14px; height: 14px; color: var(--muted); }
+  .detail-time strong { font-weight: 600; }
+
+  /* Location chip */
+  .location-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--bg-2); border-radius: 999px; font-size: 12px; color: var(--ink-light); }
+  .location-chip svg { width: 11px; height: 11px; color: var(--muted); }
+
+  /* (Review banner removed per June 2 scope: daily logs no longer have an approval workflow) */
+
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 – 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Project Logs <span class="count">32</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H9H8"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Project Logs</h2>
+          <div class="pt-sub">Field-submitted reports: daily tech logs, weekly foreman reports, weekly supervisor reports</div>
+        </div>
+        <div class="pt-counter"><strong>32</strong> reports · <strong>11</strong> this week</div>
+        <div class="compose-btn-wrap">
+          <button class="compose-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Compose Report
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="compose-dropdown">
+            <div class="compose-dropdown-item">
+              <div class="ic foreman">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <div>
+                <div class="lbl">Foreman Report</div>
+                <div class="sub">Weekly; foreman submits Friday EOD</div>
+              </div>
+            </div>
+            <div class="compose-dropdown-item">
+              <div class="ic supervisor">
+                <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div>
+                <div class="lbl">Supervisor Report</div>
+                <div class="sub">Weekly; after site visit</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="summary-strip">
+        <div class="summary-item">
+          <div class="summary-label">Daily Tech Logs</div>
+          <div class="summary-value">23</div>
+          <div class="summary-sub">Daily, all time</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Foreman Reports</div>
+          <div class="summary-value">7</div>
+          <div class="summary-sub">Weekly, all time</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Supervisor Reports</div>
+          <div class="summary-value">2</div>
+          <div class="summary-sub">Weekly, all time</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">This week</div>
+          <div class="summary-value">11</div>
+          <div class="summary-sub">May 24 – 30</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Photos</div>
+          <div class="summary-value">198</div>
+          <div class="summary-sub">Across all reports</div>
+        </div>
+      </div>
+
+      <!-- Report-type sub-tabs (Pass 5) -->
+      <div class="type-tabs">
+        <div class="type-tab active">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          All
+          <span class="type-tab-count">32</span>
+        </div>
+        <div class="type-tab">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          Daily Tech Logs
+          <span class="type-tab-count">23</span>
+        </div>
+        <div class="type-tab">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Foreman Reports
+          <span class="type-tab-count">7</span>
+        </div>
+        <div class="type-tab">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Supervisor Reports
+          <span class="type-tab-count">2</span>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <span class="filter-bar-label">Filter</span>
+        <div class="filter-input">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Last 14 days
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="filter-input">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>
+          All technicians
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="filter-input">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+          Any task
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="filter-search">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search log content…">
+        </div>
+      </div>
+
+      <!-- Workspace: list + detail panel -->
+      <div class="workspace">
+
+        <!-- LEFT: list -->
+        <div class="list-card">
+          <div class="list-head">
+            <h3>Project Logs</h3>
+            <span class="head-meta">Showing 8 of 23 · Last 14 days</span>
+          </div>
+
+          <!-- Today group -->
+          <div class="date-group">Today · Wed, May 20</div>
+
+          <a class="log-row" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">20</div>
+              <div class="log-date-weekday">Wed</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-2">MP</div>
+                <span class="log-tech-name">Mark Panteluk</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">4:18 PM</span>
+              </div>
+              <div class="log-summary">Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop. Capped all open ends for drywall crew tomorrow. Found one stub at the wrong height, corrected and re-pressure-tested.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 6.5 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg> 2 tasks</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 5 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#cfd5db"/>
+                  <rect y="32" width="48" height="16" fill="#a89580"/>
+                  <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+                  <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+                  <rect x="6" y="26" width="32" height="3" fill="#c98551"/>
+                  <circle cx="9.5" cy="14.5" r="2" fill="#8b5e3b"/><circle cx="21.5" cy="14.5" r="2" fill="#8b5e3b"/><circle cx="33.5" cy="14.5" r="2" fill="#8b5e3b"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#3a4148"/>
+                  <circle cx="24" cy="22" r="14" fill="#e8e4dc" stroke="#1a1d20" stroke-width="2"/>
+                  <circle cx="24" cy="22" r="11" fill="#fff"/>
+                  <text x="24" y="20" text-anchor="middle" font-family="Arial" font-size="4" font-weight="bold" fill="#222">PSI</text>
+                  <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+                  <circle cx="24" cy="22" r="1.5" fill="#222"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+3</div>
+            </div>
+          </a>
+
+          <!-- Yesterday group -->
+          <div class="date-group">Yesterday · Tue, May 19</div>
+
+          <!-- FOREMAN REPORT row (weekly cadence) -->
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">19</div>
+              <div class="log-date-weekday">Tue</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-4">RK</div>
+                <span class="log-tech-name">Robbie Kreviazuk</span>
+                <span class="report-type-badge foreman">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                  Foreman Report
+                </span>
+                <span class="log-time">4:42 PM</span>
+                <span class="log-time" style="margin-left: 8px; color: var(--green); font-weight: 500;">● Health: Green</span>
+              </div>
+              <div class="log-summary"><strong>Wk ending May 22.</strong> Heating mains up and running out branch lines where we can. Pellars putting up ducts. Ainsworth on site Wednesday for controls review. Insulators booked for next week. Confidence 8/10.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg> Schedule: On track</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg> Crew 5 · Need 1 more</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 6 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#aab3bd"/>
+                  <rect x="4" y="20" width="40" height="6" fill="#5a6068"/>
+                  <rect x="4" y="30" width="40" height="6" fill="#5a6068"/>
+                  <rect x="10" y="14" width="3" height="20" fill="#c92020"/>
+                  <rect x="22" y="14" width="3" height="22" fill="#c92020"/>
+                  <rect x="34" y="14" width="3" height="20" fill="#c92020"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#cfd5db"/>
+                  <rect x="4" y="32" width="40" height="14" fill="#a89580"/>
+                  <rect x="14" y="6" width="20" height="26" fill="#888c92"/>
+                  <rect x="18" y="10" width="3" height="18" fill="#c0c5cc"/>
+                  <rect x="27" y="10" width="3" height="18" fill="#c0c5cc"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+4</div>
+            </div>
+          </a>
+
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">19</div>
+              <div class="log-date-weekday">Tue</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-2">MP</div>
+                <span class="log-tech-name">Mark Panteluk</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">5:02 PM</span>
+              </div>
+              <div class="log-summary">Continued rough-in on west wall. Installed manifold and shut-off valves. Coordinated with electrical for shared chase. Material delivery arrived around 11 AM, organized in storage room.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 7.0 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg> 1 task</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 3 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#c0c5cc"/>
+                  <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+                  <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+                  <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+                  <rect x="34" y="28" width="4" height="14" fill="#c98551"/>
+                  <circle cx="12" cy="18" r="2.5" fill="#c92020"/><circle cx="24" cy="18" r="2.5" fill="#c92020"/><circle cx="36" cy="18" r="2.5" fill="#c92020"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#5a6068"/>
+                  <rect y="32" width="48" height="16" fill="#3a3f45"/>
+                  <g transform="translate(8 14) rotate(35 16 12)">
+                    <rect x="0" y="9" width="22" height="6" rx="1" fill="#b8b8b8"/>
+                    <path d="M 22 8 L 26 8 L 28 10 L 28 14 L 26 16 L 22 16 Z" fill="#c8c8c8"/>
+                  </g>
+                  <rect x="6" y="34" width="36" height="3" fill="#c98551"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#d8c9b0"/>
+                  <rect width="48" height="22" fill="#e8dcc4"/>
+                  <rect x="6" y="28" width="3" height="20" fill="#888"/>
+                  <rect x="20" y="28" width="3" height="20" fill="#888"/>
+                  <rect x="34" y="28" width="3" height="20" fill="#888"/>
+                  <circle cx="7.5" cy="32" r="3" fill="#c92020"/>
+                  <circle cx="21.5" cy="32" r="3" fill="#2050c9"/>
+                  <circle cx="35.5" cy="32" r="3" fill="#888"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+            </div>
+          </a>
+
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">19</div>
+              <div class="log-date-weekday">Tue</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-4">TH</div>
+                <span class="log-tech-name">Travis Heibert</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">3:45 PM</span>
+              </div>
+              <div class="log-summary">Worked on mechanical room. Mounted recirc pump and connected to supply line. Set up isolation valves on both sides. Waiting on electrician to wire pump motor.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 5.5 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg> 1 task</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 2 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#3a4148"/>
+                  <rect x="10" y="14" width="28" height="22" rx="2" fill="#5a6068"/>
+                  <circle cx="24" cy="25" r="8" fill="#1a1d20"/>
+                  <circle cx="24" cy="25" r="6" fill="#3a3f45"/>
+                  <rect x="22" y="8" width="4" height="8" fill="#888"/>
+                  <rect x="22" y="36" width="4" height="6" fill="#c98551"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#c0c5cc"/>
+                  <rect x="8" y="14" width="32" height="6" fill="#888c92"/>
+                  <rect x="20" y="20" width="8" height="4" fill="#c98551"/>
+                  <circle cx="14" cy="17" r="2.5" fill="#2050c9"/>
+                  <circle cx="34" cy="17" r="2.5" fill="#c92020"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+            </div>
+          </a>
+
+          <!-- May 18 -->
+          <div class="date-group">Mon, May 18</div>
+
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">18</div>
+              <div class="log-date-weekday">Mon</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-2">MP</div>
+                <span class="log-tech-name">Mark Panteluk</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">4:55 PM</span>
+              </div>
+              <div class="log-summary">Started west wall rough-in. Snap lines for vertical and horizontal runs. Installed first 3 vertical risers. Coordinated with framing crew on chase locations.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 8.0 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg> 1 task</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 4 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#e8dcc4"/>
+                  <line x1="0" y1="12" x2="48" y2="14" stroke="#c92020" stroke-width="0.6"/>
+                  <line x1="0" y1="32" x2="48" y2="30" stroke="#c92020" stroke-width="0.6"/>
+                  <rect x="8" y="0" width="3" height="48" fill="#c98551"/>
+                  <rect x="24" y="0" width="3" height="48" fill="#c98551"/>
+                  <rect x="40" y="0" width="3" height="48" fill="#c98551"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+3</div>
+            </div>
+          </a>
+
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">18</div>
+              <div class="log-date-weekday">Mon</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-3">SP</div>
+                <span class="log-tech-name">Sam Paterson</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">8:30 AM</span>
+              </div>
+              <div class="log-summary">Site walk with general contractor. Reviewed scope for east-side bathroom group. Took measurements for fixture ordering. Met with hotel maintenance lead to discuss shutoff scheduling.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 3.0 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 6 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#a8c4d8"/>
+                  <rect y="30" width="48" height="18" fill="#7a8a96"/>
+                  <rect x="14" y="14" width="20" height="20" fill="#d8c9b0"/>
+                  <rect x="18" y="18" width="4" height="6" fill="#3a4148"/>
+                  <rect x="26" y="18" width="4" height="6" fill="#3a4148"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+5</div>
+            </div>
+          </a>
+
+          <!-- May 15 -->
+          <div class="date-group">Fri, May 15</div>
+
+          <!-- SUPERVISOR REPORT row (weekly cadence, end of week) -->
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">15</div>
+              <div class="log-date-weekday">Fri</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-3">RA</div>
+                <span class="log-tech-name">Rob Altvater</span>
+                <span class="report-type-badge supervisor">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                  Supervisor Report
+                </span>
+                <span class="log-time">2:48 PM</span>
+                <span class="log-time" style="margin-left: 8px; color: var(--amber); font-weight: 500;">● Health: Yellow</span>
+              </div>
+              <div class="log-summary"><strong>Site visit May 15, 2.5 hrs on site.</strong> Foreman report mostly accurate; one discrepancy on actual crew count (reported 5, observed 4 with one tech off). Workmanship excellent. Site cleanliness needs attention. Two RFIs open longer than 5 days affecting productivity.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg> Foreman: Green</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> 3 risks flagged</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 8 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#7a8290"/>
+                  <rect x="8" y="14" width="32" height="22" fill="#3a4148"/>
+                  <rect x="12" y="18" width="24" height="14" fill="#aab3bd"/>
+                  <rect x="20" y="20" width="3" height="10" fill="#c92020"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#cfd5db"/>
+                  <rect x="0" y="32" width="48" height="16" fill="#a89580"/>
+                  <rect x="6" y="22" width="12" height="14" fill="#888c92"/>
+                  <rect x="22" y="20" width="20" height="16" fill="#5a6068"/>
+                  <rect x="30" y="24" width="3" height="10" fill="#c98551"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+6</div>
+            </div>
+          </a>
+
+          <a class="log-row compact" href="odin-project-log-detail.html">
+            <div class="log-date">
+              <div class="log-date-month">May</div>
+              <div class="log-date-day">15</div>
+              <div class="log-date-weekday">Fri</div>
+            </div>
+            <div class="log-body">
+              <div class="log-row1">
+                <div class="log-tech-avatar av-4">TH</div>
+                <span class="log-tech-name">Travis Heibert</span>
+                <span class="report-type-badge tech">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Daily Tech Log
+                </span>
+                <span class="log-time">3:20 PM</span>
+              </div>
+              <div class="log-summary">Mechanical room demo work continued. Removed old expansion tank and disposed. Cleared space for new water heater install next week. Cleaned and prepped floor area.</div>
+              <div class="log-meta">
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 6.5 hrs</span>
+                <span class="chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> 3 photos</span>
+              </div>
+            </div>
+            <div class="log-photos">
+              <div class="log-photo">
+                <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" fill="#5a6068"/>
+                  <rect y="34" width="48" height="14" fill="#3a3f45"/>
+                  <rect x="8" y="10" width="16" height="26" fill="#888c92"/>
+                  <circle cx="16" cy="20" r="2" fill="#c92020"/>
+                  <rect x="28" y="14" width="14" height="22" fill="#a8a8a8"/>
+                </svg>
+                <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+              </div>
+              <div class="log-photo-more">+2</div>
+            </div>
+          </a>
+
+        </div>
+
+
+      </div>
+
+      <div class="annotations">
+        <h3>Project Logs tab notes</h3>
+        <ul>
+          <li><strong>Tab renamed from Daily Logs to Project Logs</strong> (D-022, Pass 5 lock). The tab now holds three log types: daily tech logs, foreman weekly reports, and supervisor weekly reports. Sub-tabs at the top of the list filter by type: All / Daily Tech Logs / Foreman Reports / Supervisor Reports.</li>
+          <li><strong>Compose Report dropdown</strong> at top-right exposes the report composer entry points (New Foreman Report / New Supervisor Report). Daily Tech Logs are mobile-only and submitted by techs in the field, so there is no "New Daily Tech Log" option here on the admin side (removed Jun 9, D-032): there is no desktop tech-log composer for it to open. Whether an admin ever needs to log one is an open question with their team.</li>
+          <li><strong>Full-page detail view on row click</strong> (D-028, Jun 9). Clicking any row navigates to <code>odin-project-log-detail.html</code> rather than expanding a side panel. The earlier side-panel pattern undersold the richer audit content in foreman and supervisor reports; a dedicated detail page gives each log type room to render its full field set. One detail surface, three template variants based on log type.</li>
+          <li><strong>Date grouping.</strong> Logs are grouped by date with a sticky header strip. Today / Yesterday / specific dates. Same pattern as a typical timeline view.</li>
+          <li><strong>Big date block on the left of each row.</strong> Mimics the Odin Work Orders date treatment but vertical. Helps scanning when many logs exist.</li>
+          <li><strong>Photo thumbnails inline.</strong> 2-3 photos visible per row with a +N overflow indicator. Click any photo (or the row) to open the detail page.</li>
+          <li><strong>Filter bar at top.</strong> Date range, technician, task, free-text search across log content. Active filters get a blue tint (consistent with the rest of Odin).</li>
+          <li><strong>Summary strip above filters.</strong> Five lightweight stats: total logs, this week, logs today, total photos, total hours from log submissions.</li>
+          <li><strong>No approval workflow on any log type.</strong> Per D-018 (Justin Jun 2), all log submissions post straight to the project. Edit/delete remain available to authors and PM after the fact.</li>
+          <li><strong>Tasks referenced are links.</strong> Each tech-referenced task appears as a clickable row that jumps to that task in the Tasks tab.</li>
+          <li><strong>Web-side composer is intentionally absent for tech daily logs.</strong> Tech logs are submitted on mobile. Foreman and Supervisor reports have both mobile and desktop composers because these are typically written after the field day at a desk.</li>
+          <li><strong>Confidential supervisor content (D-026):</strong> Two fields on Supervisor Reports stay restricted to PM, the Supervisor on the project, and global admin/super-admin: Foreman Performance rating and Verification of Foreman Report accuracy. All other supervisor content publishes to the team. The list row itself shows the supervisor report row to everyone; the confidential fields render only on the detail page for users with permission.</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

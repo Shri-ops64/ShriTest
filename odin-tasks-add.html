@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Add Tasks</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1:#f86077;
+    --pink-grad-2:#ed1c24;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 100px; max-width: 1040px; }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; gap: 18px; }
+  .page-title-block h1 { font-size: 22px; font-weight: 700; color: var(--ink); }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: white; color: var(--ink); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.secondary:hover { background: var(--bg-2); }
+  .btn.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; border: none; box-shadow: 0 2px 8px rgba(237,28,36,0.22); }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-light); }
+  .btn.ghost:hover { background: var(--bg-2); }
+
+  .card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+
+  /* Batch config row */
+  .config-row { display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .field select, .field input { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--ink); font-family: inherit; background: white; outline: none; }
+  .field select:focus, .field input:focus { border-color: var(--blue); }
+  .config-cluster { min-width: 280px; }
+  .auto-id-note { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .id-badge { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; color: var(--ink-light); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 2px 7px; }
+
+  /* Repeating task rows */
+  .at-table { margin-top: 2px; }
+  .at-head, .at-row { display: grid; grid-template-columns: 34px 1fr 130px 160px 36px; gap: 12px; align-items: center; }
+  .at-head { padding: 0 0 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .at-head .req { color: var(--red); }
+  .at-row { padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+  .at-idx { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; color: var(--muted-2); text-align: center; }
+  .at-row input { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 13.5px; color: var(--ink); font-family: inherit; background: white; outline: none; }
+  .at-row input:focus { border-color: var(--blue); }
+  .at-row input::placeholder { color: var(--muted-2); }
+  .at-hrs { display: flex; align-items: center; gap: 6px; }
+  .at-hrs .unit { font-size: 12px; color: var(--muted); }
+  .at-remove { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; color: var(--muted-2); cursor: pointer; }
+  .at-remove:hover { background: var(--red-soft); color: var(--red); }
+  .at-remove svg { width: 15px; height: 15px; }
+  .at-row.empty input { background: var(--bg-2); }
+
+  .add-row-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 11px; border: 1.5px dashed var(--line); border-radius: 8px; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; }
+  .add-row-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .add-row-btn svg { width: 15px; height: 15px; }
+
+  /* Sticky save bar */
+  .save-bar { position: fixed; left: 220px; right: 0; bottom: 0; background: white; border-top: 1px solid var(--line); padding: 13px 28px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .save-bar .count { font-size: 13px; color: var(--ink-light); }
+  .save-bar .count strong { color: var(--ink); }
+  .save-actions { display: flex; gap: 10px; }
+
+  /* Import hint banner */
+  .import-hint { display: flex; align-items: center; gap: 10px; background: var(--blue-soft); border: 1px solid #cfe0fa; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--ink); margin-bottom: 16px; }
+  .import-hint svg { width: 17px; height: 17px; color: var(--blue); flex-shrink: 0; }
+  .import-hint strong { font-weight: 700; }
+
+  /* Annotations */
+  .annotations { max-width: 1040px; margin: 8px 28px 40px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '\2192'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span><a href="#">Fairmont Hotel Renovation</a><span class="crumb-sep">/</span><a href="#">Tasks</a><span class="crumb-sep">/</span>Add tasks
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Add tasks</h1>
+          <div class="sub">Fairmont Hotel Renovation · 9059. Add one or more tasks. For a long list straight out of Jonas, import the spreadsheet instead.</div>
+        </div>
+        <button class="btn secondary">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Import from spreadsheet
+        </button>
+      </div>
+
+      <div class="import-hint">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div>Got a long task list from Jonas? <strong>Import from spreadsheet</strong> is the faster path for 30+ tasks. Use this screen for adding a handful by hand or fixing up an import.</div>
+      </div>
+
+      <div class="card">
+        <div class="config-row">
+          <div class="field config-cluster">
+            <label>Add to cluster</label>
+            <select>
+              <option>Original Scope</option>
+              <option>CCN-01 · Penthouse Coordination</option>
+              <option>CCN-03 · FC Bal. Valve / HW Pipe Size</option>
+              <option>CCN-09 · Swing Stage Outlets</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="auto-id-note">
+            <span>Task IDs assigned automatically on save, e.g.</span>
+            <span class="id-badge">9059-00415</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="at-table">
+          <div class="at-head">
+            <div>#</div>
+            <div>Task name <span class="req">*</span></div>
+            <div>Est. hours <span class="req">*</span></div>
+            <div>Due date</div>
+            <div></div>
+          </div>
+
+          <div class="at-row">
+            <div class="at-idx">1</div>
+            <input type="text" value="Level 3 branch piping rough-in">
+            <div class="at-hrs"><input type="text" value="40"><span class="unit">hrs</span></div>
+            <input type="text" value="12 Jun 2026">
+            <div class="at-remove"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+          </div>
+
+          <div class="at-row">
+            <div class="at-idx">2</div>
+            <input type="text" value="Level 3 fixture set">
+            <div class="at-hrs"><input type="text" value="24"><span class="unit">hrs</span></div>
+            <input type="text" value="20 Jun 2026">
+            <div class="at-remove"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+          </div>
+
+          <div class="at-row empty">
+            <div class="at-idx">3</div>
+            <input type="text" placeholder="Task name">
+            <div class="at-hrs"><input type="text" placeholder="0"><span class="unit">hrs</span></div>
+            <input type="text" placeholder="Optional">
+            <div class="at-remove"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+          </div>
+        </div>
+
+        <div class="add-row-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add another task
+        </div>
+      </div>
+
+    </div>
+
+    <div class="save-bar">
+      <div class="count"><strong>2</strong> tasks ready to add to <strong>Original Scope</strong></div>
+      <div class="save-actions">
+        <button class="btn ghost">Cancel</button>
+        <button class="btn primary">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+          Add 2 tasks
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="annotations">
+  <h3>Add tasks screen notes</h3>
+  <ul>
+    <li><strong>Why this screen exists.</strong> "+ Add task" on the Tasks tab had no destination. This is the manual path for adding tasks one or several at a time; the dev team needs a real target for that button.</li>
+    <li><strong>Repeating rows, add as you go.</strong> One blank row is always present at the bottom (row 3 here). "Add another task" appends another. A single Save creates them all at once. Tested intent: comfortably handle a handful by hand; 30 to 75 from Jonas go through Import (below).</li>
+    <li><strong>Minimum fields per task:</strong> Task name and Est. hours (the labour estimate that drives est-vs-act). Due date is optional. Status defaults to Not Started; Task ID (9059-004xx) is assigned automatically on save, shown in IBM Plex Mono as an ID reference.</li>
+    <li><strong>Batch cluster selector.</strong> The whole batch lands in one cluster ("Add to cluster"), defaulting to Original Scope, since a Jonas import or a hand-add is usually one phase or bucket at a time. A per-row cluster override can be added in build if Thor needs to mix clusters in one go.</li>
+    <li><strong>Save bar mirrors the Edit Project pattern:</strong> sticky bottom, left-offset to clear the sidebar, with a live count ("Add 2 tasks") so the PM sees exactly what they are about to create. Empty rows are ignored in the count.</li>
+  </ul>
+  <h4>Import from spreadsheet (the bulk path)</h4>
+  <ul>
+    <li><strong>Primary path for long lists.</strong> The task list originates in Jonas. The recommended approach is a clean, structured Excel import: deterministic column mapping (Task name, Est. labour hours, optional cluster/due), not AI classification, so the seeded estimates can be trusted.</li>
+    <li><strong>Open dependency on Thor.</strong> The Jonas export mixes materials and labour; we only want labour for tasks. Pending request to Thor (via Justin): provide a labour-only export, or include a column that flags row type (Labour vs Material). The import screen is built once that file format is confirmed. AI stays an optional convenience layer, not a thing estimate integrity depends on.</li>
+  </ul>
+</div>
+
+</body>
+</html>

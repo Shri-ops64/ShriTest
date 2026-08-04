@@ -156,6 +156,28 @@
 
   .footer-note { background: white; border-radius: 12px; padding: 20px 26px; margin-top: 20px; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-light); line-height: 1.6; }
   .footer-note strong { color: var(--ink); }
+
+  /* Part section dividers */
+  .part-divider { display: flex; align-items: center; gap: 14px; margin: 30px 0 14px; }
+  .part-divider:first-child { margin-top: 0; }
+  .part-divider span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); white-space: nowrap; }
+  .part-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  /* Custom test case rows */
+  .custom-tag { font-size: 9.5px; font-weight: 700; color: var(--purple); background: var(--purple-soft); padding: 2px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px; margin-left: 6px; }
+  tr.row-custom { background: #fdfbff; }
+  .col-rowactions { width: 36px; }
+  .row-delete { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted-2); }
+  .row-delete:hover { background: var(--red-soft); color: var(--red); }
+  .row-delete svg { width: 14px; height: 14px; }
+
+  /* Add test case */
+  .add-tc-trigger { padding: 12px 22px; font-size: 12.5px; font-weight: 600; color: var(--blue); cursor: pointer; border-top: 1px solid var(--line-2); }
+  .add-tc-trigger:hover { background: var(--blue-soft); }
+  .add-tc-form { display: flex; gap: 8px; align-items: center; padding: 14px 22px; border-top: 1px solid var(--line-2); background: var(--purple-soft); flex-wrap: wrap; }
+  .add-tc-input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px; font-size: 12.5px; font-family: inherit; }
+  .add-tc-input.wide { flex: 2; min-width: 220px; }
+  .add-tc-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(29,98,211,0.12); }
 </style>
 </head>
 <body>
@@ -540,6 +562,236 @@ const SCREENS = [
   { cat: 'Permissions', test: 'No Create Task affordance', expected: 'Confirmed absent anywhere in this component' },
 ]},
 
+// ---------------- ADMIN: PROJECT SETUP ----------------
+{ part: 'Admin — Project Setup', name: 'New Project Wizard', file: 'odin-projects-new-wizard.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Stepper shows one step at a time', expected: 'Only the current step is visible in production, with a progress stepper at top (mockup shows all 3 stacked for review only)' },
+  { cat: 'Validation', test: 'Project ID optional', expected: 'Project can be created without a Project ID; helper text explains it comes from Jonas and can be added later' },
+  { cat: 'Actions', test: 'Save as draft', expected: 'Available on every step; draft projects appear in the Project List with a draft badge until completed' },
+  { cat: 'Actions', test: 'Add Client inline', expected: 'Opens a small modal to create a new client record without leaving the wizard' },
+  { cat: 'Data', test: 'No Public/Private toggle', expected: 'Confirmed absent — Thor\'s open-access model means every project is visible to everyone; no per-project privacy control in v1' },
+  { cat: 'Data', test: 'Labor budget field', expected: 'Total labor estimate captured as a single number; helper text clarifies it gets broken into tasks later, not here' },
+  { cat: 'Data', test: 'Roles list trimmed to 4', expected: 'Team step offers exactly Project Manager, Supervisor, Foreman, Technician — no Site Manager/Engineer/Inspector/Coordinator/Estimator' },
+  { cat: 'Data', test: 'Default team pre-load', expected: 'Default Team Members setting pre-loads with a green "Default" pill; PM can remove or add to it' },
+  { cat: 'Actions', test: 'External contacts step', expected: 'Repeating contact cards (name/org/email/phone/role); one can be marked Primary GC with a star; step is skippable' },
+  { cat: 'Actions', test: 'Set as Primary GC', expected: 'Clicking promotes a non-primary contact card to Primary GC, moving the star treatment' },
+  { cat: 'Empty/Error', test: 'Skip contacts entirely', expected: 'Create Project succeeds with zero contacts; RFI compose later falls back to free-text recipient with no typeahead' },
+]},
+
+{ part: 'Admin — Project Setup', name: 'Edit Project', file: 'odin-projects-edit.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Flat sectioned form, no stepper', expected: 'All sections visible on one scrollable page with a sticky left-side section nav, not a multi-step wizard' },
+  { cat: 'Layout', test: 'Sticky nav auto-highlight', expected: 'Left-side section nav highlights the active section based on scroll position; clicking a nav item jumps to it' },
+  { cat: 'Data', test: 'Section status pills', expected: 'Each section header shows green ("All required fields filled") or amber (needs attention) based on actual field completeness' },
+  { cat: 'Data', test: 'Labor budget status line', expected: 'Dates & Labor section shows live "X of Y hrs logged" next to the estimate field, reflecting actual consumption' },
+  { cat: 'Actions', test: 'Deep-linkable sections', expected: 'A URL like ?section=external-contacts scrolls/jumps straight to that section' },
+  { cat: 'Data', test: 'Team and contacts counts', expected: 'Section headers show live counts (e.g. "4 team members", "2 contacts") without needing to scroll in' },
+  { cat: 'Actions', test: 'Danger zone renamed', expected: 'Section is labeled something other than "Danger zone" (per Mike\'s feedback) since most actions here are routine status changes' },
+  { cat: 'Validation', test: 'Typed confirmation reserved for destructive action only', expected: 'Only the genuinely destructive action (e.g. permanent close/delete) requires typing a confirmation phrase; routine status changes do not' },
+  { cat: 'Data', test: 'Closing a project effects', expected: 'Closing removes the project from active lists (visible only via filters), cancels all open tasks (hours already logged stay on timesheets), and leaves open RFIs/PCNs in the register but closed to new activity' },
+]},
+
+// ---------------- ADMIN: TASKS ----------------
+{ part: 'Admin — Tasks', name: 'Tasks tab', file: 'odin-tasks.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Split-view detail panel', expected: 'Clicking a task row opens a detail panel to the right of the list (not a full navigation), with the selected row highlighted blue-soft' },
+  { cat: 'Data', test: 'Detail panel content', expected: 'Shows status pill, Task ID, cluster context, title, action row, Hours block (logged vs estimate + bar), description, key-value details, and recent time entries' },
+  { cat: 'Actions', test: 'Status-aware action row', expected: 'Blocked shows Unblock; In Progress shows Mark Complete + Mark Blocked; Complete shows Reopen; Not Started shows Mark Complete + Mark Blocked; Edit always available' },
+  { cat: 'Data', test: 'Task ID column (Jonas mirror)', expected: 'Each task shows a mono-font Task ID in project-number-prefixed format (e.g. 9059-00301); no "Assigned" column exists' },
+  { cat: 'Data', test: 'Flat tasks, no subtasks', expected: 'Confirmed no subtask/nested-task UI exists anywhere on this screen' },
+  { cat: 'Permissions', test: 'Anyone can change status', expected: 'Mark Complete / Mark Blocked available regardless of who is viewing — no assignee restriction' },
+  { cat: 'Permissions', test: 'No task-creation affordance for techs', expected: 'This is an admin-only tab; confirm techs cannot reach a create-task action anywhere' },
+  { cat: 'Data', test: 'Project Estimate strip', expected: 'Shows project labor budget (inline editable), tasks-defined sum, actual hours logged, remaining, and a color-coded variance state (green ≤estimate, amber 0-10% over, red >10% over)' },
+  { cat: 'Data', test: 'Cluster grouping', expected: 'Original Scope, Change Notice Scopes, and Other each render as their own collapsible group with their own hours rollup' },
+  { cat: 'Data', test: 'PCN-spawned task badge', expected: 'Tasks created from a PCN show an inline PCN-XXX badge on the task name, visible even when filtered/sorted' },
+  { cat: 'Data', test: 'Blocked task inline reason', expected: 'A blocked task shows its blocking reason (e.g. "Blocked by RFI-007") both inline in the list and more prominently in the detail panel' },
+  { cat: 'Data', test: 'Est-vs-act bar color logic', expected: 'Bar renders amber when hours exceed estimate, red when blocked, green when complete and under estimate' },
+  { cat: 'Actions', test: 'Cluster vs Status grouping toggle', expected: 'Toggling to Status flattens all clusters and re-sorts by status; toggling back restores cluster grouping' },
+]},
+
+{ part: 'Admin — Tasks', name: 'Add Task(s)', file: 'odin-tasks-add.html', platform: 'admin', rows: [
+  { cat: 'Actions', test: 'Repeating row entry', expected: 'A blank row is always present at the bottom; "Add another task" appends one more; a single Save creates all filled rows at once' },
+  { cat: 'Validation', test: 'Minimum required fields', expected: 'Task name and Est. hours are required per row; Due date is optional; empty rows are ignored on save, not created as blank tasks' },
+  { cat: 'Data', test: 'Auto-assigned Task ID', expected: 'Each created task gets a Task ID automatically (format 9059-004xx), shown in mono font, not entered by the user' },
+  { cat: 'Data', test: 'Default status', expected: 'New tasks default to Not Started' },
+  { cat: 'Data', test: 'Batch cluster selector', expected: 'One "Add to cluster" selector applies to the whole batch, defaulting to Original Scope' },
+  { cat: 'Layout', test: 'Sticky save bar with live count', expected: 'Save bar stays fixed at the bottom, left-offset to clear the sidebar, and updates its label live (e.g. "Add 2 tasks") as rows are filled/emptied' },
+]},
+
+// ---------------- ADMIN: TIME ----------------
+{ part: 'Admin — Time', name: 'Time tab (project-scoped)', file: 'odin-time.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Reuses Timesheets Log chrome', expected: 'Same overview cards, filter block, and table chrome as the company-wide Timesheets Log module, just scoped to this project' },
+  { cat: 'Data', test: 'Overview cards are project-to-date', expected: 'This week / last week / this month / last month figures reflect only this project\'s entries, not company-wide totals' },
+  { cat: 'Filters', test: 'Task filter present', expected: 'A Task filter is available (new vs. the company-wide module) to see hours by task' },
+  { cat: 'Filters', test: 'Redundant filters dropped', expected: 'Client, Location, Work Order, and Job Status filters are absent (all constant/inapplicable at the project level)' },
+  { cat: 'Data', test: 'Task column with status sub-line', expected: 'Each row shows the task it was attributed to, plus that task\'s status as a sub-line; draft tasks show an amber "Draft" pill' },
+  { cat: 'Data', test: '"Other" entries render distinctly', expected: 'Entries marked Other on mobile show a dashed-circle icon and "Other" text, matching the mobile Task Picker\'s treatment' },
+  { cat: 'Data', test: 'No duplicate records', expected: 'An entry created via mobile Submit Time, desktop Timesheets, or the Daily Log composer all appear here as the same underlying record — verify no duplication across entry paths' },
+  { cat: 'Data', test: 'Hours roll up to Tasks tab', expected: 'A row\'s task linkage is what powers that task\'s est-vs-act bar on the Tasks tab; entries with no task count toward project totals only' },
+  { cat: 'Actions', test: 'Export and Export Payroll', expected: 'Both produce a download (CSV / payroll-formatted) matching the company-wide module\'s behavior' },
+]},
+
+// ---------------- ADMIN: PROJECT LOGS (renamed from Daily Logs) ----------------
+{ part: 'Admin — Project Logs', name: 'Project Logs tab', file: 'odin-project-logs.html', platform: 'admin', rows: [
+  { cat: 'Layout', test: 'Tab renamed and widened in scope', expected: 'Tab is labeled Project Logs, not Daily Logs, and holds three log types: Daily Tech Logs, Foreman Reports, Supervisor Reports' },
+  { cat: 'Filters', test: 'Type sub-tabs', expected: 'All / Daily Tech Logs / Foreman Reports / Supervisor Reports sub-tabs filter the list correctly' },
+  { cat: 'Actions', test: 'Compose Report dropdown', expected: 'Exposes "New Foreman Report" and "New Supervisor Report" only — no "New Daily Tech Log" option (techs submit those from mobile only)' },
+  { cat: 'Actions', test: 'Row click opens full detail page', expected: 'Clicking any row navigates to odin-project-log-detail.html rather than expanding an inline panel' },
+  { cat: 'Layout', test: 'Date grouping with sticky headers', expected: 'Logs group under Today / Yesterday / specific dates with a sticky header strip while scrolling' },
+  { cat: 'Data', test: 'Inline photo thumbnails with overflow', expected: '2-3 thumbnails show per row with a "+N" indicator when more exist' },
+  { cat: 'Filters', test: 'Filter bar', expected: 'Date range, technician, task, and free-text search all work; active filters get a blue tint' },
+  { cat: 'Data', test: 'Summary strip stats', expected: 'Total logs, this week, logs today, total photos, and total hours all reflect the current filtered set accurately' },
+  { cat: 'Data', test: 'No approval workflow', expected: 'All log types post straight to the project on submission; no "awaiting review" gate. Edit/delete remain available to authors and PM after the fact' },
+  { cat: 'Actions', test: 'Referenced tasks are clickable', expected: 'Any task referenced in a log links directly to that task in the Tasks tab' },
+  { cat: 'Permissions', test: 'Confidential supervisor fields stay hidden in the list', expected: 'The list row for a Supervisor Report shows to everyone; the two confidential fields (Foreman Performance, Verification) do not appear until the detail page, and only for permitted roles' },
+]},
+
+{ part: 'Admin — Project Logs', name: 'Project Log Detail (3 template variants)', file: 'odin-project-log-detail.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'One route, three templates by log type', expected: 'Daily Tech Log, Foreman Report, and Supervisor Report each render their own field set on the same detail route, based on the log\'s type' },
+  { cat: 'Data', test: 'Daily Tech Log detail content', expected: 'Summary text, photos, hours, location, and referenced tasks render — no confidential treatment applied' },
+  { cat: 'Data', test: 'Foreman Report detail content', expected: 'Health traffic light, accomplishments, next-week goals, schedule status, manpower, 7 subtrade statuses, materials concerns, safety, and 3 ratings (Housekeeping / Confidence / Customer relationship) all render, fully visible to the team' },
+  { cat: 'Data', test: 'Supervisor Report detail content', expected: 'Visit info, health assessment, 4-category Thor Standards (Workmanship / Cleanliness / Productivity / Customer relationship), safety, schedule, Top 3 risks, support requested, and photos all render' },
+  { cat: 'Permissions', test: 'Confidential block gating', expected: 'Foreman Performance rating and Verification-of-accuracy fields render only for PM, the project\'s Supervisor, global admin, or global super-admin — completely absent from the DOM for anyone else, not just visually hidden' },
+  { cat: 'Data', test: 'Confidential block visual treatment', expected: 'When visible, the confidential block renders with an amber tint and an explicit "Confidential" label' },
+  { cat: 'Data', test: 'Customer Relationship is not confidential', expected: 'Appears as a normal 4th Thor Standards row / 3rd rating slider, visible to the whole team, not gated' },
+  { cat: 'Actions', test: 'Header actions', expected: 'Only Export PDF and Edit are present — no "Mark Reviewed" action anywhere (no approval workflow exists)' },
+  { cat: 'Actions', test: 'Back navigation', expected: 'Back link and breadcrumb both return to the Project Logs list correctly' },
+]},
+
+// ---------------- ADMIN: CHANGE NOTICES (list + detail pages) ----------------
+{ part: 'Admin — Change Notices', name: 'Change Notices — dedicated list view', file: 'odin-change-notices-list.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Directional model: PCN inbound, RFI outbound', expected: 'Confirmed as the locked model per spec §6.6 — RFIs go out to the GC, PCNs come back in as formal changes' },
+  { cat: 'Data', test: 'Default sort order', expected: 'Open items first (Open RFI → Awaiting Answer RFI → Open PCN), then by raised date descending; closed items sink to the bottom' },
+  { cat: 'Filters', test: 'Two-tier filter chips', expected: 'All / PCN / RFI chips, plus separately Open / Awaiting Answer / Closed, both apply and combine correctly' },
+  { cat: 'Data', test: 'Title cell inline indicators', expected: 'Triggered-from badge (blue, PCN-only, when a source RFI exists), outcome badge (closed RFIs only), paperclip with attachment count, and linked-task count (PCNs only) all render correctly per row' },
+  { cat: 'Data', test: 'RFI status pills', expected: 'Open / Awaiting Answer / Closed only — no approval-related states' },
+  { cat: 'Data', test: 'PCN status pills', expected: 'Open / Closed only — no approved/rejected states exist' },
+  { cat: 'Data', test: 'Due column scoping', expected: 'Only Awaiting Answer RFIs show a due date (amber within 3 days, red overdue); all other rows show a dash' },
+  { cat: 'Data', test: 'Cost/Hours column scoping', expected: 'Cost and Hours columns apply to PCNs only; Cost renders in green text' },
+  { cat: 'Data', test: 'Summary strip metrics', expected: 'Total / Open / Cost Impact, RFI-to-PCN conversion rate, and average RFI turnaround all calculate correctly from the visible register' },
+  { cat: 'Actions', test: 'Row click routes by type', expected: 'PCN rows open odin-change-notices-pcn-detail.html; RFI rows open odin-change-notices-rfi-detail.html' },
+  { cat: 'Actions', test: 'State-dependent action icons', expected: 'Open RFI shows a Compose icon; Awaiting Answer RFI shows Mark Answered; every row has Open/Download/Archive as baseline' },
+  { cat: 'Data', test: 'Outcome badge linking (RFI → PCN chain)', expected: 'A closed RFI\'s outcome badge pointing to a PCN (or vice versa) is clickable and navigates to the linked record' },
+]},
+
+{ part: 'Admin — Change Notices', name: 'PCN Detail (Fixed / T&M / Voided states)', file: 'odin-change-notices-pcn-detail.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Billing type pill', expected: 'Fixed renders as a grey pill, T&M as an amber pill, shown next to the status pill' },
+  { cat: 'Data', test: 'Signed document as source of truth', expected: 'Prominently displayed with a red PDF icon, signer name, signed date, and View/Download actions — treated as the most important element on the page' },
+  { cat: 'Data', test: 'RFI back-reference badge', expected: 'When triggered by an RFI, header shows a "From RFI-XXX" badge that jumps to the source RFI on click' },
+  { cat: 'Data', test: 'Fixed PCN impact tiles', expected: 'Two big tiles show Cost impact and Hours impact; $0 cost renders in green to signal "intentionally no cost," not missing data' },
+  { cat: 'Data', test: 'Linked tasks section (dynamic)', expected: 'Lists every task spawned from this PCN with current status, est-vs-act bar, and hours used vs estimate, updating as work progresses' },
+  { cat: 'Actions', test: 'Add another task to this PCN', expected: 'Spawns a new task tagged with this PCN\'s pcn_id, appearing correctly under the right Tasks tab cluster' },
+  { cat: 'Actions', test: 'Header action row', expected: 'Close PCN (primary, when work complete), Edit (metadata only — signed doc never changes), Export PDF, Archive, and Void (secondary danger action) all present and functional' },
+  { cat: 'Data', test: 'T&M PCN has no cost/estimate fields', expected: 'No cost or hours estimate fields anywhere on a T&M PCN; replaced by a "Time & Materials" block showing accrued hours and last-logged entry' },
+  { cat: 'Data', test: 'No dollar/revenue calculations anywhere', expected: 'Confirmed absent — Odin never multiplies hours by a labor rate; hours-only data is what exports to Jonas' },
+  { cat: 'Data', test: 'T&M spawned tasks carry no estimate', expected: 'Task bar shows total accrued hours only, not progress against a budget' },
+  { cat: 'Data', test: 'T&M close-out helper text', expected: 'Helper text under the linked-tasks list explains: mark task Complete first, then PCN Closed once hours are ready to export' },
+  { cat: 'Data', test: 'Void reason required and displayed', expected: 'Clicking Void requires a reason; once voided, the reason renders prominently in a red-tinted box with who voided it and when' },
+  { cat: 'Data', test: 'Voided document stays visible but dimmed', expected: 'Signed document remains visible with a "Retained for record" pill, dimmed rather than removed' },
+  { cat: 'Data', test: 'Voided PCN strikethrough on original values', expected: 'Original cost/hours impact values show with strikethrough to indicate they no longer apply' },
+  { cat: 'Data', test: 'Voiding auto-cancels linked tasks', expected: 'Tasks spawned from a voided PCN move to Cancelled status; a banner explains already-logged hours stay on timesheets for audit' },
+  { cat: 'Permissions', test: 'No Edit on voided PCN', expected: 'Edit action is absent/disabled once a PCN is Voided — confirmed locked from further changes' },
+]},
+
+{ part: 'Admin — Change Notices', name: 'RFI Detail (Open / Closed states)', file: 'odin-change-notices-rfi-detail.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Only two states exist', expected: 'Open (awaiting GC reply) and Closed only — confirm no DRAFT or SENT state anywhere in the UI' },
+  { cat: 'Data', test: 'No in-Odin compose-and-send', expected: 'Confirmed absent: no PDF generation, no Outlook hand-off, no "Send to GC" button anywhere on this page' },
+  { cat: 'Actions', test: 'Mark Answered opens capture modal', expected: 'Clicking Mark Answered on an Open RFI opens a "Capture GC response" modal with response text, sender name/org, and date received fields' },
+  { cat: 'Data', test: 'Captured response renders attributed', expected: 'After saving the capture modal, status flips to Answered and the response renders in a purple-tinted box attributed to the sender and timestamp' },
+  { cat: 'Actions', test: 'Close vs. Create PCN branch', expected: 'On an Answered RFI, Close RFI and "Create PCN from this RFI" sit side by side with no outcome radio between them — the branch is an explicit either/or choice' },
+  { cat: 'Actions', test: 'Create PCN pre-fills from RFI', expected: 'Opens the PCN ingest form pre-filled with the RFI link and the response text as description, carrying forward any potential-cost notes' },
+  { cat: 'Data', test: 'Potential cost impact is informal only', expected: 'The amber notes section captures likely cost/hours impact as free text — no formal cost-line fields exist on the RFI itself' },
+  { cat: 'Data', test: 'No whole-RFI bundle download', expected: 'Confirmed absent — individual attachment rows keep their own download icon, but there is no single "download everything" button' },
+  { cat: 'Data', test: 'RFI state enum simplified', expected: 'Status flow is OPEN → ANSWERED → CLOSED only (with an optional skip straight to CLOSED) — no SENT state, no approval gate' },
+]},
+
+// ---------------- ADMIN: REFERENCE ----------------
+{ part: 'Admin — Reference', name: 'Decision Log', file: 'decision-log.html', platform: 'admin', rows: [
+  { cat: 'Data', test: 'Customer Relationship rating placement', expected: 'Appears on both Foreman Report (1-10 slider, alongside Housekeeping and Project Confidence) and Supervisor Report (G/Y/R, alongside Thor Standards), and is explicitly not confidential' },
+  { cat: 'Permissions', test: 'Super admin confidential access', expected: 'Super admin role is included in the audit-trusted permission check for confidential Supervisor Report content' },
+  { cat: 'Data', test: 'Tech project assignment is visibility-only', expected: 'The Team card shows who is formally assigned, but any tech can still log time / write logs on any project regardless of assignment' },
+  { cat: 'Data', test: 'Confidential scope narrowed to two fields', expected: 'Only Foreman Performance and Verification of Foreman Report Accuracy are confidential — all other Supervisor Report content is team-visible' },
+  { cat: 'Data', test: 'Decision log itself stays current', expected: 'Spot-check that a handful of recent decisions referenced elsewhere in the deck (D-018, D-022, D-026, D-032, D-034, D-038, D-040) actually appear here with matching descriptions' },
+]},
+
+// ---------------- TECH MOBILE ADDITIONS ----------------
+{ part: 'Tech mobile — additions', name: 'RFI Composer (mobile, shared by all field roles)', file: 'odin-tech-rfi-composer.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Exactly 5 fields', expected: 'Photo upload, subject, description, linked task, and auto number/date — no recipient, due date, priority, discipline, or drawing reference fields' },
+  { cat: 'Permissions', test: 'Shared across Tech/Foreman/Supervisor', expected: 'Same composer used by all three field roles; only created_by_role differs on the saved record' },
+  { cat: 'Layout', test: 'Photo-first layout', expected: 'Photo capture card sits above the text fields; Camera is the primary (filled) affordance, gallery picker is secondary (dashed)' },
+  { cat: 'Data', test: 'Intro card sets expectations', expected: 'Text explains Submit posts to the project, PM emails the GC, and there is no approval step' },
+  { cat: 'Data', test: 'Subject and description hints', expected: 'Subject hints "one line, five to ten words"; description hints "in your own words, PM will rewrite for the GC"; 500-char counter present on description' },
+  { cat: 'Actions', test: 'Linked task optional', expected: 'Submit succeeds with no task selected; helper text reads "Skip if not sure"' },
+  { cat: 'Actions', test: 'Submit creates OPEN record directly', expected: 'No DRAFT state, no approval gate — record posts straight to the Change Notices register as Open' },
+  { cat: 'Data', test: 'Confirmation toast wording', expected: 'Toast confirms the PM will email the GC and follow up — then returns to the per-project view' },
+  { cat: 'Data', test: 'Entry points per role', expected: 'Technician: on per-project view below Submit Time/Write Daily Log. Foreman: on the Foreman Report composer. Supervisor: on the Supervisor Report composer' },
+]},
+
+{ part: 'Tech mobile — additions', name: 'Task Picker (mobile, bottom sheet)', file: 'odin-tech-task-picker.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'One shared picker for Submit Time and Daily Log', expected: 'Confirmed same UI/behavior used by both flows per the June 2 direction' },
+  { cat: 'Layout', test: 'Bottom-sheet pattern', expected: 'Sheet covers ~80% of viewport height with a drag handle, not a full-screen takeover; dimmed parent form stays visible behind it' },
+  { cat: 'Data', test: 'Search filters live', expected: 'Typing filters the visible task list immediately, tested against a project with 100+ tasks' },
+  { cat: 'Data', test: 'No Mine/All filter chips', expected: 'Confirmed absent — tasks belong to the project, not individuals' },
+  { cat: 'Data', test: 'Status grouping order', expected: 'In Progress first, then Blocked, then Not Started; Complete hidden by default with a toggle to show' },
+  { cat: 'Actions', test: 'Selected task visual feedback', expected: 'Blue border, blue-soft background, and a filled checkmark circle on the selected row' },
+  { cat: 'Data', test: 'Est-vs-act mini-bar per row', expected: 'Each row shows a compact bar with numbers like "2.5 / 4h"' },
+  { cat: 'Data', test: 'Blocked tasks still selectable', expected: 'Blocked tasks show red status icon and inline blocking reason but remain tappable/selectable' },
+  { cat: 'Actions', test: '"Other" row placement and behavior', expected: 'Sits above the status groups with a dashed icon and an "or pick a task" divider; selecting it sets the field to "Other · General project work" and saves with task_id = NULL' },
+  { cat: 'Permissions', test: 'No Create New Task affordance', expected: 'Confirmed absent — techs cannot create tasks from this picker' },
+]},
+
+{ part: 'Tech mobile — additions', name: 'Per-Project View by Role', file: 'odin-mobile-per-project-by-role.html', platform: 'mobile', rows: [
+  { cat: 'Permissions', test: 'Technician view', expected: 'Shows one primary action (Write Daily Tech Log) plus Raise RFI secondary; no separate Submit Time button (time is captured inside the log per D-040)' },
+  { cat: 'Permissions', test: 'Foreman view', expected: 'Shows Submit Time + Foreman Report tiles plus Raise RFI; Submit Time is a real time entry (time blocks + task allocation)' },
+  { cat: 'Permissions', test: 'Supervisor view', expected: 'Shows Submit Time + Supervisor Report tiles plus Raise RFI, same reasoning as Foreman' },
+  { cat: 'Data', test: 'Activity feed is project-scoped, not role-scoped', expected: 'Recent project activity shows the same content regardless of which role is viewing' },
+  { cat: 'Data', test: 'Role pill in app bar', expected: 'Small Tech/Foreman/Supervisor indicator shows in the top-right, matching the role being demonstrated' },
+  { cat: 'Data', test: 'Color coding per action type', expected: 'Submit Time green, Daily Tech Log pink-red, Foreman Report purple, Supervisor Report amber, Raise RFI blue — verify each is distinct and consistent with other screens' },
+]},
+
+{ part: 'Tech mobile — additions', name: 'Foreman Report Composer (mobile)', file: 'odin-foreman-report-composer-mobile.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Weekly cadence framing', expected: 'Copy/context indicates this is submitted once per week, not daily' },
+  { cat: 'Data', test: 'Pre-filled context', expected: 'Project, foreman name, and week dates auto-populate; outstanding RFIs pull from the RFI module rather than being re-typed' },
+  { cat: 'Data', test: 'Health is a single traffic light', expected: 'One 🟢🟡🔴 selector with an optional one-line reason — no multi-category scorecard' },
+  { cat: 'Data', test: 'This week / next week free text', expected: 'Two open textareas, bullet-style entry accepted, no structured editor' },
+  { cat: 'Data', test: '7 subtrade traffic lights', expected: 'Ventilation, Controls, Insulation, Firestopping, Air balance, Electrical, Sprinkler each get G/Y/R/N-A' },
+  { cat: 'Data', test: 'Outstanding RFIs read-only with age', expected: 'Pulled from the RFI module, not re-entered; RFIs aged past 7 days render in amber' },
+  { cat: 'Data', test: 'Three 1-10 rating sliders', expected: 'Housekeeping, Project Confidence, and Customer Relationship all present as sliders, no scorecard math behind them' },
+  { cat: 'Actions', test: 'Raise RFI entry point', expected: 'A Raise RFI button on this composer opens the shared RFI composer correctly' },
+  { cat: 'Permissions', test: 'No per-category 8-scorecard, no AI section', expected: 'Confirmed absent — these are explicitly parked for v2' },
+]},
+
+{ part: 'Tech mobile — additions', name: 'Supervisor Report Composer (mobile)', file: 'odin-supervisor-report-composer-mobile.html', platform: 'mobile', rows: [
+  { cat: 'Data', test: 'Weekly, post-site-visit cadence', expected: 'Framing indicates one report per project per visit, not daily' },
+  { cat: 'Data', test: 'Health is supervisor\'s own independent assessment', expected: 'Separate from the foreman\'s rating — no auto-merge or comparison shown inline' },
+  { cat: 'Data', test: 'Foreman performance is a single traffic light', expected: 'Strong/Adequate/Needs help as one 🟢🟡🔴, not a 6-category scorecard with letter grade' },
+  { cat: 'Data', test: 'Verification of foreman report field', expected: 'Yes/Mostly/No selector; selecting Mostly or No reveals a discrepancies free-text field' },
+  { cat: 'Data', test: '3-category Thor Standards (v1)', expected: 'Workmanship, Site cleanliness, Productivity each G/Y/R — confirm the full 6-category version is not present (parked for v2)' },
+  { cat: 'Data', test: 'Top 3 risks as three separate fields', expected: 'Three distinct free-text inputs, not a single combined textarea' },
+  { cat: 'Data', test: 'Support requested field', expected: 'Present as an actionable field distinct from the risks list' },
+  { cat: 'Actions', test: 'Raise RFI entry point', expected: 'A Raise RFI button opens the shared RFI composer correctly' },
+  { cat: 'Permissions', test: 'No safety-scorecard or labour-productivity-audit fields', expected: 'Confirmed absent — v1 captures safety as free text only' },
+]},
+
+// ---------------- TECH DESKTOP ADDITIONS ----------------
+{ part: 'Tech desktop — additions', name: 'Foreman Report Composer (desktop)', file: 'odin-foreman-report-composer-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Data', test: 'Field parity with mobile', expected: 'Same fields as mobile composer, just laid out in two-column rows where it saves vertical scroll' },
+  { cat: 'Desktop UX', test: 'Modal overlay pattern', expected: 'Opens as a 760px modal over the dimmed Project Logs page, scrolling internally if content exceeds viewport' },
+  { cat: 'Actions', test: 'Compose Report dropdown trigger', expected: 'The "Compose Report ▾" dropdown on Project Logs lists Tech Log / Foreman Report / Supervisor Report, and Foreman Report opens this modal' },
+  { cat: 'Desktop UX', test: 'Photo upload pattern', expected: 'Simple drag-and-drop upload, not a camera-first capture flow' },
+  { cat: 'Actions', test: 'Footer actions', expected: 'Cancel, Save draft, and Submit report all present and functional' },
+]},
+
+{ part: 'Tech desktop — additions', name: 'Supervisor Report Composer (desktop)', file: 'odin-supervisor-report-composer-desktop.html', platform: 'desktop', rows: [
+  { cat: 'Data', test: 'Field parity with mobile', expected: 'Same fields as the mobile composer, laid out in two-column rows (visit info, health+confidence, foreman performance+verification, schedule+safety, support+comments)' },
+  { cat: 'Desktop UX', test: 'Modal overlay pattern', expected: 'Same modal pattern as Foreman Report and Tech Log composers, for consistency' },
+  { cat: 'Data', test: 'Top 3 risks as stacked cards', expected: 'Three input cards with an amber left-border accent, forcing three distinct entries' },
+  { cat: 'Actions', test: 'Compose Report dropdown trigger', expected: 'Opens correctly from the Project Logs page\'s dropdown' },
+]},
+
+{ part: 'Tech desktop — additions', name: 'Tech Desktop Access Reference', file: 'odin-tech-desktop-access.html', platform: 'desktop', rows: [
+  { cat: 'Permissions', test: 'Allowed actions match the list', expected: 'Search/filter/sort the project list, open any assigned project, and use standard list actions are all confirmed available to the tech role' },
+  { cat: 'Permissions', test: 'Restricted actions match the list', expected: 'New Project button, opening unassigned projects, editing milestones, managing team/contacts, and the Edit Project header button are all confirmed hidden or disabled for the tech role' },
+  { cat: 'Data', test: 'Reference stays accurate against actual desktop screens', expected: 'Spot-check that what this reference claims a tech can/cannot do on desktop matches the actual behavior of odin-tech-project-desktop.html and related screens' },
+]},
+
 ];
 
 // ============================================================
@@ -555,41 +807,73 @@ const STATUS_ICON = {
 };
 
 let currentFilter = 'all';
-const attachments = {};   // rowKey -> { name, url }
+const attachments = {};      // rowKey -> { name, url }
 const rowStatus = {};
 const rowNotes = {};
 const rowDevResponse = {};
 const openScreens = new Set(['0']);
+const customRowsByScreen = {};  // screen_file -> [{ key, cat, test, expected }]
+const addFormOpen = new Set();  // screen_file with the "add test case" form currently open
 let API_ONLINE = false;
 
 function slug(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
+
+// rowMeta gives every function a single lookup for "what screen/cat/test/expected
+// does this row_key belong to", whether it's one of the built-in rows or one the
+// team added themselves.
+const rowMeta = {};
+SCREENS.forEach((screen, si) => {
+  screen.rows.forEach((row, ri) => {
+    const key = screen.file + '::' + slug(row.test);
+    rowMeta[key] = { si, ri, screenFile: screen.file, screenName: screen.name, cat: row.cat, test: row.test, expected: row.expected, isCustom: false };
+  });
+});
+
 function rowKey(si, ri) {
-  const screen = SCREENS[si];
-  const row = screen.rows[ri];
-  return screen.file + '::' + slug(row.test);
+  return SCREENS[si].file + '::' + slug(SCREENS[si].rows[ri].test);
 }
 
-function tallyForScreen(si) {
-  const rows = SCREENS[si].rows;
+function registerCustomRow(row) {
+  const key = row.row_key;
+  rowMeta[key] = {
+    screenFile: row.screen_file, screenName: row.screen_name,
+    cat: row.category, test: row.test_case, expected: row.expected_result,
+    isCustom: true,
+  };
+  const list = customRowsByScreen[row.screen_file] || (customRowsByScreen[row.screen_file] = []);
+  if (!list.includes(key)) list.push(key);
+}
+
+function screenRowKeys(screen) {
+  const staticKeys = screen.rows.map((row) => screen.file + '::' + slug(row.test));
+  const customKeys = customRowsByScreen[screen.file] || [];
+  return staticKeys.concat(customKeys);
+}
+
+function tallyForScreen(screen) {
+  const keys = screenRowKeys(screen);
   let pass = 0;
-  rows.forEach((_, ri) => { if (rowStatus[rowKey(si, ri)] === 'pass') pass++; });
-  return { pass, total: rows.length };
+  keys.forEach((k) => { if (rowStatus[k] === 'pass') pass++; });
+  return { pass, total: keys.length };
 }
 
 function renderScreens() {
   const root = document.getElementById('screensRoot');
   let html = '';
+  let currentPart = null;
 
   SCREENS.forEach((screen, si) => {
-    const tally = tallyForScreen(si);
-    const rowsWithIdx = screen.rows.map((r, ri) => ({ r, ri }));
-    const visibleRows = currentFilter === 'all' ? rowsWithIdx : rowsWithIdx.filter(({ ri }) => {
-      const st = rowStatus[rowKey(si, ri)] || 'notrun';
-      return st === currentFilter;
-    });
-    if (currentFilter !== 'all' && visibleRows.length === 0) return;
+    if (screen.part !== currentPart) {
+      currentPart = screen.part;
+      html += '<div class="part-divider"><span>' + currentPart + '</span></div>';
+    }
+
+    const tally = tallyForScreen(screen);
+    const allKeys = screenRowKeys(screen);
+    const visibleKeys = currentFilter === 'all' ? allKeys : allKeys.filter((k) => (rowStatus[k] || 'notrun') === currentFilter);
+    if (currentFilter !== 'all' && visibleKeys.length === 0) return;
 
     const isOpen = openScreens.has(String(si));
 
@@ -603,39 +887,60 @@ function renderScreens() {
     html += '</div>';
 
     html += '<div class="screen-table-wrap"><table class="tc-table"><thead><tr>';
-    html += '<th class="col-cat">Category</th><th class="col-test">Test case</th><th class="col-expected">Expected result</th><th class="col-status">Status</th><th class="col-notes">QA notes &amp; screenshot</th><th class="col-dev">Dev response</th>';
+    html += '<th class="col-cat">Category</th><th class="col-test">Test case</th><th class="col-expected">Expected result</th><th class="col-status">Status</th><th class="col-notes">QA notes &amp; screenshot</th><th class="col-dev">Dev response</th><th class="col-rowactions"></th>';
     html += '</tr></thead><tbody>';
 
-    visibleRows.forEach(({ r, ri }) => {
-      const key = rowKey(si, ri);
+    visibleKeys.forEach((key) => {
+      const meta = rowMeta[key];
+      if (!meta) return;
       const status = rowStatus[key] || 'notrun';
-      const rowClass = status === 'fail' ? 'row-fail' : (status === 'blocked' ? 'row-blocked' : '');
+      const rowClass = (status === 'fail' ? 'row-fail' : (status === 'blocked' ? 'row-blocked' : '')) + (meta.isCustom ? ' row-custom' : '');
       const note = rowNotes[key] || '';
       const att = attachments[key];
 
       html += '<tr class="' + rowClass + '">';
-      html += '<td class="col-cat">' + r.cat + '</td>';
-      html += '<td class="col-test">' + r.test + '</td>';
-      html += '<td class="col-expected">' + r.expected + '</td>';
-      html += '<td class="col-status"><button class="status-pill ' + status + '" onclick="cycleStatus(' + si + ',' + ri + ')">' + (STATUS_ICON[status] || '') + STATUS_LABEL[status] + '</button></td>';
+      html += '<td class="col-cat">' + meta.cat + (meta.isCustom ? ' <span class="custom-tag">Custom</span>' : '') + '</td>';
+      html += '<td class="col-test">' + meta.test + '</td>';
+      html += '<td class="col-expected">' + meta.expected + '</td>';
+      html += '<td class="col-status"><button class="status-pill ' + status + '" onclick="cycleStatus(\'' + key + '\')">' + (STATUS_ICON[status] || '') + STATUS_LABEL[status] + '</button></td>';
       html += '<td class="col-notes"><div class="notes-row">';
-      html += '<textarea class="notes-input" placeholder="Add a note..." onchange="setNote(' + si + ',' + ri + ',this.value)">' + note + '</textarea>';
+      html += '<textarea class="notes-input" placeholder="Add a note..." onchange="setNote(\'' + key + '\',this.value)">' + note + '</textarea>';
       html += '<label class="attach-btn" title="Attach screenshot">';
       html += '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
-      html += '<input type="file" accept="image/*" style="display:none" onchange="attachFile(' + si + ',' + ri + ',this)">';
+      html += '<input type="file" accept="image/*" style="display:none" onchange="attachFile(\'' + key + '\',this)">';
       html += '</label>';
       html += '</div>';
       if (att) {
         html += '<div class="thumb-chip"><img src="' + att.url + '" onclick="openLightbox(this.src)">';
         html += '<span class="thumb-name">' + (att.name || 'screenshot') + '</span>';
-        html += '<span class="thumb-remove" onclick="removeAttachment(' + si + ',' + ri + ')"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span></div>';
+        html += '<span class="thumb-remove" onclick="removeAttachment(\'' + key + '\')"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span></div>';
       }
       html += '</td>';
-      html += '<td class="col-dev"><textarea class="dev-input" placeholder="Dev reply..." onchange="setDevResponse(' + si + ',' + ri + ',this.value)">' + (rowDevResponse[key] || '') + '</textarea></td>';
+      html += '<td class="col-dev"><textarea class="dev-input" placeholder="Dev reply..." onchange="setDevResponse(\'' + key + '\',this.value)">' + (rowDevResponse[key] || '') + '</textarea></td>';
+      html += '<td class="col-rowactions">';
+      if (meta.isCustom) {
+        html += '<span class="row-delete" title="Remove this test case" onclick="deleteCustomRow(\'' + key + '\')"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></span>';
+      }
+      html += '</td>';
       html += '</tr>';
     });
 
-    html += '</tbody></table></div></div>';
+    html += '</tbody></table>';
+
+    // Add-test-case row, always visible at the bottom of the screen (not filtered out)
+    if (addFormOpen.has(screen.file)) {
+      html += '<div class="add-tc-form">';
+      html += '<input type="text" class="add-tc-input" id="addcat-' + si + '" placeholder="Category (e.g. Layout, Data, Actions)">';
+      html += '<input type="text" class="add-tc-input" id="addtest-' + si + '" placeholder="Test case">';
+      html += '<input type="text" class="add-tc-input wide" id="addexp-' + si + '" placeholder="Expected result">';
+      html += '<button class="btn-primary" style="padding:9px 16px;" onclick="saveCustomRow(' + si + ')">Add</button>';
+      html += '<button class="btn-secondary" style="padding:9px 16px;" onclick="toggleAddForm(\'' + screen.file + '\')">Cancel</button>';
+      html += '</div>';
+    } else {
+      html += '<div class="add-tc-trigger" onclick="toggleAddForm(\'' + screen.file + '\')">+ Add test case</div>';
+    }
+
+    html += '</div>';
   });
 
   root.innerHTML = html;
@@ -648,19 +953,83 @@ function toggleScreen(si) {
   renderScreens();
 }
 
+function toggleAddForm(screenFile) {
+  if (addFormOpen.has(screenFile)) addFormOpen.delete(screenFile);
+  else addFormOpen.add(screenFile);
+  renderScreens();
+}
+
+function saveCustomRow(si) {
+  const screen = SCREENS[si];
+  const cat = document.getElementById('addcat-' + si).value.trim() || 'Custom';
+  const test = document.getElementById('addtest-' + si).value.trim();
+  const expected = document.getElementById('addexp-' + si).value.trim();
+  if (!test) { alert('Give the test case a name before adding it.'); return; }
+
+  const key = screen.file + '::custom-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  registerCustomRow({ row_key: key, screen_file: screen.file, screen_name: screen.name, category: cat, test_case: test, expected_result: expected });
+  addFormOpen.delete(screen.file);
+  renderScreens();
+  updateSummary();
+
+  setIoStatus('Saving…');
+  fetch('/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      row_key: key, screen_name: screen.name, screen_file: screen.file,
+      category: cat, test_case: test, expected_result: expected, is_custom: true,
+      status: 'notrun', updated_by: getReporterName(),
+    }),
+  })
+    .then(function (r) { if (!r.ok) throw new Error('save failed (' + r.status + ')'); return r.json(); })
+    .then(function () { setIoStatus('Saved.'); setConn(true); })
+    .catch(function (err) {
+      setIoStatus('Could not save the new test case (' + err.message + '). It will disappear on refresh until your connection is back.');
+      setConn(false);
+    });
+}
+
+function deleteCustomRow(key) {
+  if (!confirm('Remove this test case? This cannot be undone.')) return;
+  const meta = rowMeta[key];
+  delete rowMeta[key];
+  delete rowStatus[key];
+  delete rowNotes[key];
+  delete rowDevResponse[key];
+  delete attachments[key];
+  if (meta && customRowsByScreen[meta.screenFile]) {
+    customRowsByScreen[meta.screenFile] = customRowsByScreen[meta.screenFile].filter((k) => k !== key);
+  }
+  renderScreens();
+  updateSummary();
+
+  fetch('/api/results', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ row_key: key, delete_row: true }),
+  }).catch(function () { /* best-effort */ });
+}
+
 function getReporterName() {
   return document.getElementById('reporterName').value.trim() || 'Anonymous';
 }
 
-function postUpdate(si, ri, fields) {
-  const key = rowKey(si, ri);
-  const screen = SCREENS[si];
+function postUpdate(key, fields) {
+  const meta = rowMeta[key];
+  if (!meta) return;
   const payload = Object.assign({
     row_key: key,
-    screen_name: screen.name,
-    screen_file: screen.file,
+    screen_name: meta.screenName,
+    screen_file: meta.screenFile,
     updated_by: getReporterName(),
   }, fields);
+  if (meta.isCustom) {
+    payload.category = meta.cat;
+    payload.test_case = meta.test;
+    payload.expected_result = meta.expected;
+    payload.is_custom = true;
+  }
 
   setIoStatus('Saving…');
   fetch('/api/results', {
@@ -683,25 +1052,24 @@ function postUpdate(si, ri, fields) {
     });
 }
 
-function cycleStatus(si, ri) {
-  const key = rowKey(si, ri);
+function cycleStatus(key) {
   const current = rowStatus[key] || 'notrun';
   const idx = STATUS_CYCLE.indexOf(current);
   const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
   rowStatus[key] = next;
   renderScreens();
   updateSummary();
-  postUpdate(si, ri, { status: next });
+  postUpdate(key, { status: next });
 }
 
-function setNote(si, ri, value) {
-  rowNotes[rowKey(si, ri)] = value;
-  postUpdate(si, ri, { qa_notes: value });
+function setNote(key, value) {
+  rowNotes[key] = value;
+  postUpdate(key, { qa_notes: value });
 }
 
-function setDevResponse(si, ri, value) {
-  rowDevResponse[rowKey(si, ri)] = value;
-  postUpdate(si, ri, { dev_response: value });
+function setDevResponse(key, value) {
+  rowDevResponse[key] = value;
+  postUpdate(key, { dev_response: value });
 }
 
 function setIoStatus(msg) {
@@ -714,27 +1082,27 @@ function setConn(online) {
   document.getElementById('connText').textContent = online ? 'Connected — saving to Supabase' : 'Offline — changes are not being saved';
 }
 
-function attachFile(si, ri, input) {
+function attachFile(key, input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function (e) {
-    // optimistic local preview while the upload is in flight
-    attachments[rowKey(si, ri)] = { name: file.name, url: e.target.result };
+    attachments[key] = { name: file.name, url: e.target.result };
     renderScreens();
-    postUpdate(si, ri, { screenshot_base64: e.target.result });
+    postUpdate(key, { screenshot_base64: e.target.result });
   };
   reader.readAsDataURL(file);
 }
 
-function removeAttachment(si, ri) {
-  delete attachments[rowKey(si, ri)];
+function removeAttachment(key) {
+  delete attachments[key];
   renderScreens();
-  postUpdate(si, ri, { clear_screenshot: true });
+  postUpdate(key, { clear_screenshot: true });
 }
 
 function applyServerRow(row) {
   const key = row.row_key;
+  if (row.is_custom && !rowMeta[key]) registerCustomRow(row);
   if (row.status) rowStatus[key] = row.status;
   if (row.qa_notes) rowNotes[key] = row.qa_notes;
   if (row.dev_response) rowDevResponse[key] = row.dev_response;
@@ -773,17 +1141,22 @@ function closeLightbox(e) {
   document.getElementById('lightbox').classList.remove('show');
 }
 
+function allRowKeys() {
+  let keys = [];
+  SCREENS.forEach((screen) => { keys = keys.concat(screenRowKeys(screen)); });
+  return keys;
+}
+
 function updateSummary() {
   let pass = 0, fail = 0, blocked = 0, notrun = 0, total = 0;
-  SCREENS.forEach((screen, si) => {
-    screen.rows.forEach((_, ri) => {
-      total++;
-      const st = rowStatus[rowKey(si, ri)] || 'notrun';
-      if (st === 'pass') pass++;
-      else if (st === 'fail') fail++;
-      else if (st === 'blocked') blocked++;
-      else notrun++;
-    });
+  const keys = allRowKeys();
+  keys.forEach((key) => {
+    total++;
+    const st = rowStatus[key] || 'notrun';
+    if (st === 'pass') pass++;
+    else if (st === 'fail') fail++;
+    else if (st === 'blocked') blocked++;
+    else notrun++;
   });
   const executed = pass + fail + blocked;
   const pct = total ? Math.round(executed / total * 100) : 0;
@@ -801,7 +1174,7 @@ function updateSummary() {
   document.getElementById('handoffCount').textContent = issueCount;
   document.getElementById('handoffBtn').classList.toggle('disabled', issueCount === 0);
 
-  document.getElementById('headMeta').textContent = SCREENS.length + ' screens \u00b7 ' + total + ' test cases \u00b7 Updated Jul 30, 2026';
+  document.getElementById('headMeta').textContent = SCREENS.length + ' screens \u00b7 ' + total + ' test cases \u00b7 Updated Aug 4, 2026';
 }
 
 document.querySelectorAll('.filter-chip').forEach(function (chip) {
@@ -821,18 +1194,19 @@ document.getElementById('handoffBtn').addEventListener('click', function () {
   const body = document.getElementById('handoffBody');
   let html = '';
   let count = 0;
-  SCREENS.forEach((screen, si) => {
-    screen.rows.forEach((r, ri) => {
-      const key = rowKey(si, ri);
+  SCREENS.forEach((screen) => {
+    screenRowKeys(screen).forEach((key) => {
+      const meta = rowMeta[key];
       const st = rowStatus[key];
+      if (!meta) return;
       if (st === 'fail' || st === 'blocked') {
         count++;
         const note = rowNotes[key];
         const devResp = rowDevResponse[key];
         html += '<div class="hm-issue">';
         html += '<div class="hm-issue-head"><span class="hm-issue-screen">' + screen.name + '</span><span class="status-pill ' + st + '" style="cursor:default;">' + STATUS_ICON[st] + STATUS_LABEL[st] + '</span></div>';
-        html += '<div class="hm-issue-title">' + r.test + '</div>';
-        html += '<div class="hm-issue-expected"><strong>Expected:</strong> ' + r.expected + '</div>';
+        html += '<div class="hm-issue-title">' + meta.test + '</div>';
+        html += '<div class="hm-issue-expected"><strong>Expected:</strong> ' + meta.expected + '</div>';
         html += '<div class="hm-issue-notes' + (note ? '' : ' empty') + '"><strong>QA notes:</strong> ' + (note || 'No notes added') + '</div>';
         if (devResp) html += '<div class="hm-issue-notes" style="background:var(--blue-soft);"><strong>Dev response:</strong> ' + devResp + '</div>';
         html += '</div>';
@@ -851,15 +1225,16 @@ function closeHandoff() {
 function copyHandoff() {
   let text = 'Odin Project Module \u2014 Dev Handoff\n\n';
   let count = 0;
-  SCREENS.forEach((screen, si) => {
-    screen.rows.forEach((r, ri) => {
-      const key = rowKey(si, ri);
+  SCREENS.forEach((screen) => {
+    screenRowKeys(screen).forEach((key) => {
+      const meta = rowMeta[key];
       const st = rowStatus[key];
+      if (!meta) return;
       if (st === 'fail' || st === 'blocked') {
         count++;
         text += '[' + STATUS_LABEL[st].toUpperCase() + '] ' + screen.name + ' (' + screen.file + ')\n';
-        text += '  Test: ' + r.test + '\n';
-        text += '  Expected: ' + r.expected + '\n';
+        text += '  Test: ' + meta.test + '\n';
+        text += '  Expected: ' + meta.expected + '\n';
         text += '  QA notes: ' + (rowNotes[key] || '(none)') + '\n';
         if (rowDevResponse[key]) text += '  Dev response: ' + rowDevResponse[key] + '\n';
         text += '\n';

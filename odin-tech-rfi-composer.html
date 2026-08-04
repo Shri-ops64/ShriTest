@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin Tech · Raise RFI</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  /* App bar */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .stage-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-dark); font-size: 11.5px; font-weight: 700; }
+  .stage-pill svg { width: 11px; height: 11px; }
+
+  /* Title block */
+  .title-block { padding: 6px 22px 14px; }
+  .title-block h1 { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .title-block .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+  .title-block .project-context svg { width: 11px; height: 11px; color: var(--blue); }
+  .title-block .project-context strong { font-weight: 600; }
+
+  /* Intro card explaining the draft flow */
+  .intro-card { background: var(--blue-soft); border: 1px solid #c5d8f0; border-radius: 10px; margin: 0 16px 14px; padding: 12px 14px; display: flex; gap: 10px; }
+  .intro-card-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--blue); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .intro-card-icon svg { width: 14px; height: 14px; }
+  .intro-card-body { flex: 1; font-size: 12px; color: var(--ink-light); line-height: 1.5; }
+  .intro-card-body strong { color: var(--ink); font-weight: 600; }
+
+  /* Card */
+  .card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px 18px; }
+  .card.no-pad { padding: 0; overflow: hidden; }
+
+  /* Field label */
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-label .hint { font-size: 10.5px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  /* Photo capture (image-first) */
+  .photo-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .photo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .photo-action-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 10px; border: 1.5px dashed var(--line); background: var(--bg-2); cursor: pointer; }
+  .photo-action-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .photo-action-btn.primary { border-color: var(--ink); background: var(--ink); color: white; border-style: solid; }
+  .photo-action-btn.primary:hover { background: var(--ink); }
+  .photo-action-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; }
+  .photo-action-btn:not(.primary) .photo-action-icon { background: white; border: 1px solid var(--line); }
+  .photo-action-icon svg { width: 18px; height: 18px; }
+  .photo-action-btn.primary .photo-action-icon svg { color: white; }
+  .photo-action-btn:not(.primary) .photo-action-icon svg { color: var(--ink-light); }
+  .photo-action-label { font-size: 12.5px; font-weight: 600; }
+  .photo-action-btn:not(.primary) .photo-action-label { color: var(--ink); }
+
+  .photo-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .photo-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-thumb-remove { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .photo-thumb-remove svg { width: 9px; height: 9px; }
+
+  /* Inputs */
+  .input-text { width: 100%; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: inherit; color: var(--ink); background: white; }
+  .input-text:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  textarea.input-text { resize: vertical; min-height: 100px; line-height: 1.55; }
+
+  .input-with-counter { position: relative; }
+  .input-counter { position: absolute; bottom: 8px; right: 12px; font-size: 10.5px; color: var(--muted); font-weight: 500; background: rgba(255,255,255,0.95); padding: 1px 5px; border-radius: 3px; }
+
+  /* Task picker row */
+  .task-picker { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: white; cursor: pointer; }
+  .task-picker:hover { border-color: var(--blue); }
+  .task-picker-body { flex: 1; min-width: 0; }
+  .task-picker-label { font-size: 12px; color: var(--muted); margin-bottom: 1px; }
+  .task-picker-value { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .task-picker-value.empty { color: var(--muted); font-weight: 500; }
+  .task-picker-chev { color: var(--muted-2); flex-shrink: 0; }
+  .task-picker-chev svg { width: 16px; height: 16px; }
+
+  /* Help note */
+  .help-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.45; padding-left: 2px; }
+
+  /* Footer (sticky-ish action bar) */
+  .footer-actions { background: white; border-top: 1px solid var(--line); padding: 14px 18px 18px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 13px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+  .btn-pill.secondary { background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .btn-pill.secondary:hover { background: var(--bg-2); }
+  .btn-pill.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 3px 10px rgba(237, 28, 36, 0.25); }
+  .btn-pill svg { width: 13px; height: 13px; }
+
+  /* Container with annotations */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; color: #7a6620; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; line-height: 1.5; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations code { background: white; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'IBM Plex Mono', Menlo, monospace; color: #4a3d10; }
+  /* Dictation mic (D-035): browser-native speech-to-text on long-form fields */
+  .ta-wrap { position: relative; }
+  .ta-wrap > textarea { padding-right: 44px; }
+  .mic-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #cfe0fa; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .mic-btn svg { width: 15px; height: 15px; color: var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="device-frame">
+
+    <!-- App bar -->
+    <div class="app-bar">
+      <button class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Project
+      </button>
+      <span class="stage-pill">
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Internal capture
+      </span>
+    </div>
+
+    <!-- Title -->
+    <div class="title-block">
+      <h1>Raise RFI</h1>
+      <div class="project-context">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <strong>Fairmont Hotel Renovation</strong> · 9059
+      </div>
+    </div>
+
+    <!-- Intro card explaining the flow -->
+    <div class="intro-card">
+      <div class="intro-card-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="intro-card-body">
+        <strong>Submit posts this RFI to the project.</strong> The PM takes it from there and emails the GC. There is no approval step. Don't worry about phrasing or who to send it to. Just capture the question.
+      </div>
+    </div>
+
+    <!-- Photo card (image-first) -->
+    <div class="card">
+      <div class="photo-section-head">
+        <div class="field-label" style="margin-bottom: 0;">Photos <span class="hint">tap to add</span></div>
+      </div>
+
+      <div class="photo-actions">
+        <button class="photo-action-btn primary">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <span class="photo-action-label">Camera</span>
+        </button>
+        <button class="photo-action-btn">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <span class="photo-action-label">From gallery</span>
+        </button>
+      </div>
+
+      <div class="photo-thumbs">
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#3a4150"/>
+            <rect x="10" y="32" width="80" height="36" fill="#6b7a8a" stroke="#2a2f3a" stroke-width="1"/>
+            <circle cx="50" cy="50" r="8" fill="#a0a8b5"/>
+            <rect x="35" y="48" width="30" height="4" fill="#2a2f3a"/>
+            <rect x="45" y="35" width="10" height="30" fill="#2a2f3a"/>
+            <rect x="0" y="0" width="100" height="20" fill="#1c2028"/>
+            <text x="50" y="13" text-anchor="middle" fill="#d0d4dc" font-family="Inter, sans-serif" font-size="8" font-weight="600">SPEC CONFLICT</text>
+          </svg>
+          <div class="photo-thumb-remove">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#e8e4d8"/>
+            <rect x="10" y="20" width="80" height="60" fill="white" stroke="#c0bcb0" stroke-width="1"/>
+            <rect x="18" y="28" width="50" height="2" fill="#9a978d"/>
+            <rect x="18" y="34" width="64" height="1.5" fill="#c0bcb0"/>
+            <rect x="18" y="40" width="60" height="1.5" fill="#c0bcb0"/>
+            <rect x="18" y="46" width="40" height="1.5" fill="#c0bcb0"/>
+            <rect x="18" y="55" width="64" height="6" fill="#fdf2dd" stroke="#d99316" stroke-width="0.8"/>
+            <rect x="18" y="65" width="50" height="1.5" fill="#c0bcb0"/>
+            <rect x="18" y="71" width="55" height="1.5" fill="#c0bcb0"/>
+          </svg>
+          <div class="photo-thumb-remove">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject card -->
+    <div class="card">
+      <div class="field-label">Subject<span class="req">*</span> <span class="hint">one line</span></div>
+      <input type="text" class="input-text" value="Backflow preventer 14-week lead time, need substitute approval">
+      <div class="help-note">Short. What's the question in five to ten words.</div>
+    </div>
+
+    <!-- Description card -->
+    <div class="card">
+      <div class="field-label">Description<span class="req">*</span></div>
+      <div class="input-with-counter">
+        <div class="ta-wrap"><textarea class="input-text">Spec'd Watts 909 RPZ has a 14-week lead time, won't make schedule. Apollo 4ALF-LF and Wilkins 975XL are both in stock locally. Need approval to swap.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+        <div class="input-counter">183 / 500</div>
+      </div>
+      <div class="help-note">In your own words. The PM will rewrite this for the GC if needed.</div>
+    </div>
+
+    <!-- Linked task card -->
+    <div class="card">
+      <div class="field-label">Linked task <span class="hint">optional</span></div>
+      <div class="task-picker">
+        <div class="task-picker-body">
+          <div class="task-picker-label">Related to</div>
+          <div class="task-picker-value">Backflow preventer install</div>
+        </div>
+        <div class="task-picker-chev">
+          <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="help-note">Helps the PM see which task this might block. Skip if not sure.</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-actions">
+      <button class="btn-pill secondary">Cancel</button>
+      <button class="btn-pill primary">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit RFI
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Annotations -->
+  <div class="annotations">
+    <h3>Mobile RFI composer notes</h3>
+    <ul>
+      <li><strong>Five fields only</strong>, matching the lean intake spec (section 6.6.3). Photo upload, subject, description, linked task. Number and date auto-populated on submit, not asked. No recipient, no due date, no priority, no discipline, no drawing reference, no spec section, no blocking-task toggle. Field user captures, PM handles the rest.</li>
+      <li><strong>Shared by all field roles (D-038).</strong> The same composer is used by Technicians, Foremen, and Supervisors. The only difference is the <code>created_by_role</code> stamped on the record; the form is identical. Entry points sit on each role's screen (see below).</li>
+      <li><strong>Photo-first layout.</strong> Photo capture card sits above the text fields because the most common field-originated RFI starts with "look at this." Camera button is the primary affordance (dark filled), gallery picker is secondary (dashed border).</li>
+      <li><strong>Two example photos</strong> rendered as illustrative SVGs: one showing a labeled SPEC CONFLICT shot of a mechanical installation, one showing a spec sheet with a highlighted line. Matches the photo treatment on daily logs and tech home for visual consistency.</li>
+      <li><strong>Intro card sets expectation:</strong> "Submit posts this RFI to the project. The PM takes it from there and emails the GC. There is no approval step." Removes the anxiety of "am I being too casual" or "am I sending this to the GC directly", without implying a gate that does not exist.</li>
+      <li><strong>Stage pill in the app bar</strong> reads "Internal capture" with a small info icon. Reinforces that this is the casual capture step, not the formal outbound send. Blue color matches the RFI type pill used elsewhere.</li>
+      <li><strong>Subject hint helps frame the input:</strong> "one line" in the label hint, "Short. What's the question in five to ten words." in the help-note below. Keeps the field user from writing essays in this field.</li>
+      <li><strong>Description hint reinforces casual tone:</strong> "In your own words. The PM will rewrite this for the GC if needed." The field user doesn't have to think about formal language; that's the PM's job when emailing the GC.</li>
+      <li><strong>500-character counter</strong> on description. Generous but bounded. Encourages capture rather than novel.</li>
+      <li><strong>Linked task is optional</strong> with helper text "Skip if not sure." Tapping it opens a project-task picker (same pattern as the task picker elsewhere). Pre-fills the PM's mental model of "this blocks XYZ work."</li>
+      <li><strong>Submit button uses the same pink-red gradient</strong> as other submit-style actions in the tech mobile app. Consistent affordance language.</li>
+    </ul>
+
+    <h4>What happens on Submit</h4>
+    <ul>
+      <li><strong>Record is created as <code>OPEN</code> (D-038, no approval gate).</strong> The RFI posts straight to the project's Change Notices register as an Open RFI. There is no DRAFT state and no PM Draft Inbox; that earlier approval-style flow is cut (it conflicted with how Thor actually works, confirmed Jun 10).</li>
+      <li><strong>Confirmation toast:</strong> "RFI raised. The PM will email the GC and follow up if anything needs clarification." Then returns to the per-project view.</li>
+      <li><strong>The PM handles the outbound email</strong> to the GC from their normal email client, and later captures the GC's response back into the desktop RFI detail (Mark Answered). Odin is the system of record for the question and the answer, not the mail client.</li>
+      <li><strong>Activity event emitted:</strong> <code>RFI_CREATED</code> with metadata noting <code>created_by_role</code> (tech, foreman, or supervisor). Shows up in the project's Activity feed so the PM and team see the new RFI as it comes in.</li>
+    </ul>
+
+    <h4>Entry points to this composer</h4>
+    <ul>
+      <li><strong>Technician:</strong> "Raise RFI" affordance on the per-project tech view (<code>odin-tech-project.html</code>), below the two primary actions (Submit Time, Write Daily Tech Log).</li>
+      <li><strong>Foreman:</strong> "Raise RFI" button on the Foreman report composer (<code>odin-foreman-report-composer-mobile.html</code>).</li>
+      <li><strong>Supervisor:</strong> "Raise RFI" button on the Supervisor report composer (<code>odin-supervisor-report-composer-mobile.html</code>).</li>
+      <li><strong>Possible future entry point from a task detail</strong> in case a field user wants to RFI directly against a specific blocked task. Parked for v1.1.</li>
+    </ul>
+
+    <h4>What field roles still do NOT do</h4>
+    <ul>
+      <li><strong>They do not create PCNs.</strong> PCNs are inbound GC documents per the directional model; if a field user receives a PCN on site, they forward the email to the PM (per Justin's May 28 confirmation).</li>
+      <li><strong>They do not compose-and-send RFIs.</strong> The outbound email to the GC is the PM's job. Mobile is intake only.</li>
+      <li><strong>They do not answer RFIs.</strong> The PM captures the GC's email response into the desktop detail panel.</li>
+      <li>This composer plus the per-role Raise-RFI buttons are the entire mobile Change Notices surface for v1. Read-only register on mobile is parked for v1.1.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

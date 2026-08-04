@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Supervisor Report Composer (mobile, v1 preview)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  /* App bar */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .report-type-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); font-size: 11.5px; font-weight: 700; }
+  .report-type-pill svg { width: 11px; height: 11px; }
+
+  /* Title block */
+  .title-block { padding: 6px 22px 18px; }
+  .title-block h1 { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .title-block .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+  .title-block .project-context svg { width: 11px; height: 11px; color: var(--blue); }
+  .title-block .project-context strong { font-weight: 600; }
+  .title-block .visit-info { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* Card */
+  .card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px 18px; }
+
+  /* Field label */
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-label .hint { font-size: 10.5px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  /* Visit info row */
+  .visit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .visit-stat { background: var(--bg-2); border-radius: 8px; padding: 10px 12px; }
+  .visit-stat .lbl { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
+  .visit-stat input { border: none; background: transparent; font-size: 15px; font-weight: 600; color: var(--ink); width: 100%; outline: none; font-family: inherit; }
+
+  /* Health traffic-light selector */
+  .health-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .health-btn { padding: 8px 8px; min-height: 52px; box-sizing: border-box; border-radius: 10px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+  .health-btn .dot { width: 14px; height: 14px; border-radius: 50%; }
+  .health-btn.green .dot { background: var(--green); }
+  .health-btn.yellow .dot { background: var(--amber); }
+  .health-btn.red .dot { background: var(--red); }
+  .health-btn .lbl { font-size: 12px; font-weight: 600; color: var(--ink-light); }
+  .health-btn.selected.green { border-color: var(--green); background: var(--green-soft); }
+  .health-btn.selected.green .lbl { color: var(--green); }
+  .health-btn.selected.yellow { border-color: var(--amber); background: var(--amber-soft); }
+  .health-btn.selected.yellow .lbl { color: var(--amber); }
+  .health-btn.selected.red { border-color: var(--red); background: var(--red-soft); }
+  .health-btn.selected.red .lbl { color: var(--red); }
+
+  /* Single-line input */
+  .form-input { width: 100%; padding: 10px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 14px; color: var(--ink); font-family: inherit; outline: none; }
+  .form-input:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  /* Text area */
+  .form-textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 14px; color: var(--ink); font-family: inherit; resize: vertical; min-height: 90px; outline: none; }
+  .form-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  /* Pill row */
+  .pill-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .pill-btn { padding: 8px 8px; min-height: 52px; box-sizing: border-box; border-radius: 10px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-light); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .pill-btn.selected { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Rating 1-10 slider */
+  .rating-row { display: flex; align-items: center; gap: 12px; }
+  .rating-track { flex: 1; height: 8px; background: linear-gradient(to right, var(--red) 0%, var(--amber) 50%, var(--green) 100%); border-radius: 999px; position: relative; }
+  .rating-thumb { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: white; border: 2px solid var(--ink); transform: translate(-50%, -50%); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+  .rating-val { font-size: 18px; font-weight: 700; color: var(--ink); min-width: 28px; text-align: right; }
+  .rating-val .max { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Audit category row (Workmanship / Cleanliness / Productivity as G/Y/R) */
+  .audit-list .audit-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+  .audit-list .audit-row:last-child { border-bottom: none; }
+  .audit-name { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .audit-lights { display: flex; gap: 4px; }
+  .audit-lights .sl { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .audit-lights .sl .inner { width: 10px; height: 10px; border-radius: 50%; opacity: 0.35; }
+  .audit-lights .sl.g .inner { background: var(--green); }
+  .audit-lights .sl.y .inner { background: var(--amber); }
+  .audit-lights .sl.r .inner { background: var(--red); }
+  .audit-lights .sl.selected { border-color: currentColor; background: white; }
+  .audit-lights .sl.g.selected { color: var(--green); }
+  .audit-lights .sl.y.selected { color: var(--amber); }
+  .audit-lights .sl.r.selected { color: var(--red); }
+  .audit-lights .sl.selected .inner { opacity: 1; }
+
+  /* Verification row */
+  .verification-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .verification-btn { padding: 8px 8px; min-height: 52px; box-sizing: border-box; border-radius: 10px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-light); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .verification-btn.selected.yes { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+  .verification-btn.selected.mostly { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
+  .verification-btn.selected.no { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+
+  /* Top 3 risks */
+  .risk-block { background: var(--bg-2); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid var(--amber); }
+  .risk-block:last-child { margin-bottom: 0; }
+  .risk-block .risk-label { font-size: 10.5px; color: var(--amber); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .risk-block input { width: 100%; border: none; background: transparent; font-size: 13.5px; color: var(--ink); outline: none; font-family: inherit; }
+  .risk-block input::placeholder { color: var(--muted-2); font-style: italic; }
+
+  /* Photo capture */
+  .photo-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .photo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .photo-action-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border-radius: 10px; border: 1.5px dashed var(--line); background: var(--bg-2); cursor: pointer; }
+  .photo-action-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .photo-action-btn.primary { border-color: var(--ink); background: var(--ink); color: white; border-style: solid; }
+  .photo-action-icon { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; }
+  .photo-action-btn:not(.primary) .photo-action-icon { background: white; border: 1px solid var(--line); }
+  .photo-action-icon svg { width: 16px; height: 16px; }
+  .photo-action-btn.primary .photo-action-icon svg { color: white; }
+  .photo-action-btn:not(.primary) .photo-action-icon svg { color: var(--ink-light); }
+  .photo-action-label { font-size: 12.5px; font-weight: 600; }
+  .photo-action-btn:not(.primary) .photo-action-label { color: var(--ink); }
+  .photo-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; background: var(--bg-2); }
+  .photo-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-count-meta { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+
+  /* Footer */
+  .footer-actions { background: white; border-top: 1px solid var(--line); padding: 14px 18px 18px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+  /* Outstanding RFIs (read-only) + Raise RFI */
+  .rfi-link-list .rfi-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .rfi-link-list .rfi-row:last-child { border-bottom: none; }
+  .rfi-id-pill { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: var(--blue-soft); color: var(--blue-dark); }
+  .rfi-subject { flex: 1; font-size: 12.5px; color: var(--ink); line-height: 1.35; }
+  .rfi-age { font-size: 11px; color: var(--amber); font-weight: 600; }
+  .rfi-raise-btn { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 12px; padding: 10px; border: 1.5px solid var(--blue); border-radius: 10px; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .rfi-raise-btn svg { width: 14px; height: 14px; }
+
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 13px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+  .btn-pill.secondary { background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .btn-pill.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 3px 10px rgba(237, 28, 36, 0.25); }
+  .btn-pill svg { width: 13px; height: 13px; }
+
+  /* Annotations */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+  /* Dictation mic (D-035): browser-native speech-to-text on long-form fields */
+  .ta-wrap { position: relative; }
+  .ta-wrap > textarea { padding-right: 44px; }
+  .mic-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #cfe0fa; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .mic-btn svg { width: 15px; height: 15px; color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <!-- App bar -->
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Cancel
+      </div>
+      <span class="report-type-pill">
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Supervisor Report
+      </span>
+    </div>
+
+    <!-- Title -->
+    <div class="title-block">
+      <h1>Weekly Supervisor Report</h1>
+      <div class="project-context">
+        <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <strong>APM RTU Replacement (Job 9075)</strong>
+      </div>
+      <div class="visit-info">Site visit June 5, 2026 · Supervisor: Rob Altvater · Foreman: Adam Coey</div>
+    </div>
+
+    <!-- 1. Visit info -->
+    <div class="card">
+      <div class="field-label">Site visit</div>
+      <div class="visit-row">
+        <div class="visit-stat">
+          <div class="lbl">Date</div>
+          <input type="text" value="Jun 5, 2026" />
+        </div>
+        <div class="visit-stat">
+          <div class="lbl">Time on site</div>
+          <input type="text" value="2.5 hrs" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Overall project health (supervisor's own assessment) -->
+    <div class="card">
+      <div class="field-label">Overall project health <span class="hint">your assessment</span></div>
+      <div class="health-row">
+        <div class="health-btn green">
+          <div class="dot"></div>
+          <div class="lbl">Green</div>
+        </div>
+        <div class="health-btn yellow selected">
+          <div class="dot"></div>
+          <div class="lbl">Yellow</div>
+        </div>
+        <div class="health-btn red">
+          <div class="dot"></div>
+          <div class="lbl">Red</div>
+        </div>
+      </div>
+      <input type="text" class="form-input" placeholder="One-line reason (optional)" value="Schedule holding but site cleanliness and two open RFIs need attention.">
+    </div>
+
+    <!-- 3. Confidence rating -->
+    <div class="card">
+      <div class="field-label">Confidence project finishes successfully <span class="hint">1-10</span></div>
+      <div class="rating-row">
+        <div class="rating-track">
+          <div class="rating-thumb" style="left: 70%;"></div>
+        </div>
+        <div class="rating-val">7<span class="max"> / 10</span></div>
+      </div>
+    </div>
+
+    <!-- 4. Foreman performance (traffic light, not scorecard) -->
+    <div class="card">
+      <div class="field-label">Foreman performance <span class="hint">overall this week</span></div>
+      <div class="health-row">
+        <div class="health-btn green selected">
+          <div class="dot"></div>
+          <div class="lbl">Strong</div>
+        </div>
+        <div class="health-btn yellow">
+          <div class="dot"></div>
+          <div class="lbl">Adequate</div>
+        </div>
+        <div class="health-btn red">
+          <div class="dot"></div>
+          <div class="lbl">Needs help</div>
+        </div>
+      </div>
+      <input type="text" class="form-input" placeholder="One-line note (optional)" value="Adam handling AHU1 craning logistics well. Stayed on top of weather contingency.">
+    </div>
+
+    <!-- 5. Verification of foreman report -->
+    <div class="card">
+      <div class="field-label">Foreman report accurate?</div>
+      <div class="verification-row">
+        <div class="verification-btn yes">Yes</div>
+        <div class="verification-btn mostly selected">Mostly</div>
+        <div class="verification-btn no">No</div>
+      </div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Note any discrepancies (only if Mostly or No)" style="min-height: 70px;">Crew reported as 5 on Tuesday but observed 4 (one tech off-site for material run). Subtrade status for sheet metal listed as green; observed minor delays waiting on AHU placement, would call yellow.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 6. Workmanship / Cleanliness / Productivity (Thor Standards subset) -->
+    <div class="card">
+      <div class="field-label">Thor standards <span class="hint">G / Y / R</span></div>
+      <div class="audit-list">
+        <div class="audit-row">
+          <div class="audit-name">Workmanship</div>
+          <div class="audit-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="audit-row">
+          <div class="audit-name">Site cleanliness</div>
+          <div class="audit-lights">
+            <div class="sl g"><div class="inner"></div></div>
+            <div class="sl y selected"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="audit-row">
+          <div class="audit-name">Productivity</div>
+          <div class="audit-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="audit-row">
+          <div class="audit-name">Customer relationship</div>
+          <div class="audit-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Safety concerns -->
+    <div class="card">
+      <div class="field-label">Safety concerns <span class="hint">free text</span></div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Any safety issues observed?" style="min-height: 70px;">PPE compliance good. Fall protection setup correct around roof openings. One ladder noted not tied off, corrected on site. Hot work permit current and visible.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 8. Schedule audit -->
+    <div class="card">
+      <div class="field-label">Schedule (your assessment) <span class="req">*</span></div>
+      <div class="pill-row">
+        <div class="pill-btn">Ahead</div>
+        <div class="pill-btn selected">On schedule</div>
+        <div class="pill-btn">Behind</div>
+      </div>
+      <input type="text" class="form-input" placeholder="Risk level + note" value="Medium risk: weather contingency for AHU1 craning Tuesday could push 1-2 days.">
+    </div>
+
+    <!-- 9. Top 3 risks -->
+    <div class="card">
+      <div class="field-label">Top 3 risks this week</div>
+      <div class="risk-block">
+        <div class="risk-label">Risk 1</div>
+        <input type="text" placeholder="Top concern this week..." />
+      </div>
+      <div class="risk-block">
+        <div class="risk-label">Risk 2</div>
+        <input type="text" placeholder="Second concern..." />
+      </div>
+      <div class="risk-block">
+        <div class="risk-label">Risk 3</div>
+        <input type="text" placeholder="Third concern..." />
+      </div>
+    </div>
+
+    <!-- 10. Support requested -->
+    <div class="card">
+      <div class="field-label">Support requested <span class="hint">from PM / construction manager</span></div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="What help does the foreman need?" style="min-height: 70px;">PM follow-up on RFI-007 and RFI-008 with engineer of record. Push for response by EOD Monday. Consider client-side touchpoint on cleanliness expectation before walkthrough.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 11. Photos -->
+    <div class="card">
+      <div class="photo-section-head">
+        <div class="field-label" style="margin: 0;">
+          Photos
+          <span class="hint">problem areas, quality issues</span>
+        </div>
+      </div>
+      <div class="photo-actions">
+        <div class="photo-action-btn primary">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="photo-action-label">Take photo</div>
+        </div>
+        <div class="photo-action-btn">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div class="photo-action-label">From library</div>
+        </div>
+      </div>
+      <div class="photo-thumbs">
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#7a8290"/>
+            <rect x="8" y="14" width="32" height="22" fill="#3a4148"/>
+            <rect x="12" y="18" width="24" height="14" fill="#aab3bd"/>
+            <rect x="20" y="20" width="3" height="10" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#cfd5db"/>
+            <rect x="0" y="32" width="48" height="16" fill="#a89580"/>
+            <rect x="6" y="22" width="12" height="14" fill="#888c92"/>
+            <rect x="22" y="20" width="20" height="16" fill="#5a6068"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#aab3bd"/>
+            <rect x="4" y="20" width="40" height="6" fill="#5a6068"/>
+            <rect x="4" y="30" width="40" height="6" fill="#5a6068"/>
+            <rect x="10" y="14" width="3" height="20" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#5a6068"/>
+            <rect y="34" width="48" height="14" fill="#3a3f45"/>
+            <rect x="8" y="10" width="16" height="26" fill="#888c92"/>
+            <circle cx="16" cy="20" r="2" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#c0c5cc"/>
+            <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+            <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#d8c9b0"/>
+            <rect width="48" height="22" fill="#e8dcc4"/>
+            <rect x="6" y="28" width="3" height="20" fill="#888"/>
+            <rect x="20" y="28" width="3" height="20" fill="#888"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#3a4148"/>
+            <circle cx="24" cy="22" r="14" fill="#e8e4dc"/>
+            <circle cx="24" cy="22" r="11" fill="#fff"/>
+            <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#888c92"/>
+            <rect x="6" y="6" width="36" height="3" fill="#c98551"/>
+            <rect x="6" y="14" width="36" height="3" fill="#c98551"/>
+            <rect x="6" y="22" width="36" height="3" fill="#c98551"/>
+            <rect x="6" y="30" width="36" height="3" fill="#c98551"/>
+          </svg>
+        </div>
+      </div>
+      <div class="photo-count-meta">8 photos attached</div>
+    </div>
+
+    <!-- 12. Additional comments -->
+    <div class="card">
+      <div class="field-label">
+        Additional comments
+        <span class="hint">optional</span>
+      </div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Anything else worth flagging" style="min-height: 70px;">Met briefly with site contact, relationship strong. Owner asked about timeline for follow-up walkthrough; recommend scheduling June 17.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 13. Outstanding RFIs + Raise RFI -->
+    <div class="card">
+      <div class="field-label">
+        Outstanding RFIs
+        <span class="hint">All open, pulled automatically</span>
+      </div>
+      <div class="rfi-link-list">
+        <div class="rfi-row">
+          <span class="rfi-id-pill">RFI-007</span>
+          <div class="rfi-subject">Hot water recirc loop spec clarification (3/4" vs 1/2")</div>
+          <div class="rfi-age">11 days</div>
+        </div>
+        <div class="rfi-row">
+          <span class="rfi-id-pill">RFI-008</span>
+          <div class="rfi-subject">Backflow preventer substitute approval (Apollo 4ALF-LF)</div>
+          <div class="rfi-age">8 days</div>
+        </div>
+      </div>
+      <a href="odin-tech-rfi-composer.html" class="rfi-raise-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Raise RFI
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-actions">
+      <button class="btn-pill secondary">Save draft</button>
+      <button class="btn-pill primary">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit Report
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Annotations -->
+  <div class="annotations">
+    <h3>Supervisor Report composer (mobile · v1)</h3>
+    <ul>
+      <li><strong>Weekly cadence,</strong> after a site visit. Supervisor visits multiple projects each week; submits one report per project per visit.</li>
+      <li><strong>Different lens than the foreman report.</strong> Foreman answers "what's happening on the project"; Supervisor answers "how well is Thor running this project." Per Justin's framing.</li>
+      <li><strong>Health is the supervisor's own assessment,</strong> independent of the foreman's. When they disagree (Foreman green, Supervisor yellow), that's a useful signal for the PM.</li>
+      <li><strong>Foreman performance is a single 🟢🟡🔴</strong> (Strong / Adequate / Needs help), NOT a 6-category scorecard with letter grade. Optional one-line note. Per Justin scope conversation.</li>
+      <li><strong>Verification of foreman report</strong> is the audit hook: Yes / Mostly / No. Discrepancies captured as free text. Surfaces gaps between what the foreman reported and what the supervisor observed.</li>
+      <li><strong>Thor Standards is three categories in v1:</strong> Workmanship, Site cleanliness, Productivity. Each is G / Y / R. v2 expands to the full 6 Thor Standards categories.</li>
+      <li><strong>Top 3 risks</strong> as three separate free-text fields. Forces the supervisor to actually pick three rather than dumping every concern into one big text box.</li>
+      <li><strong>Support requested</strong> is the action hook: what does the foreman / PM need from leadership? Drives concrete follow-up.</li>
+    </ul>
+
+    <h4>What's NOT in v1 (parked, per scope conversation with Justin)</h4>
+    <ul>
+      <li>Foreman performance multi-category scorecard with letter grade (6 categories with 1-10 scores).</li>
+      <li>Full 6-category Thor Standards Audit (Tool organization, Professional appearance, Customer experience, Material organization; these 4 parked).</li>
+      <li>6-category Safety Audit with individual scores (PPE, Ladder, Lift, Fall protection, Hazard ID, Housekeeping). v1 captures safety as free text.</li>
+      <li>Labour productivity audit with specific waste categories (waiting for material, rework, etc.).</li>
+      <li>Coaching opportunities longitudinal tracking. (HR territory; needs careful design before building.)</li>
+      <li>AI-generated executive summary, biggest risk/opportunity, cross-project trends, "projects requiring executive attention."</li>
+      <li>Overall Job Score (___/100). v1 health rating is the supervisor's own assessment.</li>
+      <li>Cross-project company-wide aggregation dashboard for Justin (the most exciting v2 feature, but its own roadmap conversation).</li>
+    </ul>
+
+    <h4>What feeds into rollup elsewhere in Odin</h4>
+    <ul>
+      <li><strong>Supervisor health rating</strong> alongside foreman health on Overview tab. Two signals, surfaced for the PM to interpret. Odin does not auto-merge into one score.</li>
+      <li><strong>Verification flag</strong> (Mostly / No) generates an Activity feed event for the PM.</li>
+      <li><strong>Top 3 risks</strong> are stored as free text in v1. v2 could promote them to first-class Risk records with owners and follow-up dates.</li>
+      <li><strong>Foreman performance trend</strong> visible on the Project Logs tab over time (rolling green/yellow/red across weeks). No HR-style file in v1.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

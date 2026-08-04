@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin Projects Module · Decision Log</title>
+<!--
+  =====================================================================
+  DECISION LOG · HOW TO ADD AN ENTRY
+  =====================================================================
+  This is a living document. Add entries as significant decisions are
+  made on the project. Format each entry following the template below.
+
+  Format (copy/paste, edit, paste at top of the relevant date block):
+
+      <div class="entry" data-status="committed" data-tags="topic-a, topic-b">
+        <div class="entry-head">
+          <span class="entry-id">D-NNN</span>
+          <span class="entry-title">One-line decision title</span>
+          <span class="entry-status committed">Committed</span>
+        </div>
+        <div class="entry-meta">
+          <span class="entry-source">Source: Justin meeting / Mike call / Design review / etc.</span>
+          <span class="entry-tags">
+            <span class="tag">topic-a</span>
+            <span class="tag">topic-b</span>
+          </span>
+        </div>
+        <div class="entry-body">
+          <p><strong>Decision:</strong> What was decided, briefly.</p>
+          <p><strong>Reasoning:</strong> Why this call was made. The "why"
+          matters more than the "what" months from now.</p>
+          <p><strong>Affects:</strong> Files / spec sections / data model
+          fields touched.</p>
+        </div>
+      </div>
+
+  Status values: committed, pending-review, reverted, parked-v2
+
+  Tag conventions (lowercase, hyphenated):
+    scope, data-model, ui-pattern, brand, workflow, role, integration,
+    mobile, desktop, tech-side, admin-side, ux
+
+  Each new entry takes the next D-NNN number. Highest is at the top.
+  =====================================================================
+-->
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #2d2e30;
+    --muted:      #58595b;
+    --muted-2:    #828487;
+    --muted-3:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.55; }
+
+  /* Top bar */
+  .top-bar { background: var(--ink); color: white; padding: 14px 28px; display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .top-bar .crumb { color: rgba(255, 255, 255, 0.65); }
+  .top-bar a { color: rgba(255, 255, 255, 0.65); text-decoration: none; }
+  .top-bar a:hover { color: white; }
+  .top-bar .here { color: white; font-weight: 600; }
+  .top-bar .sep { color: rgba(255, 255, 255, 0.35); }
+
+  /* Page container */
+  .container { max-width: 960px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  /* Header */
+  .page-head { margin-bottom: 28px; }
+  .page-head .eyebrow { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+  .page-head .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .page-head h1 { font-size: 32px; font-weight: 700; line-height: 1.15; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .page-head .lede { font-size: 15px; color: var(--ink-light); line-height: 1.55; max-width: 720px; }
+
+  /* Stats strip */
+  .stats { display: flex; gap: 10px; margin: 22px 0 28px; flex-wrap: wrap; }
+  .stat { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; min-width: 110px; }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1; font-feature-settings: 'tnum'; }
+  .stat-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 4px; }
+
+  /* Filter row */
+  .filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; padding: 14px 18px; background: white; border: 1px solid var(--line); border-radius: 10px; }
+  .filter-row .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-right: 6px; }
+  .filter-pill { padding: 5px 12px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--ink-light); cursor: pointer; user-select: none; }
+  .filter-pill:hover { background: var(--bg); }
+  .filter-pill.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Date group */
+  .date-group { margin-bottom: 36px; }
+  .date-group-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .date-group-head h2 { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .date-group-head .group-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Entry */
+  .entry { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; margin-bottom: 12px; }
+  .entry-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .entry-id { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; font-weight: 700; color: var(--blue-dark); background: var(--blue-soft); padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+  .entry-title { font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.3; flex: 1; min-width: 0; }
+  .entry-status { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
+  .entry-status.committed { background: var(--green-soft); color: var(--green); }
+  .entry-status.pending-review { background: var(--amber-soft); color: var(--amber); }
+  .entry-status.reverted { background: var(--bg); color: var(--muted); text-decoration: line-through; }
+  .entry-status.parked-v2 { background: var(--purple-soft); color: var(--purple); }
+
+  .entry-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; font-size: 11.5px; color: var(--muted); flex-wrap: wrap; }
+  .entry-source { color: var(--muted); }
+  .entry-source strong { color: var(--ink-light); font-weight: 600; }
+  .entry-tags { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+  .entry-tags .tag { padding: 2px 8px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 3px; font-size: 10.5px; font-weight: 600; color: var(--ink-light); text-transform: lowercase; cursor: pointer; }
+  .entry-tags .tag:hover { background: var(--blue-soft); color: var(--blue-dark); border-color: var(--blue-soft); }
+
+  .entry-body { font-size: 14px; color: var(--ink-light); line-height: 1.55; }
+  .entry-body p { margin-bottom: 8px; }
+  .entry-body p:last-child { margin-bottom: 0; }
+  .entry-body strong { color: var(--ink); font-weight: 600; }
+  .entry-body code { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12.5px; background: var(--bg-2); padding: 1px 5px; border-radius: 3px; }
+
+  /* Footnote */
+  .foot { margin-top: 40px; padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; color: var(--ink-light); }
+  .foot strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html">← Deck</a>
+  <span class="sep">/</span>
+  <a href="PROJECT-MODULE-SPEC.md">Spec</a>
+  <span class="sep">/</span>
+  <span class="here">Decision Log</span>
+</div>
+
+<div class="container">
+
+  <div class="page-head">
+    <div class="eyebrow"><span class="dot"></span> Living document · updated as decisions are made</div>
+    <h1>Decision Log</h1>
+    <p class="lede">Significant decisions made on the Odin Projects Module, in reverse chronological order. The "why" behind each call so the next person to look at this code understands the reasoning, not just the outcome.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">33</div>
+      <div class="stat-label">Decisions logged</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">30</div>
+      <div class="stat-label">Committed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">1</div>
+      <div class="stat-label">Pending review</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">May 20</div>
+      <div class="stat-label">First entry</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <span class="filter-label">Filter</span>
+    <span class="filter-pill active" data-filter="all">All</span>
+    <span class="filter-pill" data-filter="status:committed">Committed</span>
+    <span class="filter-pill" data-filter="status:pending-review">Pending review</span>
+    <span class="filter-pill" data-filter="tag:scope">scope</span>
+    <span class="filter-pill" data-filter="tag:data-model">data-model</span>
+    <span class="filter-pill" data-filter="tag:ui-pattern">ui-pattern</span>
+    <span class="filter-pill" data-filter="tag:brand">brand</span>
+    <span class="filter-pill" data-filter="tag:workflow">workflow</span>
+    <span class="filter-pill" data-filter="tag:role">role</span>
+    <span class="filter-pill" data-filter="tag:integration">integration</span>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 17, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 17, 2026</h2>
+      <span class="group-count">Change Notices status model simplified: RFI is three states, PCN is two, approvals removed module-wide (D-043); Tasks tab change notices collapsed into one Change Notice Scopes section, CCN label dropped for PCN number (D-044)</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="workflow, ui-pattern, data-model">
+      <div class="entry-head">
+        <span class="entry-id">D-043</span>
+        <span class="entry-title">Change Notices status model: RFI = Open / Awaiting Answer / Closed; PCN = Open / Closed; approvals removed entirely</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, Jun 17 (confirms the no-approval direction Justin set Jun 2)</span>
+        <span class="entry-tags">
+          <span class="tag">workflow</span>
+          <span class="tag">ui-pattern</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Collapse the Change Notices status enums to the smallest set that reflects how Thor actually works. RFI runs Open (captured, not yet emailed), Awaiting Answer (PM has emailed the GC and is waiting), and Closed (the answer is captured or the question is moot). PCN runs Open (recorded on ingest, linked work in flight) and Closed (work complete, or the PCN is voided). Awaiting Answer renders amber so it reads distinct from blue Open; a voided PCN is just Closed with a reason.</p>
+        <p><strong>Approvals removed module-wide.</strong> There is no internal approval gate and no Approved, Rejected, Pending Sign-off, or Draft status on either object. PCNs are inbound, GC-signed documents that Thor records rather than approves; RFIs post straight to Open whether raised by a field tech or the PM. Cost impact survives as a field, but the KPI is relabeled from "Approved Cost Impact" to "Cost Impact" since there is no approval to qualify it.</p>
+        <p><strong>Reasoning:</strong> the earlier enums (Sent, Answered, Approved, Rejected, Pending Sign-off, Draft) modeled a compose-send-and-approve workflow that Thor does not run. Thor emails GCs outside Odin and trusts the field to raise RFIs that matter; Odin is the system of record, not an approval engine. Folding Sent into Awaiting Answer and Answered into Closed removes standing states that never carried independent meaning.</p>
+        <p><strong>Affects:</strong> <code>odin-change-notices-list.html</code>, <code>odin-change-notices.html</code>, <code>odin-change-notices-rfi.html</code>, <code>odin-change-notices-rfi-detail.html</code>, <code>odin-change-notices-pcn-detail.html</code>; spec section 6.6 (tab intro, register, both state machines, RFI detail panel, mockup manifest). The voided-PCN detail render keeps a distinct red-tinted callout to flag the rare retraction case; this is informational, not an approval state.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-044</span>
+        <span class="entry-title">Tasks tab: collapse per-PCN clusters into one "Change Notice Scopes" section; drop the Jonas "CCN" label for the PCN number</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, Jun 17 (from a Tasks tab screenshot review)</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Tasks tab gives change notices a single <strong>Change Notice Scopes</strong> section instead of a separate detailed cluster for each PCN. The original per-PCN headers (approval date, cost impact, hours impact, reason, progress ring) read as too heavy and intimidating for this surface. The new section header is styled to match Original Scope: a combined hours rollup and a single est-vs-act bar, with a subtle amber left-border so the two scope sections read as a family. Per-PCN cost, date, and reason are not lost; they live in the Change Notices register and in the task detail panel.</p>
+        <p><strong>Numbering:</strong> task rows now carry a <code>PCN-XXX</code> badge, the same identifier used when the PCN is ingested (tasks are created as <code>PCN-004: [title]</code>). The Jonas-internal "CCN" term that previously appeared as the badge and cluster label is no longer surfaced to users; it was confusing and added apparent complexity. The page subtitle and annotations were updated to match, and the stale "Approved &middot; Fixed" cluster labels are gone (consistent with D-043, which removed approvals from the module).</p>
+        <p><strong>Affects:</strong> <code>odin-tasks.html</code> (three PCN clusters merged to one; badges and subtitle relabeled). Spec section 6.5 (Change Notice Scopes cluster, Other-bucket placement, group toggle).</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 11, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 11, 2026</h2>
+      <span class="group-count">Tech mobile home redesigned and committed (Option A with Team Scoreboard, D-041); Work Orders to My Dept WO and Projects to Open/Closed, tech-to-WO assignment parked (D-042)</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, mobile">
+      <div class="entry-head">
+        <span class="entry-id">D-041</span>
+        <span class="entry-title">Tech mobile home redesigned and committed (Option A, with Team Scoreboard); resolves D-023</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin chose Option A (with scoreboard); KPI math was Mike's call per Justin's "just build it"</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Ship a redesigned tech mobile home: My Hours (personal, no estimate) at top, then a whole-company Team Scoreboard, then Work Orders and Projects. The scoreboard shows closed work only over a rolling 30 days, identical for every tech: Maintenance, Quoted Service Work, and Projects as over/under rings, plus an Emergency Service count compared to the previous 30 days. Tapping any work-order or project row expands a contributor panel adapted from the desktop hours-contribution hover.</p>
+        <p><strong>Data rule (the crux):</strong> estimate-vs-actual is always measured at the work-order / project level, summed across everyone on the job, never per tech, because estimates live on the job and not per person. Every rollup and KPI uses group hours over grouped estimates. A tech's own hours appear only in the My Hours card and the per-job expand panel.</p>
+        <p><strong>Color model:</strong> in-progress work uses a neutral blue budget gauge (no green; amber near the estimate, red once over before closing), because being under on an unfinished job only means it is not done. Closed work uses a green/red scorecard. Terminology: service-side "Projects" now reads "Quoted Service Work."</p>
+        <p><strong>Reasoning:</strong> earlier mockups missed because they implied a tech could be measured against a whole job estimate alone. Anchoring all over/under math at the job level, keeping personal hours separate, and splitting open-vs-closed color semantics resolved it. Justin reviewed an A/B (with and without the scoreboard) and chose the scoreboard version.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-home.html</code> (replaced; project IDs deep-link to the per-project tech view, work-order numbers stubbed pending a service-side WO detail). Spec section 7.2 rewritten; phasing updated; D-023 marked resolved.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, mobile, data-model">
+      <div class="entry-head">
+        <span class="entry-id">D-042</span>
+        <span class="entry-title">Work Orders tab is "My Dept WO" (not "My WOs"); Projects drops "My Projects" and defaults to Open/Closed</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Shri and Mike, Jun 11 meeting</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> On the tech home, the Work Orders section leads with "My Dept WO" rather than "My WOs," keeping Open and Closed beside it. The Projects section drops the "My Projects" tab entirely and opens on Open, with Closed beside it.</p>
+        <p><strong>Reasoning:</strong> Odin has no tech-to-work-order assignment. Jobs frequently carry several techs and that relationship is unsolved, so a personal "My WOs" cannot be computed honestly. Department, however, is attached to work orders and is already functional, so it is the working filter. Separately, techs are not attached to projects (sometimes assigned, often not), so a "My Projects" tab would show most techs an empty list. The real tech-to-WO relationship is a larger, separate piece of work, parked in spec open decisions item 12 so the rationale is not lost.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-home.html</code>. Spec section 7.2 and open decisions item 12.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 10, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 10, 2026</h2>
+      <span class="group-count">Post-client-review batch: portal deferred (D-033); roles trimmed (D-034); dictation strategy (D-035); single time-entry hours model (D-036); Add Tasks screen + import path (D-037); RFI cluster (D-038); mic + task hours + PCN fix + linking pass (D-039); role-aware time entry + "Other" rename (D-040)</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="workflow, role, ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-040</span>
+        <span class="entry-title">Role-aware time entry (techs via log, foreman/supervisor via standalone Submit Time); "Unallocated" renamed to "Other" as an explicit line item</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, Jun 10, catching two gaps in the D-036 model after the client review</span>
+        <span class="entry-tags">
+          <span class="tag">workflow</span>
+          <span class="tag">role</span>
+          <span class="tag">ui-pattern</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>The gap.</strong> D-036 collapsed time entry into the Daily Tech Log. That works for technicians, but Foremen and Supervisors file a weekly report rather than a daily log, while still billing project hours, so "time only through the log" left them with no entry path. The fix: treat the time-entry mechanism (time blocks + hours-to-task allocation) as a component, not exclusively part of the log.</p>
+        <p><strong>Resolution.</strong> Technicians enter time inside the Daily Tech Log (D-036). Foremen and Supervisors get a real standalone "Submit Time" surface carrying the same time blocks + multi-task allocation (minus narrative and photos). Nobody enters time twice: techs via the log, leaders via Submit Time. This reverses the earlier (too-aggressive) reframe of the Submit Time screen into a read-only roll-up, which had quietly broken the foreman/supervisor entry path.</p>
+        <p><strong>Tech per-project view cleanup.</strong> "Submit Time" removed from the tech view (it would be a redundant second entry for the same hours). Left with one full-width primary, Write Daily Tech Log, and Raise RFI below it. Mike's call on layout; chose bringing the log forward over promoting Raise RFI to a co-primary, to keep the frequency hierarchy (daily log vs occasional RFI). The per-project-by-role mock matches: tech frame single primary; foreman/supervisor frames keep Submit Time (wired to the entry surface) alongside their report card.</p>
+        <p><strong>"Unallocated" renamed to "Other," with a subline.</strong> Per Christine the catch-all bucket exists (D-031); "Unallocated" read as accounting jargon with a faint "you forgot something" tone. Renamed to <strong>Other</strong> with the subline "Work not tied to a specific task," applied consistently in the daily-log allocation line, the Tasks-tab catch-all cluster, the timesheet task picker, and the Time tab. The data concept is unchanged (<code>task_id = NULL</code>).</p>
+        <p><strong>Bucket is now an explicit line item, not an auto-remainder.</strong> Previously the Other row auto-displayed the leftover hours. Per Mike it is now a real selectable line with its own checkbox and hours box, exactly like a task row: the tech ticks Other and types the hours (e.g. 6.5 hrs of site cleanup). Every hour is explicitly placed on a task or on Other, which also makes the "X of Y allocated" counter honest.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-time-submit.html</code> (rebuilt as a real entry form), <code>odin-tech-log-composer.html</code> (Other line + counter), <code>odin-tech-project.html</code> and <code>odin-mobile-per-project-by-role.html</code> (single tech primary, foreman/supervisor Submit Time wired), <code>odin-tasks.html</code> / <code>odin-tech-task-picker.html</code> / <code>odin-time.html</code> (rename). Spec 6.x, 7.3, 7.5, 7.12, 7.12a, 7.15 updated.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, navigation">
+      <div class="entry-head">
+        <span class="entry-id">D-039</span>
+        <span class="entry-title">Polish pass: dictation mic on long-form fields, per-task hours on mobile task list, PCN hours visual fix, navigation linking</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Implements D-035 (mic) and Justin's Jun 10 requests; cleans up the items from the client-review triage</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">navigation</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Dictation mic (implements D-035):</strong> a browser-native mic affordance added to every long-form textarea across the mobile composers (daily tech log narrative, RFI description, and the foreman/supervisor report free-text fields). Top-right of each field; for the mock it is the icon only, powered by the browser's own speech engine (no server, no cost). Record-and-transcribe and AI clean-up remain on the roadmap (D-035).</p>
+        <p><strong>Per-task hours on the mobile task list (Justin, Jun 10):</strong> each task card now shows hours spent vs estimated (e.g. "9 / 16 hrs") beside the due date, so a tech sees budget consumption without opening anything.</p>
+        <p><strong>PCN hours visual fix:</strong> on the PCN detail (Fixed example), the Hours impact tile read +2.0 hrs while the five spawned tasks summed to 2.5 estimated hours. Corrected the tile to +2.5 so the header figure matches the spawned-task total and the rollup denominator. Purely a mockup consistency fix.</p>
+        <p><strong>Navigation linking:</strong> wired the clickable paths the demo was missing. Per-project tech view: Submit Time opens the read-only "Project time today" roll-up (which links onward to the Daily Tech Log composer, per D-036), Write Daily Tech Log opens the composer, Raise RFI opens the RFI composer. Per-project-by-role view: the Foreman Report and Supervisor Report cards now open their mobile composers (these were unreachable in the client demo), and Write Daily Tech Log is wired. Tasks tab "Add task" already wired to the Add Tasks screen (D-037); foreman/supervisor composers reachable via the Raise RFI buttons too (D-038).</p>
+        <p><strong>Affects:</strong> <code>odin-tech-log-composer.html</code>, <code>odin-tech-rfi-composer.html</code>, <code>odin-foreman-report-composer-mobile.html</code>, <code>odin-supervisor-report-composer-mobile.html</code> (mic); <code>odin-tech-task-list.html</code> (hours); <code>odin-change-notices-pcn-detail.html</code> (hours fix); <code>odin-tech-project.html</code>, <code>odin-mobile-per-project-by-role.html</code> (linking). Spec 7.5, 7.8, 7.12, 7.13, 7.14 touched.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="workflow, role, ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-038</span>
+        <span class="entry-title">RFI cluster: tech/foreman/supervisor can all raise; no approval gate; informal cost-impact notes; cost or hours change always becomes a PCN</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Client review (Jun 10); Mike's calls on each sub-item</span>
+        <span class="entry-tags">
+          <span class="tag">workflow</span>
+          <span class="tag">role</span>
+          <span class="tag">ui-pattern</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Who can raise an RFI:</strong> Technicians, Foremen, and Supervisors, any of the three, from the field. All use the same mobile composer (<code>odin-tech-rfi-composer.html</code>); the only difference is the <code>created_by_role</code> stamped on the record. Foreman and Supervisor composers each get a dedicated "Raise RFI" button.</p>
+        <p><strong>No approval gate (reaffirmed, gate killed).</strong> The client review proposed adding a PM approval/screening step before an RFI goes to the GC. Mike killed it: Thor does not want an approval process. RFIs post straight to OPEN; the PM handles the outbound email and curates by acting, not gatekeeping. This also corrected stale "Submit creates a draft / PM reviews in a Draft Inbox" language still sitting in the RFI composer mockup, which contradicted the canonical state machine (6.6.5).</p>
+        <p><strong>Potential cost impact = informal notes (reframed cost tab).</strong> The review asked for an "additional costs tab" on the RFI. Because Thor's rule is that any change to cost or hours is always formalized as a PCN, a formal cost ledger on the RFI would be redundant or contradictory. Chosen instead (Mike's call): an informal "Potential cost impact" notes section on the RFI detail where the field or PM can jot likely impact. The notes seed the PCN if one is raised; otherwise the RFI just closes.</p>
+        <p><strong>RFI outcome model (confirmed).</strong> An RFI does not always become a PCN. A pure clarification is answered and closed (the existing Mark Answered / Close path, D-029). A change to cost or hours always becomes a PCN, via the "Create PCN from this RFI" action now shown beside Close on the Answered state, or via inbound PCN ingest with the Associated RFI set. The GC's response can arrive as an email (captured by the PM) or as a PCN; both paths are supported.</p>
+        <p><strong>Foreman/Supervisor Outstanding RFIs:</strong> shown read-only, auto-pulled, and showing <em>all</em> open RFIs (not capped at three) so a foreman cannot miss one. The foreman never assembles this list by hand.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-rfi-composer.html</code> (de-drafted, generalized to all field roles), <code>odin-change-notices-rfi-detail.html</code> (informal cost-impact section both states; "Create PCN from this RFI" added to Answered), <code>odin-foreman-report-composer-mobile.html</code> and <code>odin-supervisor-report-composer-mobile.html</code> (all-open Outstanding RFIs + Raise RFI button). Spec 6.6.4, 6.6.5, 6.6.7, 7.13, 7.14 updated; `created_by_role` enum widened to ADMIN/TECH/FOREMAN/SUPERVISOR.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, data-model">
+      <div class="entry-head">
+        <span class="entry-id">D-037</span>
+        <span class="entry-title">Add Tasks screen built; Jonas spreadsheet import is the bulk path</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Client review (Jun 10): "Add Task" screen needed; explore Jonas to Excel to Odin import</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Build a dedicated <strong>Add Tasks</strong> screen as the destination for the Tasks tab "Add task" button (which previously went nowhere). It is a full-page admin form with repeating rows (one task per row: name, est. hours, optional due date), an "Add another task" affordance, a batch "Add to cluster" selector defaulting to Original Scope, auto-assigned Task IDs and a default Not Started status, and a sticky save bar with a live count. For long lists straight out of Jonas (30 to 75 tasks), <strong>Import from spreadsheet</strong> is the primary path; the manual screen is the small-batch and fix-up tool.</p>
+        <p><strong>Import approach:</strong> a clean, structured Excel import with deterministic column mapping (Task name, Est. labour hours, optional cluster/due), not AI classification, so the seeded estimates can be trusted. Estimate accuracy is the point of the module, so AI is kept as an optional convenience layer rather than the thing integrity depends on. <strong>Open dependency on Thor:</strong> the Jonas export mixes materials and labour and we only want the labour rows for tasks. Pending request to Thor (via Justin) for either a labour-only export or a column that flags row type (Labour vs Material). The import UI is built once that file format is confirmed; the manual Add Tasks screen ships regardless.</p>
+        <p><strong>Bulk add feasibility:</strong> 50 to 75 rows in one form and one bulk save is trivial on both client and server; no performance concern. The reason to prefer import is human error over many hand-keyed rows, not a technical limit.</p>
+        <p><strong>Affects:</strong> new file <code>odin-tasks-add.html</code>; <code>odin-tasks.html</code> "Add task" button now links to it. Spec section 6.2.1 added; the former "bulk task import from templates" out-of-scope line replaced by the planned Jonas import path.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="data-model, ui-pattern, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-036</span>
+        <span class="entry-title">One time entry: project hours captured and allocated in the Daily Tech Log; timesheet becomes a read-only roll-up</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Client review (Jun 10) asked for hours-to-task allocation on both the daily log and the timesheet; everyone flagged the two-systems confusion; Mike + Claude resolved the model, Mike endorsed</span>
+        <span class="entry-tags">
+          <span class="tag">data-model</span>
+          <span class="tag">ui-pattern</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> A tech enters their project hours exactly once, in that project's Daily Tech Log. The log carries one or more <strong>time blocks</strong> (each an optional time range plus an hours value; "add another time block" covers a return visit later the same day), and the day's total is then <strong>allocated to tasks in hours</strong> (not percentage) with a live "X of Y hrs allocated" counter; any unallocated remainder auto-lands in the project's Unallocated bucket (D-031). The standalone project timesheet stops being a second entry form and becomes a <strong>read-only roll-up</strong> of what was logged today, broken out by task. A tech who worked two projects in a day files one Daily Tech Log per project; the "two timesheets in a day" case is therefore just two project logs, not a special form.</p>
+        <p><strong>Why:</strong> two screens collecting hours was the source of the confusion raised by every reviewer ("are these the same entry, two entries, or two places to type the same thing?"). The fix is to make hours one thing, not to coordinate two. Hours-based allocation (not percentage) is required because the Tasks tab tracks estimates in hours, so actuals must reconcile in hours; percentage would add mental math and rounding drift. Putting the entry in the Daily Tech Log matches the module's proof-of-work mission (hours are part of the record of the day) and is where the tech is already describing the work task by task. Allocation is encouraged but not blocking; the Unallocated remainder keeps the numbers honest without forcing the tech to over-attribute.</p>
+        <p><strong>Open integration detail:</strong> how the project-log time writes into the existing Odin (service-side) timesheet so the tech does not re-enter hours anywhere. Owned by Mike + Mandeep, not a blocker for the mocks. Also captured as a Thor training point (techs must understand project time does not also go in the regular timesheet).</p>
+        <p><strong>Affects:</strong> <code>odin-tech-log-composer.html</code> (Hours stepper replaced by Time blocks; "Tasks worked on" replaced by hours-per-task allocation with a live counter; Unallocated row now shows the auto remainder), <code>odin-tech-time-submit.html</code> (reframed from entry form to read-only "Project time today" roll-up; entry point now opens the log). Spec sections 7.5 and 7.12/7.12a updated; the per-project "Submit Time" button rerouted to the composer.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, role">
+      <div class="entry-head">
+        <span class="entry-id">D-035</span>
+        <span class="entry-title">Dictation strategy: native mic button in v1; record-and-transcribe and AI clean-up deferred to v1.1</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Client review (Jun 10) asked for dictate + AI-assist on mobile; Mike set the phasing</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Add a visible microphone button to the long-form text fields on the mobile composers (daily tech log narrative, RFI description, foreman/supervisor report notes) for v1. The v1 implementation uses the browser-native speech recognition engine (Web Speech API): the field's own mic, on-device, no server round-trip and no per-use cost. Two follow-ons go to the roadmap, not v1: (1) record-and-transcribe (server-side, Whisper-type transcription for more consistent quality), prioritized in v1.1; (2) an AI "clean up" button that polishes dictated text, scheduled right after 1.0.</p>
+        <p><strong>Reasoning:</strong> a visible mic button genuinely drives dictation use (the same reason Claude and ChatGPT surface one), and techs strongly prefer dictating over typing on site, so it earns its place in v1. But it costs almost nothing to ship because the browser already provides the engine: the mockup change is just the icon. The clean-up button is different in kind, a real AI feature with per-call cost and plumbing, and Mike wants 1.0 shipped before it is taken on so it does not become a side-quest that pulls the devs off the launch. Record-and-transcribe is the quality upgrade path once the basics ship.</p>
+        <p><strong>Affects:</strong> mockups gain a mic affordance on long-form fields (implementation in the next build batch): <code>odin-tech-log-composer.html</code>, <code>odin-tech-rfi-composer.html</code>, <code>odin-foreman-report-composer-mobile.html</code>, <code>odin-supervisor-report-composer-mobile.html</code>. Spec section 13: native mic in v1, record-and-transcribe and AI clean-up in v1.1.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="role, ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-034</span>
+        <span class="entry-title">Project Role dropdown trimmed to four roles</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Client review (Jun 10); Mike</span>
+        <span class="entry-tags">
+          <span class="tag">role</span>
+          <span class="tag">ui-pattern</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Project Role dropdown (in the New Project Wizard step 2 and Edit Project) is trimmed to exactly four roles: Project Manager, Supervisor, Foreman, Technician. The earlier eight-entry list (which also carried Site Manager, Engineer, Inspector, Coordinator, Estimator) is cut.</p>
+        <p><strong>Reasoning:</strong> the module only needs the roles that map to an actual project responsibility and to the mobile composers. Supervisor, Foreman and Technician each have a defined surface (supervisor weekly report, foreman weekly report, daily tech log), and PM is the owner role. The other five were generic HR titles that added dropdown noise without driving any behaviour in the module. Project Manager, Supervisor and Foreman are the Project Leaders on the Overview Team card; Technician is the field role.</p>
+        <p><strong>Affects:</strong> <code>odin-projects-new-wizard.html</code> (dropdown trimmed, an existing displayed member retagged from Site Manager to Supervisor, implementation note updated), <code>odin-projects-edit.html</code> (same dropdown trim and member retag). Spec data model role list to follow the same four in the next pass.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope, integration">
+      <div class="entry-head">
+        <span class="entry-id">D-033</span>
+        <span class="entry-title">Client / GC portal is a post-launch addition, not part of v1</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin asked (email, Jun 10); Mike confirmed the deferral and Justin aligned</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+          <span class="tag">integration</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> External login access for clients and general contractors (a "client portal" to check project status) is NOT in scope for this build and will be done as a separate addition <em>after</em> the module launches, on a time-and-materials basis. The v1 external mechanism stays as committed: internal users generate on-demand project report PDFs from the Client Reports tab and email them out. No external logins in v1.</p>
+        <p><strong>Why it's not already in scope:</strong> the signed SOW (Jan 5, 2026) is explicit. Section 1 and section 4 rule out external stakeholder dashboards/portal access; section 3.6 commits to controlled external visibility through reviewed PDF reports "rather than granting ODIN access"; section 8 lists external logins/portal as exactly the kind of thing requiring a change request. Mike's quoting email to Justin matched this ("control what is shown to them through reports, not allow them to login directly into Odin"). So both sides agreed to the no-portal posture in writing from the start.</p>
+        <p><strong>Why defer it rather than fold it into this build:</strong> two reasons, both agreed with Justin. (1) Keep the team focused on shipping the committed scope cleanly. (2) Let the module accumulate real project data and let Thor's staff get familiar with it before exposing it to a customer, so a client's first login isn't to a freshly-launched module that's sparse or out of date. The portal shell already exists on the service side, so the future work is the project-specific functionality, not the portal itself. Justin is aligned on doing it post-launch.</p>
+        <p><strong>Resolves:</strong> the "Send to Portal" affordance flagged on the Change Notices detail (pending Brent) should not assume a portal exists in v1. It is either cut or reframed to the report/PDF mechanism. Confirm with Brent, but the SOW points to no portal in this phase.</p>
+        <p><strong>Affects:</strong> spec section 12 item 6 (upgraded from open question to confirmed post-launch addition); items 2, 3, and 8 fold into the portal work when it happens. No mockup changes; this is a scope boundary, not a UI change.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 9, 2026                                                  -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 9, 2026</h2>
+      <span class="group-count">Justin signoff on Pass 5; permissions model locked; Team card redesigned; Project Log Detail screen added; RFI response capture defined; mobile "My" concept dropped; Unallocated bucket added; logs renamed to Daily Tech Log</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, naming">
+      <div class="entry-head">
+        <span class="entry-id">D-032</span>
+        <span class="entry-title">"Daily Log" / "Tech Log" renamed to "Daily Tech Log"; dead admin compose option removed</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, reviewing the tech log composer and the admin Compose Report dropdown</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">naming</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Rename the tech daily log to "Daily Tech Log" everywhere: the mobile composer title, the mobile log detail, the Project Logs sub-tab and type pills ("Daily Tech Logs"), the activity feed event text, the "Write Daily Tech Log" action, and the data model entity. Separately, remove the "New Tech Log" option from the admin Project Logs "Compose Report" dropdown, leaving only New Foreman Report and New Supervisor Report.</p>
+        <p><strong>Reasoning:</strong> "Daily Log" was ambiguous once Foreman and Supervisor weekly reports joined the same surface; "Daily Tech Log" says exactly what it is and who files it. On the dropdown: the "New Tech Log" option opened nothing, because daily tech logs are mobile-only and there is no desktop tech-log composer. A button that goes nowhere is worse than no button. Whether an admin ever needs to file a daily log is an open question to confirm with the Thor team; if yes, a desktop composer would be built then and the option re-added.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-log-composer.html</code>, <code>odin-tech-log-detail.html</code>, <code>odin-project-logs.html</code>, <code>odin-project-log-detail.html</code>, <code>odin-activity.html</code>, <code>odin-tech-project.html</code>, <code>odin-tech-home.html</code>, <code>odin-tech-desktop-access.html</code>, <code>index.html</code>. Spec sections 6.4, 7.5, 7.6, 11, and section 14 updated.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, data-model">
+      <div class="entry-head">
+        <span class="entry-id">D-031</span>
+        <span class="entry-title">Persistent Unallocated task bucket, created by default on every project</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Christine (Thor co-owner), via Mike</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Every project is created with a permanent "Unallocated" task bucket. On the admin Tasks tab it renders as a default cluster pinned at the bottom of the list, with neutral grey treatment (distinct from amber PCN clusters), no hours estimate, hours-logged only. In the mobile daily tech log composer, a matching "Unallocated" row is pinned at the bottom of "Tasks worked on," rendered quiet (italic, muted, dashed divider above) so it is not the easy default pick. Time logged without a task attribution (timesheet Unallocated pick or the composer's Unallocated row) lands in this bucket; the PM can reassign those entries to real tasks later.</p>
+        <p><strong>Reasoning:</strong> Christine's specific ask. Techs often do work that does not map to a defined task, or do not know which task applies. A persistent Unallocated bucket gives that time a real home rather than leaving it unattributed, while keeping it deliberately at the bottom and visually quiet so it is a fallback, not the default. It also gives the PM a clean queue of "time that needs a task" to reconcile. Counts toward project logged-to-date but never toward an est-vs-act calculation, since it has no estimate.</p>
+        <p><strong>Also resolved here:</strong> the "what if there are 40 tasks" question on the composer. The "Tasks worked on" list gains a search box with the tech's in-progress tasks listed first, so it scales; the Unallocated row stays pinned at the bottom regardless of search.</p>
+        <p><strong>Affects:</strong> <code>odin-tasks.html</code> (default Unallocated cluster), <code>odin-tech-log-composer.html</code> (search box + pinned Unallocated row). Spec section 6.2 (creation default), section 7.5 (composer), and Task entity (`is_unallocated_bucket`) updated.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, mobile, naming">
+      <div class="entry-head">
+        <span class="entry-id">D-030</span>
+        <span class="entry-title">Dropped the "My" concept across the mobile module; sections are project-scoped</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, reviewing the mobile per-project view</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">naming</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Remove the "My" framing throughout the mobile module. "My Open Tasks" → "Project Tasks", "My Recent Logs" → "Project Logs", "My Recent Photos" → "Project Photos" on the per-project view; the full-list screens follow (My Logs → Project Logs, My Photos → Project Photos; the task list was already "Project Tasks"). The tech home "My Projects" widget becomes "Projects", restructured into two sections: "Assigned to me" first, then "Other active projects". Also fixed a stale index label: the card titled "My Tasks list" linked to a screen titled "Project Tasks", now corrected to "Project Tasks list".</p>
+        <p><strong>Reasoning:</strong> Two earlier decisions removed the basis for per-tech scoping. D-016 cut task assignment (tasks belong to nobody), and D-026 made project access open to all staff. With no assignment and no permission gate, a "My" lens implies a personal scope that does not exist, which is misleading. The honest model is project-scoped: these sections show the project's tasks, logs, and photos. The one place a personal ordering still helps is the home projects list, where the tech's assigned projects sort to the top so they are not scrolling the whole company, but even there the label is "Projects" and every project remains reachable.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-project.html</code>, <code>odin-tech-home.html</code> (Projects widget, two-section), <code>odin-tech-photos.html</code>, <code>odin-tech-log-list.html</code>, <code>odin-tech-picker.html</code>, <code>odin-tech-photo-upload.html</code>, <code>odin-tech-desktop-access.html</code>, <code>index.html</code> (three card labels). Spec section 7 naming updated.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-029</span>
+        <span class="entry-title">RFI response capture defined as a modal; whole-RFI Download removed</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, reviewing the RFI detail mockup</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Clicking "Mark Answered" on an Open RFI opens a "Capture GC response" modal with three fields: a response-text paste box, "Response from" (sender name + org), and "Date received". On save, the RFI flips to ANSWERED and the pasted text renders in the purple Response box attributed to sender and timestamp. Separately, the whole-RFI "Download" button is removed from both states of the detail panel; per-attachment download icons stay.</p>
+        <p><strong>Reasoning:</strong> The mockup showed "Mark Answered" and the resulting purple response box, but never the actual capture step, so there was no way to enter the GC's reply. A modal (matching the PCN/RFI intake modal pattern) makes the capture explicit and keeps the response as a deliberate PM action rather than an auto-pull. The Download button was undefined beyond a tooltip and conflicted with the "PM handles email outside Odin" model (D-017); removing it keeps the panel lean. A packaged export can return in v1.1 if a real need surfaces.</p>
+        <p><strong>Affects:</strong> <code>odin-change-notices-rfi-detail.html</code> (new modal, Download removed from both states, annotations updated). Spec section 6.6.4 + 6.6.5 updated to describe the capture modal and note no whole-RFI export.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-028</span>
+        <span class="entry-title">Project Log Detail screen added: dedicated full-page detail view replaces side panel</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike + colleague design review, post-Justin-signoff</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Clicking a row in the Project Logs list opens a dedicated full-page detail view rather than the previous side-panel pattern. One mockup file (<code>odin-project-log-detail.html</code>) demonstrates three states: Tech Log detail, Foreman Report detail, Supervisor Report detail. Mandeep builds one route (<code>/projects/[id]/logs/[logId]</code>) with three template variants based on log type.</p>
+        <p><strong>Reasoning:</strong> Side-panel pattern worked when Daily Logs held only short tech submissions (~4 fields). With Foreman Reports (~13 fields) and Supervisor Reports (~12 fields including audit content) now in the same surface, the side panel undersells the content. Supervisor Report's audit-style content (Foreman Performance, Verification, Top 3 Risks, Customer Relationship) needs the room to render properly. Consistency wins: all three log types use the same full-page detail pattern. List view itself still provides at-a-glance scanning via sub-tabs and row design.</p>
+        <p><strong>Affects:</strong> New file <code>odin-project-log-detail.html</code>. Project Logs list (<code>odin-project-logs.html</code>) row click action changes from "open side panel" to "navigate to detail page". Side panel is gone from the Project Logs list.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, role, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-027</span>
+        <span class="entry-title">Team card on Overview redesigned: Project Leaders + Technicians sections</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, post-Justin-permissions-confirmation</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">role</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Team card on the Overview tab splits into two sections within the same card:</p>
+        <p><strong>1. Project Leaders</strong> (top): three fixed slots for PM, Foreman, and Supervisor. Each slot shows the assigned person with role pill and a small pencil edit icon to swap them out. Unassigned slots render with "Not assigned" beside the role label so the empty position is visible.</p>
+        <p><strong>2. Technicians</strong> (bottom): assigned techs with logged hours per tech, matching the previous Team card pattern. PM can add/remove techs via an "Add technician" affordance.</p>
+        <p><strong>Reasoning:</strong> With three named leadership roles (PM, Foreman, Supervisor) now meaningful per-project, the flat list of names with role pills no longer communicates project structure clearly. Splitting into a fixed-leaders section + flexible-techs section maps to how Thor actually organizes a project. Empty leader slots ("Not assigned") prompt the PM to fill them. Hours stay on techs only (leaders aren't time-trackers in this context). Edit pencil per leader row enables swap-out without needing to rebuild the whole team.</p>
+        <p><strong>Affects:</strong> <code>odin-overview-current-brand.html</code> Team card markup. Spec section 6.1 (Overview tab).</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="role, data-model, integration">
+      <div class="entry-head">
+        <span class="entry-id">D-026</span>
+        <span class="entry-title">Project-scoped role model: project_assignments table, not extending global RBAC</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike + Claude design discussion; Justin email confirmation Jun 9</span>
+        <span class="entry-tags">
+          <span class="tag">role</span>
+          <span class="tag">data-model</span>
+          <span class="tag">integration</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Foreman and Supervisor are <strong>project-scoped roles</strong>, not global user roles. Same person can be Foreman on one project and Supervisor on another, or hold no project role on a third. A new <code>project_assignments</code> table stores <code>(project_id, user_id, project_role)</code> tuples with <code>project_role</code> enum values: <code>FOREMAN</code>, <code>SUPERVISOR</code>, <code>TECH</code>. The PM stays as <code>project_manager_user_id</code> on the project entity (one PM per project, separate from the assignments table).</p>
+        <p><strong>Odin's existing global RBAC (user / admin / super_admin) is NOT touched.</strong> Permission checks for Foreman/Supervisor functionality are pure project-scoped queries against <code>project_assignments</code>. The service-side of Odin is unaffected.</p>
+        <p><strong>Confidential supervisor content visibility check:</strong> Two fields on the Supervisor Report stay confidential to <code>PM + Supervisor + global admin + global super_admin</code>: Foreman Performance rating, and Verification of Foreman Report accuracy. All other supervisor content (including Top 3 Risks, Confidence, Thor Standards, Customer Relationship rating) publishes to the project team like any other content. Justin confirmed this narrowed scope on Jun 9.</p>
+        <p><strong>Default behavior for unassigned users:</strong> A user with no entry in <code>project_assignments</code> for a project still has full read access to the project (open-access culture per Justin), they just can't compose Foreman Reports or Supervisor Reports without an explicit role assignment.</p>
+        <p><strong>Reasoning:</strong> Extending Odin's global RBAC with new roles would bleed into the service side of the app and create a permissions tangle. Project-scoped role assignment maps to reality (people wear different hats on different projects) and keeps the new logic contained inside the Projects module. Mandeep doesn't need to change anything global.</p>
+        <p><strong>Affects:</strong> New <code>project_assignments</code> table. Permission-check helpers in the Projects module backend. Edit Project section 4.6.2 gains a Team section UI for assigning project_roles. Spec section 11 (data model) and section 8 (access matrix). Supersedes the earlier scope of D-021 by narrowing the confidential carve-out from "all Supervisor Report content" to "Foreman Performance rating and Verification field only."</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope, role, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-025</span>
+        <span class="entry-title">Justin signoff on Pass 5: Foreman + Supervisor module greenlit for integration</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin email Jun 9, 2026 ("Foreman & Supervisor Features")</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+          <span class="tag">role</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Justin signed off on the Pass 5 preview package: Foreman + Supervisor roles, weekly reports, Daily Logs renamed to Project Logs with sub-tabs (All / Tech Logs / Foreman Reports / Supervisor Reports), and the publish carve-out for Project Health (D-021) all greenlit. Pending-review entries D-021, D-022 move to committed. Pass 5 work integrates into the main deck.</p>
+        <p><strong>Justin's additional asks (incorporated into integration):</strong></p>
+        <ol>
+          <li><strong>Customer Relationship rating field</strong> added to both Foreman Report (1-10 slider, alongside Housekeeping and Project Confidence) and Supervisor Report (G/Y/R, alongside Thor Standards rows). Not confidential.</li>
+          <li><strong>Super admin role can see confidential content</strong> (added to the audit-trusted permission check).</li>
+          <li><strong>Tech project assignment is visibility-only</strong> on the Team card. Anyone can log time / write logs on any project regardless of assignment, but the Team card surfaces who is formally on the project. PM assigns techs.</li>
+          <li><strong>Confidential scope narrowed</strong> to just two fields (Foreman Performance + Verification). All other Supervisor Report content publishes to the team.</li>
+        </ol>
+        <p><strong>Reasoning:</strong> Pass 5 was structured to give Justin the maximum chance to push back on confidentiality, naming, and field scope. He confirmed everything with minor field additions, which validates the lean v1 approach. Time to integrate into the main deck.</p>
+        <p><strong>Affects:</strong> All Pass 5 mockup files copy into the main deck. Spec sections 6.4 (Project Logs), 6.1 (Overview Team card and health chips), 11 (data model: project_assignments table, new Foreman/Supervisor Report entities), 13 (phasing moves Pass 5 items from pending to v1 committed). Decision Log entries D-021 and D-022 flip from pending-review to committed.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="process, documentation">
+      <div class="entry-head">
+        <span class="entry-id">D-024</span>
+        <span class="entry-title">Decision Log introduced as a living document</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, post-Pass-1-4 spec audit</span>
+        <span class="entry-tags">
+          <span class="tag">process</span>
+          <span class="tag">documentation</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Add a separate <code>decision-log.html</code> file to the deck, linked from <code>index.html</code> and pointed to from the spec MD. Captures significant decisions reverse-chronologically with reasoning, status, and topic tags. Living document; no end date.</p>
+        <p><strong>Reasoning:</strong> Many decisions were made in conversation across multiple sessions and were not written down. Six months from now nobody (including Mike) will remember why specific calls were made. Spec MD captures WHAT was decided; this captures WHY. Tagged so related decisions are findable. Granularity: significant structural decisions only, not every visual tweak.</p>
+        <p><strong>Affects:</strong> New file <code>decision-log.html</code>; <code>index.html</code> gains link; <code>PROJECT-MODULE-SPEC.md</code> gains pointer near the top.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 8, 2026                                                  -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 8, 2026</h2>
+      <span class="group-count">Pass 5 prep + tech home redesign</span>
+    </div>
+
+    <div class="entry" data-status="pending-review" data-tags="ui-pattern, mobile, desktop, tech-side">
+      <div class="entry-head">
+        <span class="entry-id">D-023</span>
+        <span class="entry-title">Tech Home redesigned with est-vs-actual at WO and project scope; My Hours stays personal</span>
+        <span class="entry-status pending-review">Pending review</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin emails (Jun 5 + Jun 8); Mandeep's admin work-orders pattern</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">desktop</span>
+          <span class="tag">tech-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Three-section tech home: <strong>My Hours</strong> (personal, no estimate), <strong>Work Orders</strong> (team-actual vs team-estimate apples-to-apples, with new "My WOs" tab + existing My Dept WO + Open WO tabs), <strong>My Projects</strong> (same est-vs-actual treatment, per-project bars). vs-last-period comparisons removed entirely (broken on Mondays). Lists capped at 3 with View all links. Sketched in mobile and desktop preview files; pending Justin signoff.</p>
+        <p><strong>Reasoning:</strong> Justin's earlier ask for est-vs-actual on tech side surfaced the apples-to-oranges problem: tech's personal hours can't sensibly be compared to project-level estimates. Mandeep's admin work-orders screen showed the right model: team vs team at WO level. We follow that pattern on mobile/desktop tech home, putting est-vs-actual where it's apples-to-apples (per-WO, per-project). Personal hours stays on My Hours as pure time tracking.</p>
+        <p><strong>Affects:</strong> Pending. When signed off, applies to <code>odin-tech-home.html</code> + <code>odin-tech-desktop-access.html</code> + per-project drill-ins. Requires Mandeep to add "My WOs" tab via filter on existing WO query. Also requires new mobile + desktop "view all work orders" destination screens (current production lists 300+ unbounded; show-stopper).</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="role, workflow, scope">
+      <div class="entry-head">
+        <span class="entry-id">D-022</span>
+        <span class="entry-title">Foreman + Supervisor roles and reports added; Project Logs replaces Daily Logs tab</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin ChatGPT exchanges; Mike scope conversation; Pass 5 preview package; Justin signoff Jun 9 (see D-025)</span>
+        <span class="entry-tags">
+          <span class="tag">role</span>
+          <span class="tag">workflow</span>
+          <span class="tag">scope</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Two new roles (Foreman, Supervisor) with weekly reports. Daily Logs tab renamed to Project Logs with sub-tabs: All / Tech Logs / Foreman Reports / Supervisor Reports. v1 field sets are lean (Foreman: ~14 fields including Customer Relationship slider; Supervisor: ~13 fields including Customer Relationship G/Y/R). Scorecards, letter grades, AI sections, cross-project dashboards all parked for v2.</p>
+        <p><strong>Reasoning:</strong> Justin's vision included 50+ field reports with scoring rubrics. Form fatigue and lack of baseline data make scoring noise. Lean v1 ships fast, generates real data, sets up v2 calibration. Confidentiality scope narrowed to just two fields (Foreman Performance rating and Verification) per Justin Jun 9 follow-up: see D-026.</p>
+        <p><strong>Affects:</strong> Rename <code>odin-daily-logs.html</code> → <code>odin-project-logs.html</code>; add composer mockups; update Team card (D-027); update spec sections 6.4 + 7 + 11.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, role, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-021</span>
+        <span class="entry-title">Project Health publishes from Supervisor + Foreman Reports to Overview as a non-confidential carve-out</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, post-Pass-5-package review; Justin signoff Jun 9 (see D-025)</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">role</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Project Health rating (🟢🟡🔴 + one-line reason) publishes to the Overview tab as a non-confidential summary indicator. Both the Foreman Report's and Supervisor Report's health ratings render side-by-side as small chips on the project header alongside the days-remaining pill. Each chip carries its own role label + relative timestamp; stale (&gt;14 days) timestamps render in amber.</p>
+        <p><strong>Reasoning:</strong> The Supervisor Report investment becomes write-only without surfacing its valuable summary judgment somewhere. Traffic-light rating is summary judgment, not personal critique. When the foreman and supervisor disagree on health, that disagreement IS the signal. Per the narrowed confidentiality scope (D-026), only TWO Supervisor Report fields are restricted (Foreman Performance rating + Verification). The Project Health rating, Top 3 Risks, Confidence, Thor Standards, and Customer Relationship rating all publish to the project team.</p>
+        <p><strong>Affects:</strong> <code>odin-overview-current-brand.html</code> project header gains the two chips. Foreman + Supervisor composer mockups submit health rating that publishes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 4, 2026                                                  -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 4, 2026</h2>
+      <span class="group-count">Pass 4 · Pinned messages</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-020</span>
+        <span class="entry-title">Pinned messages in Activity: PM-only, max 5, with light 2-step unpin confirmation</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 4 design conversation</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Activity feed gains pinned-message capability. PM can pin up to 5 items. Pinned items also surface on the Overview tab's Recent Activity card. Unpin uses a light 2-step confirmation (click X → confirm). PM-only authorship; everyone can see pinned items.</p>
+        <p><strong>Reasoning:</strong> Activity feed scrolls. Important moments (a critical RFI answered, a major milestone hit, a customer compliment) get buried within days. Pinning surfaces context-setting items persistently. Cap at 5 prevents the pin feature from becoming clutter itself. PM-only authorship maintains editorial control; the PM is the project's narrator.</p>
+        <p><strong>Affects:</strong> <code>odin-activity.html</code>, <code>odin-overview-current-brand.html</code> (Recent Activity card surfaces pinned items), spec sections 6.5 + 6.1.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JUN 3, 2026                                                  -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>Jun 3, 2026</h2>
+      <span class="group-count">Justin meeting · Pass 1-3 scope lock</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope, integration, data-model">
+      <div class="entry-head">
+        <span class="entry-id">D-019</span>
+        <span class="entry-title">Jonas integration boundary locked: Odin captures external IDs only, no billing logic</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting; clarification from Andrea Lavich (accountant)</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+          <span class="tag">integration</span>
+          <span class="tag">data-model</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Jobs (projects) and work packages (tasks) are generated in Jonas, not Odin. Odin captures Jonas references via optional <code>task_id_external</code> and <code>project_id_external</code> fields. UI renders split field: locked project ID prefix + editable suffix. Only labor-tracking cost items appear as Odin tasks; all other cost item types (material, equipment, freight, permit, warranty, contingency) stay in Jonas only.</p>
+        <p><strong>Reasoning:</strong> Locking this boundary early prevents scope creep into billing, labor rates, and revenue tracking. Jonas is the system of record for financials; Odin is the system of record for proof of work. Mixing the two leads to data ownership confusion and double-entry headaches.</p>
+        <p><strong>Affects:</strong> Spec section 11 (data model), affects Project and Task entities. <code>odin-projects-new-wizard.html</code> and <code>odin-projects-edit.html</code> render the split field. Task creation UI accepts the external ID.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-018</span>
+        <span class="entry-title">Daily Logs: no approval workflow; straight to log on submission</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Tech submits Daily Log → log is posted immediately. No PM review/approve gate. PM can edit/delete after the fact if needed.</p>
+        <p><strong>Reasoning:</strong> Approval workflows add friction without adding value at this scale. Thor has high trust in their techs; the proof-of-work mission requires logs to be captured fresh, not held up in review queues. If something goes wrong, edit/delete is faster than approval.</p>
+        <p><strong>Affects:</strong> <code>odin-daily-logs.html</code>, <code>odin-tech-log-composer.html</code>, spec section 6.4.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-017</span>
+        <span class="entry-title">RFI workflow: no approval gate, no compose-and-send; Odin stores info and photos only</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> RFIs flow from field to PM as drafts. PM does NOT send them through Odin to GCs; PM emails GC externally. Odin stores the question, photos, and the response when PM enters it back into the system.</p>
+        <p><strong>Reasoning:</strong> Thor's existing RFI process uses email to GCs. Trying to replace that flow with an Odin-based send mechanism creates change-management friction. Better to be the system of record for the conversation than to replace the conversation tool itself.</p>
+        <p><strong>Affects:</strong> <code>odin-change-notices-rfi.html</code>, <code>odin-change-notices-rfi-detail.html</code>, spec section 6.6.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope">
+      <div class="entry-head">
+        <span class="entry-id">D-016</span>
+        <span class="entry-title">Subtasks cut from v1; task assignment cut from v1; techs cannot create tasks</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> No subtasks. No task assignment to specific people. Techs cannot create tasks (only admin can; techs can mark complete or blocked). One shared task-picker component with a search bar used by all tech surfaces; anyone can mark Complete or Blocked.</p>
+        <p><strong>Reasoning:</strong> Each of these expanded the surface area of Tasks without addressing the real problem (which is that Tasks tab was already feature-overloaded). Subtasks add a hierarchy layer that becomes its own UX problem. Task assignment introduces a permissions matrix. Tech-created tasks risk taxonomy chaos. v1 keeps Tasks lean and admin-controlled.</p>
+        <p><strong>Affects:</strong> <code>odin-tasks.html</code>, <code>odin-tech-task-list.html</code>, <code>odin-tech-task-picker.html</code>, spec section 6.2.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="data-model, scope">
+      <div class="entry-head">
+        <span class="entry-id">D-015</span>
+        <span class="entry-title">PCN billing_type enum: Fixed (estimated hours + cost impact) or T&amp;M (hours-only tracking)</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">data-model</span>
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> PCN entity gains a <code>billing_type</code> enum with two values: <strong>Fixed</strong> (PCN has both estimated hours and cost impact) and <strong>T&amp;M</strong> (Time &amp; Materials; hours-only tracking, no cost impact in Odin). No revenue calculations or labor rates anywhere in Odin.</p>
+        <p><strong>Reasoning:</strong> Thor bills two ways depending on the change. Fixed-fee changes need both sides (estimate + cost). T&amp;M changes track only labor hours; the billing math happens in Jonas. Capturing the distinction lets Odin show the right fields per PCN without trying to compute revenue (which would put Odin in Jonas territory).</p>
+        <p><strong>Affects:</strong> <code>odin-change-notices.html</code>, <code>odin-change-notices-pcn-detail.html</code>, spec section 11 data model, section 6.6 PCN.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-014</span>
+        <span class="entry-title">Tasks tab uses split-view detail panel (not slideout) to match Daily Logs and Assets pattern</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 3 design conversation</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Tasks list view uses a split-view detail panel: list on the left, detail on the right. Same pattern as Daily Logs and Assets. NOT a slideout, NOT a new modal.</p>
+        <p><strong>Reasoning:</strong> Pattern consistency reduces cognitive load. Three different tabs using three different detail-view mechanisms makes the module feel disjointed. Split-view is the established pattern; Tasks adopts it.</p>
+        <p><strong>Affects:</strong> <code>odin-tasks.html</code>, spec section 6.2.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-013</span>
+        <span class="entry-title">My Tasks renamed to "Project Tasks" on mobile</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">tech-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The mobile tech "My Tasks" list relabeled to "Project Tasks." Same view, different label.</p>
+        <p><strong>Reasoning:</strong> Without task assignment (see D-016), "My Tasks" is misleading. Techs don't have tasks assigned to them; they have tasks they're working on as part of the project crew. "Project Tasks" is more accurate.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-task-list.html</code> heading.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="data-model, ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-012</span>
+        <span class="entry-title">Change Notice "Direction" column collapsed into single "Origin" field</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, mid-Pass-2 design review</span>
+        <span class="entry-tags">
+          <span class="tag">data-model</span>
+          <span class="tag">ui-pattern</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Change Notice "Direction" column (was confused conceptually) collapses into a single "Origin" field with three values: <strong>From field</strong>, <strong>From admin</strong>, <strong>From GC/client</strong>.</p>
+        <p><strong>Reasoning:</strong> Direction was trying to express "who's asking" and "where it came from" simultaneously, leading to wrong-feeling data ("Direction: incoming from field" awkwardly). Origin is cleaner: one field, three mutually-exclusive values, captures the answer to the only question that matters (where did this come from).</p>
+        <p><strong>Affects:</strong> <code>odin-change-notices.html</code>, <code>odin-change-notices-list.html</code>, <code>odin-change-notices-pcn-detail.html</code>, <code>odin-change-notices-rfi-detail.html</code>, spec section 11.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-011</span>
+        <span class="entry-title">Assets tab gets a "Site Videos" folder added</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin meeting</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The default folder set on the Assets tab gains a "Site Videos" folder alongside the existing folders (drawings, site photos, permits, etc.).</p>
+        <p><strong>Reasoning:</strong> Techs increasingly capture video on site. Without a dedicated folder, videos get mixed in with photos or land in the wrong place. Explicit folder reflects how Thor actually organizes assets.</p>
+        <p><strong>Affects:</strong> <code>odin-assets-current-brand.html</code>, spec section 6.7.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MAY 28, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>May 28, 2026</h2>
+      <span class="group-count">Overview shape locked · scope cleanup</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-010</span>
+        <span class="entry-title">Overview tab final shape (v6): Milestones + Activity row 1, 4-card KPI strip row 2, 2fr/1fr/1fr supporting widgets row 3</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, post-Justin-conversation final pass</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Overview locks to v6 shape: <strong>Row 1</strong> Milestones (fixed 260px, internal scroll) + Recent Activity (fills remaining width, capped with internal scroll), equal height via align-items stretch. <strong>Row 2</strong> 4-card KPI strip (Active Tasks, Open Blockers, Open RFIs, Daily Logs This Week). <strong>Row 3</strong> 3-column weighted grid (2fr 1fr 1fr): Latest Daily Logs, Team, External Contacts.</p>
+        <p><strong>Reasoning:</strong> Five iterations got us here. Each cut was driven by "is this storytelling or fluff?" Storytelling stays; fluff goes. The final layout focuses Overview on the questions a PM actually opens the page to answer: "what's coming up" (milestones), "what just happened" (activity), "where are the friction points" (KPI strip), "what was logged" (latest daily logs), "who's on this" (team + external contacts).</p>
+        <p><strong>Affects:</strong> <code>odin-overview-current-brand.html</code>, spec section 6.1.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="reverted" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-009</span>
+        <span class="entry-title">Top KPI 2x2 grid cut entirely from Overview (Hours This Week, Hours This Month, Hours to Date, Project Health)</span>
+        <span class="entry-status reverted">Replaced</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, scope cleanup pass</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The Top KPI 2x2 grid that briefly lived on Overview gets cut. The four cards were Hours This Week, Hours This Month, Hours to Date, and Project Health.</p>
+        <p><strong>Reasoning:</strong> Project Health was orphaned when Schedule Block and Why At Risk were cut (no remaining inputs to a composite indicator). The three Hours cards answer "am I on budget?" which is a question better answered on the Time tab where the PM can filter and drill in. Keeping them on Overview was fluff competing for attention with the storytelling widgets.</p>
+        <p><strong>Affects:</strong> <code>odin-overview-current-brand.html</code>. Superseded by D-010. Note: Project Health later resurfaces in different form via D-021 (publishing from Supervisor Report rather than as a computed composite indicator).</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="reverted" data-tags="ui-pattern, admin-side">
+      <div class="entry-head">
+        <span class="entry-id">D-008</span>
+        <span class="entry-title">Schedule Block, Why At Risk, % Complete, pace pill all cut from Overview</span>
+        <span class="entry-status reverted">Cut from v1</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, scope cleanup pass</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Schedule Block removed entirely along with its dependent widgets: % Complete, pace pill, Work Progress calculation, Calendar Progress calculation. Why At Risk card also removed. Days Left moves to a small blue gradient pill in the project header next to Edit Project.</p>
+        <p><strong>Reasoning:</strong> Schedule Block had grown into a complex composite widget with custom calculations. The signal it tried to convey (am I on schedule) wasn't carrying enough weight to justify its real estate or its math complexity. Days Left as a small pill captures the headline; the rest was overkill.</p>
+        <p><strong>Affects:</strong> <code>odin-overview-current-brand.html</code>, spec section 6.1 (removed sub-sections).</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, admin-side, workflow">
+      <div class="entry-head">
+        <span class="entry-id">D-007</span>
+        <span class="entry-title">Project Actions section: three-tier confirmation pattern with typed-confirmation for Cancel</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 2 design review</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">admin-side</span>
+          <span class="tag">workflow</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> The "Danger Zone" section on Edit Project renamed to "Project Actions" with three tiers of confirmation: <strong>On Hold</strong> (light confirmation), <strong>Mark Complete</strong> (standard confirmation modal), <strong>Cancel</strong> (typed-confirmation modal requiring user to type the project name).</p>
+        <p><strong>Reasoning:</strong> "Danger Zone" carries a tone that doesn't match the workflows ("on hold" is not dangerous, it's a normal status). "Project Actions" is neutral and accurate. The three tiers of confirmation match the irreversibility gradient: On Hold is reversible, Mark Complete creates a record, Cancel is destructive.</p>
+        <p><strong>Affects:</strong> <code>odin-projects-edit.html</code>, spec section 4.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="data-model, ui-pattern, scope">
+      <div class="entry-head">
+        <span class="entry-id">D-006</span>
+        <span class="entry-title">New Project Wizard: 3-step flow replacing Mandeep's 4-step wizard</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 2 design review</span>
+        <span class="entry-tags">
+          <span class="tag">data-model</span>
+          <span class="tag">ui-pattern</span>
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> New project creation flow becomes a 3-step wizard. Project entity gains <code>total_labor_estimate_hours</code>, <code>external_contacts</code>, <code>status</code>, <code>project_id_external</code>. Public/Private toggle removed from UI (treated as always public within Thor).</p>
+        <p><strong>Reasoning:</strong> Mandeep's existing 4-step wizard had a step that was largely confirmations/review. Compressing to 3 keeps the workflow moving. The new entity fields support the Jonas integration boundary (D-019), External Contacts pattern (the renamed Project Parties), and the project lifecycle states.</p>
+        <p><strong>Affects:</strong> <code>odin-projects-new-wizard.html</code>, <code>odin-projects-edit.html</code>, spec section 4 + section 11.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, mobile, tech-side">
+      <div class="entry-head">
+        <span class="entry-id">D-005</span>
+        <span class="entry-title">Mobile RFI composer: 5-field casual capture submitting as DRAFT to PM inbox</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 2 design review</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">tech-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Tech mobile has a Raise RFI surface: 5-field casual capture (subject, description, photos, urgency, project context auto-set). Submission goes as DRAFT to the PM's review inbox. PM polishes language and sends to GC externally (per D-017).</p>
+        <p><strong>Reasoning:</strong> Field RFIs are usually rough notes. Forcing techs to write them in finished form gates the capture. Capturing as draft means the question gets into Odin while it's fresh; PM polishes it before going outward.</p>
+        <p><strong>Affects:</strong> <code>odin-tech-rfi-composer.html</code>, <code>odin-tech-project.html</code> (Raise RFI as secondary action), spec section 7.13, Activity event <code>RFI_DRAFT_CREATED</code>.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="ui-pattern, mobile, tech-side">
+      <div class="entry-head">
+        <span class="entry-id">D-004</span>
+        <span class="entry-title">Task picker: bottom-sheet pattern shared across Submit Time, RFI composer, and standalone</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 2 design review</span>
+        <span class="entry-tags">
+          <span class="tag">ui-pattern</span>
+          <span class="tag">mobile</span>
+          <span class="tag">tech-side</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> One shared task-picker component (bottom-sheet pattern) used across multiple mobile flows: Submit Time, RFI composer, and standalone. Picker has search bar; supports "Create New" draft-task composer state for techs to capture a new task they're starting (admin reviews/approves later).</p>
+        <p><strong>Reasoning:</strong> Multiple task-picker variants across flows = inconsistency + maintenance burden. One shared pattern, two states (browse / create draft).</p>
+        <p><strong>Affects:</strong> <code>odin-tech-task-picker.html</code>, <code>odin-tech-time-submit.html</code>, <code>odin-tech-rfi-composer.html</code>.</p>
+      </div>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="data-model, ui-pattern">
+      <div class="entry-head">
+        <span class="entry-id">D-003</span>
+        <span class="entry-title">Unallocated task pattern: techs explicitly choose "Unallocated" when no task fits</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Pass 2 calc + unallocated pass</span>
+        <span class="entry-tags">
+          <span class="tag">data-model</span>
+          <span class="tag">ui-pattern</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Tech surfaces (mobile Task picker, mobile Submit Time field, admin Time tab Task column) have an explicit "Unallocated" option. Data model treats this as <code>task_id NULL</code> with the UI rendering "Unallocated" as the label.</p>
+        <p><strong>Reasoning:</strong> Without an explicit no-task affordance, techs are forced to pick a wrong task or skip the field. Both options corrupt the data. Explicit "Unallocated" lets the tech say "I worked on this project but not on any specific tracked task." Admin can later allocate retroactively if needed.</p>
+        <p><strong>Affects:</strong> Multiple tech mockups, admin Time tab, spec section 7.12a.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MAY 27, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>May 27, 2026</h2>
+      <span class="group-count">First Justin confirmation pass</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="scope">
+      <div class="entry-head">
+        <span class="entry-id">D-002</span>
+        <span class="entry-title">Tasks tab survives v1 (with rework)</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Justin confirmation pass</span>
+        <span class="entry-tags">
+          <span class="tag">scope</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> Tasks tab stays in v1. Three paths had been on the table (keep as designed, demote to optional flat checklist, cut entirely); Justin chose keep with rework. PCN intake creates tasks automatically. RFI response outcome flows into task status. Task entity gains Cancelled status. Blocked status added.</p>
+        <p><strong>Reasoning:</strong> Even though Tasks had feature-overlap issues with Milestones and Daily Logs, removing it left a gap: there was no place to track in-flight workstreams within a project. The rework (subtasks cut, assignment cut, tech-created cut per D-016) addressed the overload concern without losing the central concept.</p>
+        <p><strong>Affects:</strong> <code>odin-tasks.html</code>, spec section 6.2.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MAY 20, 2026                                                 -->
+  <!-- ============================================================ -->
+  <div class="date-group">
+    <div class="date-group-head">
+      <h2>May 20, 2026</h2>
+      <span class="group-count">Project inception</span>
+    </div>
+
+    <div class="entry" data-status="committed" data-tags="brand">
+      <div class="entry-head">
+        <span class="entry-id">D-001</span>
+        <span class="entry-title">Brand constraints locked: current production Odin only, no lime green, no mascot, no em dashes</span>
+        <span class="entry-status committed">Committed</span>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-source"><strong>Source:</strong> Mike, project kickoff</span>
+        <span class="entry-tags">
+          <span class="tag">brand</span>
+        </span>
+      </div>
+      <div class="entry-body">
+        <p><strong>Decision:</strong> All mockups use current production Odin brand only. Dark topbar <code>#1c1d1f</code>, blue <code>#1d62d3</code>, pink-red gradient buttons, lowercase "odin" with red dot, Inter font primary, IBM Plex Mono ONLY for ID badges and code references. No lime green, no mascot, no em dashes anywhere.</p>
+        <p><strong>Reasoning:</strong> Daryl (designer) will roast off-brand work aggressively. Locking the constraints up front prevents drift across files and across sessions. The "no em dashes" rule is Mike's personal style preference reflected throughout.</p>
+        <p><strong>Affects:</strong> All mockup files, all preview packages.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p><strong>To add an entry:</strong> view the source of this file. The HTML comment near the top of the <code>&lt;head&gt;</code> block has the entry template and conventions. Take the next D-NNN number, paste at the top of the relevant date block (or create a new date block in reverse chronological order).</p>
+  </div>
+
+</div>
+
+<script>
+  // Filter pills
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      const filter = this.dataset.filter;
+      const entries = document.querySelectorAll('.entry');
+
+      entries.forEach(entry => {
+        if (filter === 'all') {
+          entry.style.display = '';
+        } else if (filter.startsWith('status:')) {
+          const target = filter.split(':')[1];
+          entry.style.display = (entry.dataset.status === target) ? '' : 'none';
+        } else if (filter.startsWith('tag:')) {
+          const target = filter.split(':')[1];
+          const tags = (entry.dataset.tags || '').split(',').map(s => s.trim());
+          entry.style.display = tags.includes(target) ? '' : 'none';
+        }
+      });
+
+      // Hide date groups with no visible entries
+      document.querySelectorAll('.date-group').forEach(group => {
+        const visible = Array.from(group.querySelectorAll('.entry')).some(e => e.style.display !== 'none');
+        group.style.display = visible ? '' : 'none';
+      });
+    });
+  });
+
+  // Clicking a tag inside an entry also filters by that tag
+  document.querySelectorAll('.entry-tags .tag').forEach(tag => {
+    tag.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = this.textContent.trim();
+      const matching = document.querySelector(`.filter-pill[data-filter="tag:${target}"]`);
+      if (matching) matching.click();
+    });
+  });
+</script>
+
+</body>
+</html>

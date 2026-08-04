@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Project: Fairmont Hotel · Tasks</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill-status.active { background: var(--green-soft); color: var(--green); }
+  .pill-status.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .pill-id { background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .tabs { display: flex; gap: 0; align-items: center; border-bottom: 1px solid var(--line); margin-bottom: 20px; background: white; padding: 0 6px; border-radius: 8px 8px 0 0; overflow-x: auto; }
+  .tab { padding: 14px 14px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 7px; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+  .tab svg { width: 14px; height: 14px; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+  .tab .count { font-size: 11px; background: var(--bg); padding: 1px 7px; border-radius: 999px; color: var(--muted); }
+  .tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+  /* Page title bar */
+  .page-title-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .pt-icon { width: 38px; height: 38px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; }
+  .pt-icon svg { width: 18px; height: 18px; }
+  .pt-text { flex: 1; }
+  .pt-text h2 { font-size: 17px; font-weight: 600; color: var(--ink); }
+  .pt-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pt-counter { font-size: 12px; color: var(--muted); padding: 5px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; }
+
+  /* ---------- Workspace (split-view) ---------- */
+  /* Matches Daily Logs + Assets pattern: list/clusters on left, task detail panel on right when a row is selected */
+  .workspace { display: grid; grid-template-columns: 1fr 480px; gap: 14px; align-items: start; }
+  .workspace-left { min-width: 0; } /* Allow grid to shrink list columns */
+  .workspace-right { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+
+  /* Tighten task row column widths when in split view (less horizontal space) */
+  .workspace-left .task-list-header { grid-template-columns: 18px 84px 1fr 84px 76px 90px 76px 24px; gap: 8px; padding: 9px 14px; }
+  .workspace-left .task-row { grid-template-columns: 18px 84px 1fr 84px 76px 90px 76px 24px; gap: 8px; padding: 12px 14px; }
+  .workspace-left .task-row.selected { background: var(--blue-soft); }
+  .workspace-left .task-row.selected:hover { background: var(--blue-soft); }
+  .workspace-left .cluster-head { padding: 12px 14px; }
+
+  /* ---------- Task detail panel (right side of workspace) ---------- */
+  .task-detail { background: white; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .td-head { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .td-head-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .td-head-meta .td-status { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .td-head-meta .td-status.in-progress { background: var(--blue-soft); color: var(--blue); }
+  .td-head-meta .td-status.complete { background: var(--green-soft); color: var(--green); }
+  .td-head-meta .td-status.blocked { background: var(--red-soft); color: var(--red); }
+  .td-head-meta .td-status.not-started { background: var(--bg); color: var(--ink-light); }
+  .td-head-meta .td-task-id { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; color: var(--ink-light); padding: 3px 9px; background: var(--bg-2); border-radius: 4px; }
+  .td-head-meta .td-cluster-pill { font-size: 10.5px; color: var(--amber); background: var(--amber-soft); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  .td-head-meta .td-close { margin-left: auto; cursor: pointer; color: var(--muted); padding: 4px; border-radius: 4px; }
+  .td-head-meta .td-close:hover { background: var(--bg-2); color: var(--ink); }
+  .td-head-meta .td-close svg { width: 16px; height: 16px; display: block; }
+  .td-title { font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .td-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+  /* Action row */
+  .td-actions { padding: 12px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; background: var(--bg-2); }
+  .td-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: 1px solid var(--line); background: white; color: var(--ink); font-family: inherit; }
+  .td-action-btn:hover { background: var(--bg); }
+  .td-action-btn.complete { background: var(--green); color: white; border-color: var(--green); }
+  .td-action-btn.complete:hover { background: #167a39; }
+  .td-action-btn.blocked { background: white; color: var(--red); border-color: var(--red); }
+  .td-action-btn.blocked:hover { background: var(--red-soft); }
+  .td-action-btn.unblock { background: var(--blue); color: white; border-color: var(--blue); }
+  .td-action-btn.unblock:hover { background: var(--blue-dark); }
+  .td-action-btn svg { width: 12px; height: 12px; }
+
+  /* Body sections */
+  .td-body { padding: 16px 20px 20px; }
+  .td-section { margin-bottom: 18px; }
+  .td-section:last-child { margin-bottom: 0; }
+  .td-section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px; }
+  .td-section-body { font-size: 13px; color: var(--ink); line-height: 1.55; }
+
+  /* Hours summary */
+  .td-hours-block { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .td-hours-tile { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .td-hours-tile .label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px; }
+  .td-hours-tile .value { font-size: 18px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .td-hours-tile .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .td-hours-bar { height: 7px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+  .td-hours-bar-fill { height: 100%; background: linear-gradient(to right, var(--blue), var(--blue-dark)); border-radius: 999px; }
+  .td-hours-bar-fill.complete { background: linear-gradient(to right, var(--green), #167a39); }
+  .td-hours-bar-fill.blocked { background: linear-gradient(to right, var(--red), #b41721); }
+
+  /* Time entries list */
+  .td-entries { background: var(--bg-2); border-radius: 6px; padding: 6px; border: 1px solid var(--line); }
+  .td-entry { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 9px 12px; background: white; border-radius: 4px; margin-bottom: 4px; }
+  .td-entry:last-child { margin-bottom: 0; }
+  .td-entry-av { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 600; color: white; }
+  .td-entry-body .who { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .td-entry-body .when { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .td-entry-hrs { font-size: 12.5px; font-weight: 600; color: var(--ink); font-feature-settings: 'tnum'; }
+
+  /* Blocked banner inside detail panel */
+  .td-blocked-banner { background: var(--red-soft); border: 1px solid #f0c0c3; border-radius: 6px; padding: 10px 14px; display: flex; gap: 10px; font-size: 12.5px; color: var(--ink); margin-bottom: 18px; }
+  .td-blocked-banner svg { width: 14px; height: 14px; color: var(--red); flex-shrink: 0; margin-top: 2px; }
+  .td-blocked-banner strong { color: var(--red); }
+  .td-blocked-banner a { color: var(--red); text-decoration: underline; }
+
+  /* Description (free-text by PM, optional) */
+  .td-description { font-size: 13px; color: var(--ink); line-height: 1.55; padding: 12px 14px; background: var(--bg-2); border-radius: 6px; }
+  .td-description.empty { color: var(--muted); font-style: italic; }
+
+  /* Key-value rows */
+  .td-kv { display: grid; grid-template-columns: 130px 1fr; gap: 12px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px solid var(--line-2); }
+  .td-kv:last-child { border-bottom: none; }
+  .td-kv .k { color: var(--muted); }
+  .td-kv .v { color: var(--ink); }
+  .td-kv .v a { color: var(--blue); text-decoration: none; }
+
+  /* ---------- Project Estimate strip ---------- */
+  .estimate-strip { background: white; border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  .es-row1 { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+  .es-row1-left { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .es-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .es-title { font-size: 13px; color: var(--ink-light); font-weight: 500; }
+  .es-edit-icon { width: 13px; height: 13px; color: var(--muted); cursor: pointer; vertical-align: middle; }
+  .es-stats { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .es-stat .num { font-size: 18px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; }
+  .es-stat .num.over { color: var(--amber); }
+  .es-stat .num.under { color: var(--green); }
+  .es-stat .lab { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1px; }
+  .es-variance { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .es-variance.green { background: var(--green-soft); color: var(--green); }
+  .es-variance.amber { background: var(--amber-soft); color: var(--amber); }
+  .es-variance.red { background: var(--red-soft); color: var(--red); }
+  .es-variance svg { width: 12px; height: 12px; }
+
+  /* Project est-vs-act bar */
+  .es-bar-wrap { margin-top: 4px; }
+  .es-bar { position: relative; height: 16px; background: var(--bg); border-radius: 4px; overflow: visible; }
+  .es-bar-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px; background: linear-gradient(to right, var(--blue), var(--blue-dark)); }
+  .es-bar-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); border-radius: 1px; }
+  .es-bar-tick-label { position: absolute; top: -22px; transform: translateX(-50%); font-size: 10px; color: var(--ink-light); font-weight: 600; white-space: nowrap; background: white; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); }
+  .es-bar-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+  .es-bar-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .es-bar-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+  .es-bar-legend i.logged { background: linear-gradient(to right, var(--blue), var(--blue-dark)); }
+  .es-bar-legend i.defined { background: var(--ink); width: 2px; height: 10px; }
+  .es-bar-legend i.estimate { background: transparent; border: 1.5px dashed var(--muted); }
+
+  /* ---------- Avatar colors (used on task row assignees and elsewhere) ---------- */
+  .av-mark { background: #6b7c8a; }
+  .av-adam { background: #4a90e2; }
+  .av-sam  { background: #9b59b6; }
+  .av-jt   { background: #c89a37; }
+  .av-kt   { background: #2f8a6a; }
+  .av-mp   { background: #c95a5a; }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .add-task-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; background: var(--blue); color: white; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .add-task-btn svg { width: 13px; height: 13px; }
+  .filter-chips { display: flex; gap: 6px; }
+  .chip { padding: 6px 12px; font-size: 12.5px; border-radius: 999px; background: white; border: 1px solid var(--line); color: var(--ink-light); cursor: pointer; }
+  .chip:hover { background: var(--bg-2); }
+  .chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .chip .ct { margin-left: 6px; font-size: 10px; opacity: 0.7; }
+  .group-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-left: auto; }
+  .group-toggle .seg { display: inline-flex; background: var(--bg); border-radius: 999px; padding: 3px; }
+  .group-toggle .seg button { padding: 4px 12px; font-size: 12px; border: none; background: transparent; color: var(--ink-light); border-radius: 999px; cursor: pointer; font-weight: 500; }
+  .group-toggle .seg button.on { background: white; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .search-box { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 10px; background: white; border: 1px solid var(--line); border-radius: 999px; font-size: 12.5px; color: var(--muted); }
+  .search-box svg { width: 12px; height: 12px; }
+  .search-box input { border: none; outline: none; background: transparent; font-size: 12.5px; width: 130px; font-family: inherit; color: var(--ink); }
+
+  /* ---------- Cluster headers and tasks ---------- */
+  .cluster { background: white; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .cluster-head { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .cluster-head.pcn { background: linear-gradient(to right, #fdf2dd 0%, #fdf2dd 4px, var(--bg-2) 4px); border-left: 4px solid var(--amber); padding-left: 14px; }
+  .cluster-head.unallocated { background: linear-gradient(to right, #eceef1 0%, #eceef1 4px, var(--bg-2) 4px); border-left: 4px solid var(--muted-2); padding-left: 14px; }
+  .unalloc-badge { display: inline-block; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 10px; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--line); padding: 1px 6px; border-radius: 4px; margin-right: 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .cluster-head .ch-toggle { color: var(--muted); cursor: pointer; }
+  .cluster-head .ch-toggle svg { width: 12px; height: 12px; }
+  .cluster-head .ch-main .ch-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+  .cluster-head .ch-main .ch-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+  .cluster-head .ch-main .ch-meta { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .cluster-head .ch-stats { display: flex; gap: 18px; align-items: center; }
+  .ch-mini-bar { width: 180px; }
+  .ch-mini-bar .label-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .ch-mini-bar .label-row .strong { color: var(--ink); font-weight: 600; }
+  .ch-mini-bar .bar { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; position: relative; }
+  .ch-mini-bar .bar-fill { height: 100%; background: linear-gradient(to right, var(--blue), var(--blue-dark)); border-radius: 999px; }
+  .ch-mini-bar .bar-fill.over { background: linear-gradient(to right, var(--amber), #c47e08); }
+  .ch-status-pill { padding: 3px 10px; background: var(--green-soft); color: var(--green); border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .ch-status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+
+  /* Task rows */
+  .task-list { background: white; }
+  .task-list-header { display: grid; grid-template-columns: 18px 110px 1fr 110px 100px 150px 88px 28px; gap: 12px; align-items: center; padding: 9px 18px; background: var(--bg-2); border-bottom: 1px solid var(--line); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .task-list-header .tlh-hours { text-align: right; }
+  .task-row { display: grid; grid-template-columns: 18px 110px 1fr 110px 100px 150px 88px 28px; gap: 12px; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:hover { background: var(--bg-2); cursor: pointer; }
+  .tr-task-id { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; color: var(--ink-light); }
+  .tr-task-id.empty { color: var(--muted-2); }
+  .tr-drag { color: var(--grey); cursor: grab; }
+  .tr-drag svg { width: 12px; height: 12px; }
+  .tr-status { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; text-align: center; }
+  .tr-status.not-started { background: var(--bg); color: var(--ink-light); }
+  .tr-status.in-progress { background: var(--blue-soft); color: var(--blue); }
+  .tr-status.complete { background: var(--green-soft); color: var(--green); }
+  .tr-status.blocked { background: var(--red-soft); color: var(--red); }
+  .tr-status.draft { background: var(--amber-soft); color: var(--amber); }
+  .tr-name-wrap { min-width: 0; }
+  .tr-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .tr-name .pcn-badge { display: inline-block; background: var(--amber-soft); color: var(--amber); font-size: 10px; padding: 1px 7px; border-radius: 4px; margin-right: 8px; font-weight: 700; font-family: 'IBM Plex Mono', Menlo, monospace; vertical-align: middle; }
+  .tr-name .rfi-badge { display: inline-block; background: var(--blue-soft); color: var(--blue); font-size: 10px; padding: 1px 7px; border-radius: 4px; margin-right: 8px; font-weight: 700; font-family: 'IBM Plex Mono', Menlo, monospace; vertical-align: middle; }
+  .tr-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .tr-sub a { color: var(--blue); text-decoration: none; }
+  .tr-sub a:hover { text-decoration: underline; }
+  .tr-blocked-banner { font-size: 11px; color: var(--red); margin-top: 3px; background: var(--red-soft); padding: 2px 7px; border-radius: 3px; display: inline-block; }
+  .tr-blocked-banner a { color: var(--red); text-decoration: underline; }
+  /* Note: tr-assignees and tr-assignees .a-av classes removed June 2 (tasks no longer assigned to individuals). */
+  .tr-due { font-size: 12px; color: var(--ink-light); font-feature-settings: 'tnum'; }
+  .tr-due.soon { color: var(--amber); font-weight: 600; }
+  .tr-due.overdue { color: var(--red); font-weight: 600; }
+  .tr-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .tr-bar { flex: 1; height: 7px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+  .tr-bar-fill { height: 100%; background: linear-gradient(to right, var(--blue), var(--blue-dark)); border-radius: 999px; }
+  .tr-bar-fill.complete { background: linear-gradient(to right, var(--green), #167a39); }
+  .tr-bar-fill.over { background: linear-gradient(to right, var(--amber), #c47e08); }
+  .tr-bar-fill.blocked { background: linear-gradient(to right, var(--red), #b41721); }
+  .tr-hours { font-size: 12px; color: var(--ink); font-feature-settings: 'tnum'; font-weight: 600; text-align: right; white-space: nowrap; }
+  .tr-hours .over-amt { color: var(--amber); }
+  .tr-menu { color: var(--muted); cursor: pointer; }
+  .tr-menu svg { width: 16px; height: 16px; }
+
+  /* Empty state inside cluster */
+  .empty-cluster { padding: 32px 18px; text-align: center; color: var(--muted); font-size: 13px; }
+  .empty-cluster .ec-title { font-size: 14px; font-weight: 600; color: var(--ink-light); margin-bottom: 4px; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; color: #7a6620; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>Fairmont Hotel Renovation
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="page-head">
+        <div class="page-title-block">
+          <h1>Fairmont Hotel Renovation</h1>
+          <div class="sub">
+            <span class="pill pill-id">9059</span>
+            <span class="pill pill-status active">Active</span>
+            <span>Project Manager: Adam Coey</span>
+            <span>·</span>
+            <span>24 Mar 2026 to 30 Jun 2026</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" title="Edit project details">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Project
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</div>
+        <div class="tab active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks <span class="count">14</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Time</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Project Logs <span class="count">23</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>Activity</div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Change Notices <span class="count">5</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Assets <span class="count">47</span></div>
+        <div class="tab"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Client Reports <span class="count">4</span></div>
+      </div>
+
+      <!-- Page title bar -->
+      <div class="page-title-bar">
+        <div class="pt-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="pt-text">
+          <h2>Tasks</h2>
+          <div class="pt-sub">Labor-tracking cost items from Jonas, with hours estimates rolling up to the project's labor budget. Original scope and change notices are tracked in two sections, with a default Other bucket for time not yet tied to a task.</div>
+        </div>
+        <div class="pt-counter">18 tasks · 8 in progress · 1 blocked</div>
+      </div>
+
+      <!-- ============== Project Estimate strip ============== -->
+      <div class="estimate-strip">
+        <div class="es-row1">
+          <div class="es-row1-left">
+            <div class="es-label">Project labor budget</div>
+            <div class="es-title">Fairmont Hotel Renovation</div>
+          </div>
+          <div class="es-stats">
+            <div class="es-stat">
+              <div class="num">1,200 <span style="font-size: 12px; color: var(--muted); font-weight: 500;">hrs</span></div>
+              <div class="lab">Project estimate <svg class="es-edit-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+            </div>
+            <div class="es-stat">
+              <div class="num">1,152</div>
+              <div class="lab">Tasks defined</div>
+            </div>
+            <div class="es-stat">
+              <div class="num">642</div>
+              <div class="lab">Logged to date</div>
+            </div>
+            <div class="es-stat">
+              <div class="num under">558</div>
+              <div class="lab">Remaining</div>
+            </div>
+            <div class="es-variance green">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+              On budget · 48 hrs under estimate
+            </div>
+          </div>
+        </div>
+        <div class="es-bar-wrap">
+          <div class="es-bar">
+            <!-- Logged: 642 / 1200 = 53.5% -->
+            <div class="es-bar-fill" style="width: 53.5%;"></div>
+            <!-- Tasks defined tick at 96% (1152 of 1200) -->
+            <div class="es-bar-tick" style="left: 96%;"></div>
+            <div class="es-bar-tick-label" style="left: 96%;">1,152 hrs defined</div>
+          </div>
+          <div class="es-bar-legend">
+            <span><i class="logged"></i> Logged hours (642)</span>
+            <span><i class="defined"></i> Tasks defined boundary (1,152)</span>
+            <span><i class="estimate"></i> Project estimate ceiling (1,200)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============== Workspace: split view (clusters on left, task detail panel on right) ============== -->
+      <div class="workspace">
+
+      <div class="workspace-left">
+
+      <!-- ============== Toolbar ============== -->
+      <div class="toolbar">
+        <a href="odin-tasks-add.html" class="add-task-btn" style="text-decoration:none;">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add task
+        </a>
+        <div class="filter-chips">
+          <div class="chip active">All <span class="ct">18</span></div>
+          <div class="chip">Not Started <span class="ct">4</span></div>
+          <div class="chip">In Progress <span class="ct">11</span></div>
+          <div class="chip">Blocked <span class="ct">1</span></div>
+          <div class="chip">Complete <span class="ct">3</span></div>
+        </div>
+        <div class="group-toggle">
+          Group by
+          <div class="seg">
+            <button class="on">Cluster</button>
+            <button>Status</button>
+          </div>
+        </div>
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input type="text" placeholder="Search tasks">
+        </div>
+      </div>
+
+      <!-- ============== Original Scope cluster (15 Fairmont cost items) ============== -->
+      <div class="cluster">
+        <div class="cluster-head">
+          <div class="ch-toggle">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="ch-main">
+            <div class="ch-label">Original Scope</div>
+            <div class="ch-name">15 cost items (labor)</div>
+            <div class="ch-meta">1,102 hrs estimated · 608 hrs logged · 494 hrs remaining</div>
+          </div>
+          <div class="ch-stats">
+            <div class="ch-mini-bar">
+              <div class="label-row">
+                <span><span class="strong">608</span> of 1,102 hrs</span>
+                <span>55%</span>
+              </div>
+              <div class="bar"><div class="bar-fill" style="width: 55%;"></div></div>
+            </div>
+            <div class="ch-status-pill">On track</div>
+          </div>
+        </div>
+
+        <div class="task-list">
+
+          <div class="task-list-header">
+            <div></div>
+            <div>Status</div>
+            <div>Task</div>
+            <div>Task ID</div>
+            <div>Due</div>
+            <div>Progress</div>
+            <div class="tlh-hours">Hrs / est.</div>
+            <div></div>
+          </div>
+
+          <!-- 00302 Mobilization (complete) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status complete">Complete</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Mobilization</div>
+            </div>
+            <div class="tr-task-id">9059-00302</div>
+            <div class="tr-due">26 Mar 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill complete" style="width: 100%;"></div></div></div>
+            <div class="tr-hours">24 / 24</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00310 Demo (complete) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status complete">Complete</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Demo</div>
+            </div>
+            <div class="tr-task-id">9059-00310</div>
+            <div class="tr-due">10 Apr 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill complete" style="width: 100%;"></div></div></div>
+            <div class="tr-hours">56 / 60</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00311 Scan and Core (complete) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status complete">Complete</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Scan and Core</div>
+            </div>
+            <div class="tr-task-id">9059-00311</div>
+            <div class="tr-due">17 Apr 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill complete" style="width: 95%;"></div></div></div>
+            <div class="tr-hours">38 / 40</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00101 Concourse DW Piping (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Concourse DW Piping</div>
+            </div>
+            <div class="tr-task-id">9059-00101</div>
+            <div class="tr-due">14 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 72%;"></div></div></div>
+            <div class="tr-hours">86 / 120</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00105 Level 2 Domestic Water (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Level 2 Domestic Water</div>
+            </div>
+            <div class="tr-task-id">9059-00105</div>
+            <div class="tr-due">20 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 58%;"></div></div></div>
+            <div class="tr-hours">52 / 90</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00106 Level 2 Sanitary (in progress, blocked, SELECTED for split-view demo) -->
+          <div class="task-row selected">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Level 2 Sanitary</div>
+              <div class="tr-blocked-banner">
+                Blocked by <a href="#">RFI-007</a> · Awaiting recirc spec clarification
+              </div>
+            </div>
+            <div class="tr-task-id">9059-00106</div>
+            <div class="tr-due">22 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill blocked" style="width: 36%;"></div></div></div>
+            <div class="tr-hours">32 / 88</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00109 Risers All Floors (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Risers All Floors</div>
+            </div>
+            <div class="tr-task-id">9059-00109</div>
+            <div class="tr-due">26 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 48%;"></div></div></div>
+            <div class="tr-hours">68 / 140</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00113 Storm Drainage (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Storm Drainage</div>
+            </div>
+            <div class="tr-task-id">9059-00113</div>
+            <div class="tr-due">28 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 42%;"></div></div></div>
+            <div class="tr-hours">28 / 66</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00301 Material Handling (in progress, ongoing through project) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Material Handling</div>
+            </div>
+            <div class="tr-task-id">9059-00301</div>
+            <div class="tr-due">30 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 64%;"></div></div></div>
+            <div class="tr-hours">48 / 75</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00400 Site Supervision (in progress, ongoing) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Site Supervision</div>
+            </div>
+            <div class="tr-task-id">9059-00400</div>
+            <div class="tr-due">30 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 70%;"></div></div></div>
+            <div class="tr-hours">112 / 160</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00401 Welding (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Welding</div>
+            </div>
+            <div class="tr-task-id">9059-00401</div>
+            <div class="tr-due">22 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 54%;"></div></div></div>
+            <div class="tr-hours">38 / 70</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00201 Concourse Hydronics (in progress) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Concourse Hydronics</div>
+            </div>
+            <div class="tr-task-id">9059-00201</div>
+            <div class="tr-due">25 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 38%;"></div></div></div>
+            <div class="tr-hours">26 / 68</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00207 Suite Fan Coils (not started) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status not-started">Not Started</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Suite Fan Coils</div>
+            </div>
+            <div class="tr-task-id">9059-00207</div>
+            <div class="tr-due">28 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 0%;"></div></div></div>
+            <div class="tr-hours">0 / 55</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00315 Testing (not started) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status not-started">Not Started</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Testing</div>
+            </div>
+            <div class="tr-task-id">9059-00315</div>
+            <div class="tr-due">29 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 0%;"></div></div></div>
+            <div class="tr-hours">0 / 30</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+          <!-- 00309 Commissioning (not started) -->
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status not-started">Not Started</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name">Commissioning</div>
+            </div>
+            <div class="tr-task-id">9059-00309</div>
+            <div class="tr-due">30 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 0%;"></div></div></div>
+            <div class="tr-hours">0 / 16</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============== Change Notice Scopes cluster (all PCN-spawned tasks, one section) ============== -->
+      <div class="cluster">
+        <div class="cluster-head pcn">
+          <div class="ch-toggle">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="ch-main">
+            <div class="ch-label">Change Notice Scopes</div>
+            <div class="ch-name">3 change notices (labor)</div>
+            <div class="ch-meta">50 hrs estimated &middot; 34 hrs logged &middot; 16 hrs remaining</div>
+          </div>
+          <div class="ch-stats">
+            <div class="ch-mini-bar">
+              <div class="label-row">
+                <span><span class="strong">34</span> of 50 hrs</span>
+                <span>68%</span>
+              </div>
+              <div class="bar"><div class="bar-fill" style="width: 68%;"></div></div>
+            </div>
+            <div class="ch-status-pill">In progress</div>
+          </div>
+        </div>
+
+        <div class="task-list">
+          <div class="task-list-header">
+            <div></div>
+            <div>Status</div>
+            <div>Task</div>
+            <div>Task ID</div>
+            <div>Due</div>
+            <div>Progress</div>
+            <div class="tlh-hours">Hrs / est.</div>
+            <div></div>
+          </div>
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name"><span class="pcn-badge">PCN-001</span>Penthouse Coordination</div>
+            </div>
+            <div class="tr-task-id">9059-00505</div>
+            <div class="tr-due">12 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 92%;"></div></div></div>
+            <div class="tr-hours">22 / 24</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status in-progress">In Progress</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name"><span class="pcn-badge">PCN-003</span>FC Bal. Valve / HW Pipe Size</div>
+            </div>
+            <div class="tr-task-id">9059-00506</div>
+            <div class="tr-due">18 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 67%;"></div></div></div>
+            <div class="tr-hours">12 / 18</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status not-started">Not Started</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name"><span class="pcn-badge">PCN-009</span>Swing Stage Outlets</div>
+            </div>
+            <div class="tr-task-id">9059-00509</div>
+            <div class="tr-due">20 Jun 2026</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 0%;"></div></div></div>
+            <div class="tr-hours">0 / 8</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============== Other bucket (persistent, created by default at project creation) ============== -->
+      <div class="cluster">
+        <div class="cluster-head unallocated">
+          <div class="ch-toggle"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div class="ch-main">
+            <div class="ch-label">Default bucket</div>
+            <div class="ch-name">Other</div>
+            <div class="ch-meta">Time logged without a specific task. Reassign entries to a real task when scope becomes clear.</div>
+          </div>
+          <div class="ch-stats">
+            <div class="ch-mini-bar">
+              <div class="label-row">
+                <span><span class="strong">5.5</span> hrs logged</span>
+                <span>no est.</span>
+              </div>
+              <div class="bar"><div class="bar-fill" style="width: 100%; background: var(--muted-2);"></div></div>
+            </div>
+            <div class="ch-status-pill">Default</div>
+          </div>
+        </div>
+
+        <div class="task-list">
+          <div class="task-list-header">
+            <div></div>
+            <div>Status</div>
+            <div>Task</div>
+            <div>Task ID</div>
+            <div>Due</div>
+            <div>Progress</div>
+            <div class="tlh-hours">Hrs / est.</div>
+            <div></div>
+          </div>
+          <div class="task-row">
+            <div class="tr-drag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg></div>
+            <div class="tr-status not-started">Open</div>
+            <div class="tr-name-wrap">
+              <div class="tr-name"><span class="unalloc-badge">Other</span>General site time</div>
+            </div>
+            <div class="tr-task-id">&ndash;</div>
+            <div class="tr-due">&ndash;</div>
+            <div class="tr-bar-wrap"><div class="tr-bar"><div class="tr-bar-fill" style="width: 100%; background: var(--muted-2);"></div></div></div>
+            <div class="tr-hours">5.5 / &ndash;</div>
+            <div class="tr-menu"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="18" r="1"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      </div> <!-- /workspace-left -->
+
+      <!-- Task detail panel: Level 2 Sanitary selected -->
+      <aside class="workspace-right">
+        <div class="task-detail">
+
+          <div class="td-head">
+            <div class="td-head-meta">
+              <span class="td-status in-progress">In Progress</span>
+              <span class="td-task-id">9059-00106</span>
+              <span class="td-cluster-pill">Original Scope</span>
+              <span class="td-close" title="Close detail panel">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </span>
+            </div>
+            <div class="td-title">Level 2 Sanitary</div>
+            <div class="td-sub">Due 22 Jun 2026 · Started 14 Apr 2026 · 5 time entries from 2 techs</div>
+          </div>
+
+          <div class="td-actions">
+            <button class="td-action-btn unblock" title="Resolve the blocker and resume work">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/></svg>
+              Unblock
+            </button>
+            <button class="td-action-btn complete" title="Mark this task complete">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark Complete
+            </button>
+            <button class="td-action-btn" title="Edit task name, estimate, dates, Task ID">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+          </div>
+
+          <div class="td-body">
+
+            <div class="td-blocked-banner">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+              <div>
+                <strong>Blocked by <a href="#">RFI-007</a></strong> since 18 May 2026.
+                <div style="margin-top: 3px;">Awaiting recirc spec clarification from engineer of record. Hours can still be logged for work performed before the block.</div>
+              </div>
+            </div>
+
+            <div class="td-section">
+              <div class="td-section-label">Hours</div>
+              <div class="td-hours-block">
+                <div class="td-hours-tile">
+                  <div class="label">Logged</div>
+                  <div class="value">32 <span style="font-size: 11px; color: var(--muted); font-weight: 500;">hrs</span></div>
+                  <div class="sub">36% of estimate</div>
+                </div>
+                <div class="td-hours-tile">
+                  <div class="label">Estimate</div>
+                  <div class="value">88 <span style="font-size: 11px; color: var(--muted); font-weight: 500;">hrs</span></div>
+                  <div class="sub">56 hrs remaining</div>
+                </div>
+              </div>
+              <div class="td-hours-bar"><div class="td-hours-bar-fill blocked" style="width: 36%;"></div></div>
+            </div>
+
+            <div class="td-section">
+              <div class="td-section-label">Description</div>
+              <div class="td-description">
+                Rough-in for Level 2 sanitary stack and branch lines per drawings M-201 and M-202. Includes connections to fixture groups in suites 201 through 216. Coordination required with recirculation loop (RFI-007 raised by Mark Panteluk).
+              </div>
+            </div>
+
+            <div class="td-section">
+              <div class="td-section-label">Details</div>
+              <div class="td-kv"><div class="k">Task ID (Jonas)</div><div class="v" style="font-family: 'IBM Plex Mono', Menlo, monospace;">9059-00106</div></div>
+              <div class="td-kv"><div class="k">Cluster</div><div class="v">Original Scope</div></div>
+              <div class="td-kv"><div class="k">Due date</div><div class="v">22 Jun 2026</div></div>
+              <div class="td-kv"><div class="k">Created by</div><div class="v">Adam Coey · 24 Mar 2026</div></div>
+              <div class="td-kv"><div class="k">Linked RFI</div><div class="v"><a href="#">RFI-007</a> · Hot water recirc loop spec clarification</div></div>
+            </div>
+
+            <div class="td-section">
+              <div class="td-section-label">Recent time entries</div>
+              <div class="td-entries">
+                <div class="td-entry">
+                  <div class="td-entry-av av-mark">MP</div>
+                  <div class="td-entry-body">
+                    <div class="who">Mark Panteluk</div>
+                    <div class="when">16 May · 7.5 hrs · "Branch lines to suites 209-212"</div>
+                  </div>
+                  <div class="td-entry-hrs">7.5</div>
+                </div>
+                <div class="td-entry">
+                  <div class="td-entry-av av-sam">SP</div>
+                  <div class="td-entry-body">
+                    <div class="who">Sam Paterson</div>
+                    <div class="when">15 May · 6.0 hrs · "Stack rough-in level 2"</div>
+                  </div>
+                  <div class="td-entry-hrs">6.0</div>
+                </div>
+                <div class="td-entry">
+                  <div class="td-entry-av av-mark">MP</div>
+                  <div class="td-entry-body">
+                    <div class="who">Mark Panteluk</div>
+                    <div class="when">14 May · 8.0 hrs · "Branch lines to suites 201-208"</div>
+                  </div>
+                  <div class="td-entry-hrs">8.0</div>
+                </div>
+                <div class="td-entry">
+                  <div class="td-entry-av av-sam">SP</div>
+                  <div class="td-entry-body">
+                    <div class="who">Sam Paterson</div>
+                    <div class="when">13 May · 6.5 hrs · "Setup, prep, material delivery to L2"</div>
+                  </div>
+                  <div class="td-entry-hrs">6.5</div>
+                </div>
+                <div class="td-entry">
+                  <div class="td-entry-av av-mark">MP</div>
+                  <div class="td-entry-body">
+                    <div class="who">Mark Panteluk</div>
+                    <div class="when">12 May · 4.0 hrs · "Layout and marking"</div>
+                  </div>
+                  <div class="td-entry-hrs">4.0</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+
+      </div> <!-- /workspace -->
+
+      <!-- ============== Annotations ============== -->
+      <div class="annotations">
+        <h3>Tasks tab notes (June 2 model: Jonas cost items + split-view detail)</h3>
+        <ul>
+          <li><strong>Split-view detail panel on the right (added Pass 3).</strong> Clicking a task row opens the detail panel to the right of the cluster list, matching the Daily Logs / Assets pattern. The detail panel shows: status pill, Task ID, cluster context, title, action row (Edit, Mark Complete, Mark Blocked / Unblock, Reopen depending on state), Hours block (logged vs estimate with bar), description, key-value details (Jonas Task ID, cluster, due date, creator, linked RFI/PCN if any), and recent time entries.</li>
+          <li><strong>Selected row gets a blue-soft background</strong> on the task row in the cluster list, providing clear visual anchor between the list and the detail panel.</li>
+          <li><strong>Action affordances change with state.</strong> For a Blocked task (shown here): primary action is Unblock. For In Progress: Mark Complete and Mark Blocked. For Complete: Reopen. For Not Started: Mark Complete and Mark Blocked. Edit is always available.</li>
+          <li><strong>Tasks in Odin are labor-tracking Jonas cost items.</strong> Per Justin's June 2 lock: only labor-tracking cost items are mirrored to Odin. Material lines, equipment, freight, permits, warranty, and contingency stay in Jonas. The PM enters the Jonas cost item number on each Odin task via the Task ID field (column shown here, mono-font, rendered as project-number-prefixed format like <code>9059-00301</code>).</li>
+          <li><strong>Cost items are flat (no subtasks).</strong> Per Justin's June 2 lock: Jonas cost items are flat in their accounting model, and Odin mirrors that structure. Subtask concept removed.</li>
+          <li><strong>Tasks are not assigned to individuals.</strong> Per Justin's June 2 lock: tasks belong to projects. All staff (including techs not officially on the project) can see them and log time against them. The "Assigned" column has been replaced with the Task ID column.</li>
+          <li><strong>Anyone can mark Complete or Blocked.</strong> Status changes are open to any staff member, not just assignees (since there are no assignees anymore).</li>
+          <li><strong>Techs cannot create tasks.</strong> Tasks correspond to Jonas cost items, which are set up by the PM in Jonas at the start of a job. Techs use the existing task list and Other as the fallback when no task fits.</li>
+          <li><strong>Project Estimate strip.</strong> Shows project labor budget (editable inline), sum of all task estimates ("Tasks defined"), actual hours logged, remaining hours, and variance state. In this mockup: 1,200 hr budget, 1,152 hrs defined across 18 tasks, 642 logged.</li>
+          <li><strong>Variance state is color-coded.</strong> Green when tasks-defined &le; estimate, amber 0 to 10% over, red over 10%.</li>
+          <li><strong>Original Scope is one cluster</strong> showing the 15 labor cost items pulled from the Fairmont job. Header shows rollup for original scope only, independent of PCN totals.</li>
+          <li><strong>All change-notice work lives in one Change Notice Scopes section</strong> rather than a separate detailed cluster per PCN. Each PCN still spawns one flat cost item (no subtasks per June 2); the three shown here are PCN-001 Penthouse Coordination (9059-00505), PCN-003 FC Bal. Valve / HW Pipe Size (9059-00506), and PCN-009 Swing Stage Outlets (9059-00509). The section header carries a combined hours rollup, styled to match Original Scope; per-PCN cost, date, and reason live in the Change Notices register and in the task detail panel, not crowding this list.</li>
+          <li><strong>PCN-spawned tasks carry a PCN-XXX badge inline</strong> on the task name (the same number used when the PCN was ingested, e.g. <code>PCN-004: Add supplemental vent</code>), so the change-notice attribution stays visible when the list is filtered or sorted. The old Jonas "CCN" label is not surfaced to users.</li>
+          <li><strong>Blocked state shows the reason inline.</strong> Level 2 Sanitary in this mockup is blocked by RFI-007. The blocking-reason banner appears in the row's name column AND in the detail panel (more prominent there with full context).</li>
+          <li><strong>Est-vs-act bar per task row.</strong> Compact 7px bar showing actual hours fill against the task's estimate. Color shifts to amber if hours exceed estimate, red if blocked, green when complete and under estimate.</li>
+          <li><strong>Group toggle: Cluster vs Status.</strong> Cluster grouping (default) puts Original Scope, Change Notice Scopes, and Other each in its own collapsible block. Status grouping flattens all clusters and sorts by status.</li>
+        </ul>
+
+        <h4>Detail panel composition</h4>
+        <ul>
+          <li><strong>Header:</strong> status pill, Task ID (mono), cluster context (Original Scope or Change Notice Scopes), close-X to dismiss the panel. Below: task title, subtitle showing due date and creation context.</li>
+          <li><strong>Action row:</strong> primary action button (varies by state) + Edit. Sits above the body inside a tinted band so it doesn't get lost when scrolling.</li>
+          <li><strong>Blocked banner</strong> renders just below action row when status is Blocked. Red-tinted, includes the linked RFI/PCN reason and date blocked.</li>
+          <li><strong>Hours section:</strong> two tiles (Logged, Estimate) plus a horizontal progress bar. Bar color matches task status (blue for in-progress, green for complete, red for blocked, etc.).</li>
+          <li><strong>Description:</strong> free-text field, optional. If empty, renders as "No description set" in muted italics.</li>
+          <li><strong>Details:</strong> key-value pairs for Task ID (Jonas), cluster, due date, creator, linked RFI/PCN, custom fields if any.</li>
+          <li><strong>Recent time entries:</strong> last 5-10 entries logged against this task, showing tech avatar, name, date, hours, and note text from the entry. "View all" link if more than 10 entries.</li>
+        </ul>
+
+        <h4>Mobile behavior (per June 2 direction)</h4>
+        <ul>
+          <li><strong>No mobile task detail page.</strong> Per Justin: limited info on a task aside from the name; a dedicated detail page is overkill on mobile. Controls live as inline three-dot menus on the task row in the mobile Project Tasks list. (Mockup update for the mobile inline menu is part of this Pass 3.)</li>
+        </ul>
+
+        <h4>What changed in this rework (June 2 outcomes)</h4>
+        <ul>
+          <li><strong>Removed:</strong> Draft Tasks review inbox (techs can't create tasks), subtasks (flat cost item model), Assigned column and tr-assignees avatars (no assignment), Drafts filter chip and DRAFT status.</li>
+          <li><strong>Added:</strong> Task ID column showing Jonas cost item number in mono font, populated Fairmont cost items, PCN naming convention on change-notice tasks (Jonas's internal "CCN" term is not surfaced), split-view detail panel on the right when a row is selected, Pass 3 detail panel controls (Edit, Mark Complete, Mark Blocked / Unblock, Reopen).</li>
+        </ul>
+
+        <h4>Out of scope for v1 (parked)</h4>
+        <ul>
+          <li>Gantt-style timeline view (milestones cover the schedule story; tasks stay list-based in v1)</li>
+          <li>Task templates / import from past projects</li>
+          <li>Task dependencies (Task X cannot start until Task Y is complete)</li>
+          <li>Resource leveling / capacity planning</li>
+          <li>Bidirectional Jonas API sync (Odin captures the cost item ID as a string; reconciliation happens via export, not live sync)</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

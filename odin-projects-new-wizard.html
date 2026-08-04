@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Projects · New Project Wizard</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn-danger-soft { background: white; color: var(--red); border: 1px solid #f4c5c8; }
+  .btn-danger-soft:hover { background: var(--red-soft); }
+  .btn-large { padding: 11px 26px; font-size: 14px; }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* Wizard layout */
+  .wizard-container { max-width: 920px; margin: 0 auto; }
+
+  /* Stepper at the top */
+  .stepper { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 22px 30px; margin-bottom: 22px; }
+  .stepper-row { display: flex; align-items: center; gap: 0; max-width: 680px; margin: 0 auto; }
+  .step-node { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .step-circle { width: 36px; height: 36px; border-radius: 50%; background: white; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--muted); transition: all 0.2s; }
+  .step-node.active .step-circle { background: var(--blue); border-color: var(--blue); color: white; box-shadow: 0 0 0 4px var(--blue-soft); }
+  .step-node.done .step-circle { background: var(--green); border-color: var(--green); color: white; }
+  .step-node.done .step-circle svg { width: 16px; height: 16px; }
+  .step-label { font-size: 12.5px; color: var(--muted); font-weight: 500; text-align: center; }
+  .step-node.active .step-label { color: var(--ink); font-weight: 600; }
+  .step-node.done .step-label { color: var(--ink-light); }
+  .step-connector { flex: 1; height: 2px; background: var(--line); margin: 0 4px; align-self: flex-start; margin-top: 18px; }
+  .step-connector.done { background: var(--green); }
+
+  /* State stage label (matches PCN/RFI detail mockups) */
+  .state-stage { background: linear-gradient(to right, var(--blue-soft), white 60%); border-left: 3px solid var(--blue); padding: 10px 16px; margin: 30px 0 14px; border-radius: 0 8px 8px 0; }
+  .state-stage h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--blue); }
+  .state-stage p { font-size: 13px; color: var(--ink-light); margin-top: 4px; }
+
+  /* Wizard step card */
+  .step-card { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 30px 36px; }
+  .step-card-head { margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line-2); }
+  .step-card-head .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--blue); margin-bottom: 4px; }
+  .step-card-head h2 { font-size: 19px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .step-card-head .sub { font-size: 13px; color: var(--muted); }
+
+  /* Sections within a step */
+  .form-section { margin-bottom: 28px; }
+  .form-section:last-child { margin-bottom: 0; }
+  .form-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-light); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line-2); }
+
+  .form-row { display: grid; gap: 16px; margin-bottom: 14px; grid-template-columns: 1fr; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row:last-child { margin-bottom: 0; }
+
+  .field label { font-size: 12px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 5px; }
+  .field label .req { color: var(--red); }
+  .field label .hint { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .field input[type=text], .field input[type=number], .field input[type=date], .field input[type=email], .field input[type=tel], .field textarea, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 13.5px; font-family: inherit; color: var(--ink); background: white; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+  .field .help-text { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .field .help-text strong { color: var(--ink-light); font-weight: 600; }
+
+  /* Input with inline action button (like "Add Client") */
+  .input-with-action { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .input-with-action button { padding: 10px 14px; background: var(--ink); color: white; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; }
+  .input-with-action button:hover { background: var(--ink-light); }
+  .input-with-action button svg { width: 12px; height: 12px; }
+
+  /* Public / Private radio */
+  .access-radios { display: flex; gap: 18px; align-items: flex-start; }
+  .access-radio { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; flex: 1; }
+  .access-radio.selected { border-color: var(--blue); background: var(--blue-soft); }
+  .access-radio .radio-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted-2); flex-shrink: 0; margin-top: 2px; position: relative; }
+  .access-radio.selected .radio-dot { border-color: var(--blue); }
+  .access-radio.selected .radio-dot::after { content: ''; position: absolute; top: 2px; left: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .access-radio .ar-body { flex: 1; }
+  .access-radio .ar-title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .access-radio .ar-desc { font-size: 12px; color: var(--ink-light); line-height: 1.45; }
+
+  /* Step 1 final row: dates + labor estimate */
+  .form-section.budget-section { background: var(--blue-soft); border-radius: 8px; padding: 18px 20px; border: 1px solid #c5d8f0; }
+  .form-section.budget-section .form-section-label { color: var(--blue-dark); border-bottom-color: #c5d8f0; }
+
+  .labor-helper { display: flex; gap: 10px; padding: 10px 12px; background: white; border-radius: 6px; margin-top: 6px; font-size: 11.5px; color: var(--ink-light); line-height: 1.5; }
+  .labor-helper svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+  .labor-helper strong { color: var(--ink); font-weight: 600; }
+
+  /* Step 2 team list */
+  .team-add-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 18px; align-items: end; }
+  .team-add-row button { padding: 10px 18px; background: var(--blue); color: white; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; }
+  .team-add-row button:hover { background: var(--blue-dark); }
+  .team-add-row button svg { width: 12px; height: 12px; }
+
+  .team-list-head { font-size: 12px; font-weight: 600; color: var(--ink-light); margin-bottom: 8px; }
+  .team-member-row { display: grid; grid-template-columns: 34px 1fr 140px 80px; gap: 12px; align-items: center; padding: 12px 14px; background: var(--bg-2); border-radius: 8px; margin-bottom: 6px; }
+  .tm-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; }
+  .tm-avatar.kt { background: #2f8a6a; }
+  .tm-avatar.ac { background: #4a90e2; }
+  .tm-avatar.mp { background: #c95a5a; }
+  .tm-body .name { font-size: 13px; font-weight: 600; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .tm-default-pill { display: inline-block; padding: 1px 7px; background: var(--green-soft); color: var(--green); font-size: 9.5px; font-weight: 700; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .tm-body .meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .tm-role { font-size: 12px; color: var(--ink-light); }
+  .tm-remove { font-size: 12px; color: var(--muted); cursor: pointer; text-align: right; }
+  .tm-remove:hover { color: var(--red); }
+
+  /* Step 3 external contacts */
+  .contact-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+  .contact-card.primary { background: linear-gradient(to right, var(--blue-soft), white 60%); border-color: #c5d8f0; }
+  .contact-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .contact-role-chip { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .contact-card.primary .contact-role-chip { background: var(--blue); color: white; border-color: var(--blue); }
+  .primary-star { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--amber); font-weight: 600; }
+  .primary-star svg { width: 12px; height: 12px; fill: var(--amber); }
+  .contact-remove { margin-left: auto; color: var(--muted); cursor: pointer; padding: 4px; }
+  .contact-remove:hover { color: var(--red); }
+  .contact-remove svg { width: 14px; height: 14px; }
+  .contact-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .contact-fields .field-pair-full { grid-column: 1 / -1; }
+  .set-primary-link { display: inline-block; margin-top: 8px; font-size: 11.5px; color: var(--blue); cursor: pointer; font-weight: 500; }
+  .set-primary-link:hover { text-decoration: underline; }
+  .add-contact-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: white; color: var(--blue); border: 1px dashed var(--blue); border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .add-contact-btn:hover { background: var(--blue-soft); }
+  .add-contact-btn svg { width: 13px; height: 13px; }
+
+  .contacts-empty { text-align: center; padding: 36px 24px; background: var(--bg-2); border: 1px dashed var(--line); border-radius: 8px; margin-bottom: 12px; }
+  .contacts-empty-icon { width: 44px; height: 44px; border-radius: 50%; background: white; color: var(--muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+  .contacts-empty-icon svg { width: 22px; height: 22px; }
+  .contacts-empty .title { font-size: 14px; font-weight: 600; color: var(--ink-light); margin-bottom: 4px; }
+  .contacts-empty .sub { font-size: 12.5px; color: var(--muted); }
+
+  /* Wizard footer */
+  .wizard-foot { display: flex; align-items: center; gap: 12px; padding: 18px 0 0; margin-top: 22px; border-top: 1px solid var(--line-2); }
+  .wizard-foot .right { margin-left: auto; display: flex; gap: 10px; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; color: #7a6620; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations code { background: white; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'IBM Plex Mono', Menlo, monospace; color: #4a3d10; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span>New Project
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div class="wizard-container">
+
+        <div class="page-head">
+          <div class="page-title-block">
+            <h1>New Project</h1>
+            <div class="sub">Three-step setup. You can edit any of this later from the project's Edit screen.</div>
+          </div>
+        </div>
+
+        <!-- ====================== STEPPER ====================== -->
+        <div class="stepper">
+          <div class="stepper-row">
+            <div class="step-node active">
+              <div class="step-circle">1</div>
+              <div class="step-label">Project basics</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-node">
+              <div class="step-circle">2</div>
+              <div class="step-label">Team</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-node">
+              <div class="step-circle">3</div>
+              <div class="step-label">External contacts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================== STEP 1 ====================== -->
+        <div class="state-stage">
+          <h3>Step 1 of 3 · Project basics</h3>
+          <p>The essentials: name, client, manager, dates, and the overall labor budget for the project.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-head">
+            <div class="eyebrow">Step 1 of 3</div>
+            <h2>Project basics</h2>
+            <div class="sub">Required fields are marked. Project ID can be filled in later when Jonas assigns one.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-label">Identity</div>
+
+            <div class="form-row cols-2">
+              <div class="field">
+                <label>Name of project <span class="req">*</span></label>
+                <input type="text" placeholder="e.g. Fairmont Hotel Renovation">
+                <div class="help-text">Usually the building name or short project descriptor.</div>
+              </div>
+              <div class="field">
+                <label>Project ID <span class="hint">assigned in Jonas, can be added later</span></label>
+                <input type="text" placeholder="e.g. 9059">
+                <div class="help-text">Optional at creation. Fill in once accounting has assigned the number.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label>Project description</label>
+                <textarea placeholder="Optional summary about scope, goals, or notes that aren't captured elsewhere."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-label">Clients &amp; Manager</div>
+
+            <div class="form-row cols-2">
+              <div class="field">
+                <label>Primary client <span class="req">*</span></label>
+                <div class="input-with-action">
+                  <select>
+                    <option>Select…</option>
+                    <option>Fairmont Hotels &amp; Resorts</option>
+                    <option>Hyatt Properties Ltd.</option>
+                  </select>
+                  <button><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Client</button>
+                </div>
+                <div class="help-text">General Contractor or client paying the invoice.</div>
+              </div>
+              <div class="field">
+                <label>Secondary client <span class="hint">optional</span></label>
+                <div class="input-with-action">
+                  <select>
+                    <option>Select…</option>
+                  </select>
+                  <button><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Client</button>
+                </div>
+                <div class="help-text">End customer or owner, if different from the paying client.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label>Project manager <span class="req">*</span></label>
+                <select>
+                  <option>Select…</option>
+                  <option selected>Adam Coey</option>
+                  <option>Justin Thorsteinson</option>
+                  <option>Kyle Steele</option>
+                </select>
+                <div class="help-text">The person responsible for the project's success.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section budget-section">
+            <div class="form-section-label">Dates &amp; Labor budget</div>
+
+            <div class="form-row cols-3">
+              <div class="field">
+                <label>Start date <span class="req">*</span></label>
+                <input type="date" value="2026-03-24">
+                <div class="help-text">When do crews start on site?</div>
+              </div>
+              <div class="field">
+                <label>End date <span class="req">*</span></label>
+                <input type="date" value="2026-06-30">
+                <div class="help-text">Expected commissioning or handover.</div>
+              </div>
+              <div class="field">
+                <label>Total labor estimate <span class="hint">hours</span></label>
+                <input type="number" placeholder="e.g. 1000" value="1000">
+                <div class="help-text">Overall labor budget for the whole project.</div>
+              </div>
+            </div>
+
+            <div class="labor-helper">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <div><strong>You'll break this down into tasks later</strong> on the project's Tasks tab. Tasks sum into this total. The Tasks tab shows you how the work is tracking against this overall budget, plus separately tracks any approved PCNs that add work on top.</div>
+            </div>
+          </div>
+
+          <div class="wizard-foot">
+            <button class="btn btn-secondary">Cancel</button>
+            <div class="right">
+              <button class="btn btn-secondary">Save as draft</button>
+              <button class="btn btn-primary btn-large">Continue to Team <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================== STEP 2 ====================== -->
+        <div class="state-stage">
+          <h3>Step 2 of 3 · Team</h3>
+          <p>Add the Thor employees who'll work on this project. Default team members are pre-loaded; remove or add as needed.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-head">
+            <div class="eyebrow">Step 2 of 3</div>
+            <h2>Invite people to the project</h2>
+            <div class="sub">Search for employees, assign their project role, and add them to the team. Per Justin's confirmation, all Thor employees can see all projects regardless of who is on this list. Team membership is a soft signal for assignment dashboards and notifications, not a permission gate.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-label">Add a team member</div>
+            <div class="team-add-row">
+              <div class="field">
+                <label>Search employee <span class="req">*</span></label>
+                <input type="text" placeholder="Search by name…">
+              </div>
+              <div class="field">
+                <label>Project role</label>
+                <select>
+                  <option>Select role…</option>
+                  <option>Project Manager</option>
+                  <option>Supervisor</option>
+                  <option>Foreman</option>
+                  <option>Technician</option>
+                </select>
+              </div>
+              <button><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-label">Team members (3)</div>
+            <div class="team-list-head">Pre-loaded from Default Team Members. Edit anytime.</div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar kt">KT</div>
+              <div class="tm-body">
+                <div class="name">Kyle Steele <span class="tm-default-pill">Default</span></div>
+                <div class="meta">kyle.steele@thorplumbing.ca · Added 28 May</div>
+              </div>
+              <div class="tm-role">Supervisor</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar ac">AC</div>
+              <div class="tm-body">
+                <div class="name">Adam Coey <span class="tm-default-pill">Default</span></div>
+                <div class="meta">adam.coey@thorplumbing.ca · Added 28 May</div>
+              </div>
+              <div class="tm-role">Project Manager</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar mp">MP</div>
+              <div class="tm-body">
+                <div class="name">Mark Panteluk</div>
+                <div class="meta">mark.panteluk@thorplumbing.ca · Added just now</div>
+              </div>
+              <div class="tm-role">Technician</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+          </div>
+
+          <div class="wizard-foot">
+            <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <div class="right">
+              <button class="btn btn-secondary">Save as draft</button>
+              <button class="btn btn-primary btn-large">Continue to External Contacts <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================== STEP 3 ====================== -->
+        <div class="state-stage">
+          <h3>Step 3 of 3 · External contacts</h3>
+          <p>People outside Thor on this project (GC, engineer, architect, owner). Used by the RFI compose flow to auto-suggest recipients. Skip-able; can be added later.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-head">
+            <div class="eyebrow">Step 3 of 3</div>
+            <h2>External contacts</h2>
+            <div class="sub">When you raise an RFI and send it to the GC, the recipient field on the compose panel auto-suggests from this list. One contact should be marked as <strong>Primary GC</strong>; that's the default recipient on RFIs.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-label">Contacts (2)</div>
+
+            <!-- Primary GC contact card -->
+            <div class="contact-card primary">
+              <div class="contact-card-head">
+                <span class="contact-role-chip">General Contractor</span>
+                <span class="primary-star">
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Primary GC
+                </span>
+                <div class="contact-remove" title="Remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="contact-fields">
+                <div class="field">
+                  <label>Name <span class="req">*</span></label>
+                  <input type="text" value="Brett Hartnell">
+                </div>
+                <div class="field">
+                  <label>Organization <span class="req">*</span></label>
+                  <input type="text" value="Fairmont Construction Group">
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="email" value="brett@fairmontconstructors.com">
+                </div>
+                <div class="field">
+                  <label>Phone <span class="hint">optional</span></label>
+                  <input type="tel" value="(403) 555-0142">
+                </div>
+                <div class="field field-pair-full">
+                  <label>Role on this project</label>
+                  <select>
+                    <option selected>General Contractor</option>
+                    <option>Engineer of Record</option>
+                    <option>Architect</option>
+                    <option>Owner / Building Representative</option>
+                    <option>Subtrade Lead</option>
+                    <option>Inspector / AHJ</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Engineer contact card -->
+            <div class="contact-card">
+              <div class="contact-card-head">
+                <span class="contact-role-chip">Engineer of Record</span>
+                <div class="contact-remove" title="Remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="contact-fields">
+                <div class="field">
+                  <label>Name <span class="req">*</span></label>
+                  <input type="text" value="Mark Donaldson, P.Eng.">
+                </div>
+                <div class="field">
+                  <label>Organization <span class="req">*</span></label>
+                  <input type="text" value="Donaldson Engineering">
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="email" value="mark@donaldsoneng.ca">
+                </div>
+                <div class="field">
+                  <label>Phone <span class="hint">optional</span></label>
+                  <input type="tel" value="">
+                </div>
+                <div class="field field-pair-full">
+                  <label>Role on this project</label>
+                  <select>
+                    <option>General Contractor</option>
+                    <option selected>Engineer of Record</option>
+                    <option>Architect</option>
+                    <option>Owner / Building Representative</option>
+                    <option>Subtrade Lead</option>
+                    <option>Inspector / AHJ</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="set-primary-link">★ Set as Primary GC</div>
+            </div>
+
+            <button class="add-contact-btn">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Add another contact
+            </button>
+          </div>
+
+          <div class="wizard-foot">
+            <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <div class="right">
+              <button class="btn btn-secondary">Save as draft</button>
+              <button class="btn btn-primary btn-large">Create Project <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state preview -->
+        <div class="state-stage">
+          <h3>Step 3 empty state (when no contacts are added yet)</h3>
+          <p>If the PM doesn't have GC contact details handy at project creation, they can skip this entirely and the Create Project button still works. Contacts added later from Edit Project.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-head">
+            <div class="eyebrow">Step 3 of 3 · Empty state</div>
+            <h2>External contacts</h2>
+          </div>
+
+          <div class="contacts-empty">
+            <div class="contacts-empty-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>
+            </div>
+            <div class="title">No external contacts yet</div>
+            <div class="sub">You can add them now or skip this step and add them later from the project's Edit screen. Without contacts, the RFI compose recipient field will be free-text only.</div>
+          </div>
+
+          <button class="add-contact-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Add a contact
+          </button>
+
+          <div class="wizard-foot">
+            <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <div class="right">
+              <button class="btn btn-secondary">Save as draft</button>
+              <button class="btn btn-primary btn-large">Create Project (skip contacts) <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================== ANNOTATIONS ====================== -->
+        <div class="annotations">
+          <h3>New Project Wizard notes</h3>
+          <ul>
+            <li><strong>Three steps shown together on this mockup page</strong> so reviewers see the full flow at once. In production, only one step is visible at a time and the stepper at the top tracks progress.</li>
+            <li><strong>Replaces Mandeep's existing four-step wizard.</strong> Steps 3 (Deliverables/Tasks) and 4 (Report folders) from the current production version are removed entirely. Tasks happen in the Tasks tab now with full hierarchy and est-vs-act tracking; report folders concept is replaced by the new tab structure.</li>
+            <li><strong>Pre-populated demo data</strong> shows a realistic state. Empty form would have all fields blank.</li>
+            <li><strong>"Save as draft" is available on every step.</strong> Lets the PM walk away mid-setup without losing what they've entered. Draft projects appear in the Project List view with a draft badge until completed.</li>
+          </ul>
+
+          <h4>Step 1: Project basics</h4>
+          <ul>
+            <li><strong>Project ID is now optional.</strong> Per Justin's May 28 confirmation, ID comes from Jonas and may not be known at project creation time. Helper text "assigned in Jonas, can be added later" sets the expectation. The actual unique identifier is the internal database ID; Project ID is a human-readable accounting reference.</li>
+            <li><strong>Add Client inline button</strong> retained from the Mandeep version. Lets the PM create a new client record without leaving the wizard. Opens a small modal (not mocked).</li>
+            <li><strong>Public/Private toggle removed.</strong> Per Justin's confirmation, Thor's culture is "everyone sees everything"; the toggle was paying rent for a case that almost never happens. Database can retain a visibility column for future flexibility; UI doesn't expose it in v1. If Thor ever needs project-level privacy, that's a v2 addition.</li>
+            <li><strong>Dates &amp; Labor budget grouped in a blue-tinted section</strong> to signal it's the contractually meaningful block. Total labor estimate is the new field per Justin's May 27 confirmation; it's the headline number for the project's Tasks tab budget rollup.</li>
+            <li><strong>Labor estimate helper note</strong> explicitly says "you'll break this down into tasks later." Important to prevent the PM from feeling like they have to define all tasks now. The Tasks tab is the right place; the wizard sets only the total.</li>
+          </ul>
+
+          <h4>Step 2: Team</h4>
+          <ul>
+            <li><strong>Structurally same as Mandeep's existing step 2.</strong> Search-and-add pattern is good; no need to rework. Just brand swap and a few clarifications.</li>
+            <li><strong>Roles list trimmed to four (D-034, per Mike + Thor PMs):</strong> Project Manager, Supervisor, Foreman, Technician. The earlier production set (Site Manager, Engineer, Inspector, Coordinator, Estimator) was cut: the module only needs the roles that map to a project responsibility and to the mobile composers (Supervisor, Foreman, Technician) plus the PM. Project Manager, Supervisor and Foreman are the Project Leaders on the Overview Team card; Technician is the field role.</li>
+            <li><strong>Default Team Members pre-load</strong> from the Default Team admin setting (Kyle Steele and Adam Coey in this example, marked with green "Default" pills). PM can remove or supplement.</li>
+            <li><strong>Helper text reflects Thor's open access culture.</strong> Per Justin: all employees see all projects regardless of team membership. The Team list is for assignment dashboards, notifications, and tech mobile "Projects" widgets, not for access control.</li>
+          </ul>
+
+          <h4>Step 3: External contacts (the new step)</h4>
+          <ul>
+            <li><strong>Replaces both the old "Deliverables / Tasks" step 3 and "Report folders" step 4.</strong> External contacts is genuinely new functionality required by the RFI compose-and-send flow (section 6.6.5).</li>
+            <li><strong>Repeating-row composer.</strong> Each contact is a card with name, organization, email, phone, role dropdown. Add another via the dashed-border button at the bottom.</li>
+            <li><strong>One contact marked "Primary GC"</strong> with the amber star treatment. Default recipient when the PM raises an RFI. Other contacts available as alternatives in the typeahead.</li>
+            <li><strong>Set as Primary affordance</strong> on non-primary cards. Click to promote.</li>
+            <li><strong>Roles list:</strong> General Contractor, Engineer of Record, Architect, Owner / Building Representative, Subtrade Lead, Inspector / AHJ, Other. Open to expansion if Justin or PMs need additional roles. Architect and Inspector aren't always RFI recipients but worth capturing for project records.</li>
+            <li><strong>Skip-able.</strong> If the PM doesn't have contact info at creation, they can hit Create Project without adding any. Empty state shown as a separate state on this mockup page. Contacts can be added later from Edit Project.</li>
+            <li><strong>Fallback when no contacts exist:</strong> the RFI compose recipient field falls back to free-text only, no typeahead. Project still works.</li>
+          </ul>
+
+          <h4>Edit Project derivative</h4>
+          <ul>
+            <li><strong>Same fields, different UI mode.</strong> Edit Project takes the same data model and renders it as a single sectioned form with no progress indicator. Sections collapse and expand for navigation; Save button at the bottom commits all changes.</li>
+            <li><strong>External Contacts section on Edit Project is the most common path</strong> for adding GC contact info after the project is already running. Most PMs will skip this step in the wizard and come back later, so the Edit Project version of this section is the workhorse.</li>
+            <li>Mocked separately as <code>odin-projects-edit.html</code>.</li>
+          </ul>
+
+          <h4>Data model implications</h4>
+          <ul>
+            <li><strong>Project entity</strong> gains <code>total_labor_estimate_hours</code> (numeric, nullable) and <code>external_contacts</code> (jsonb array). Already specced in section 10.</li>
+            <li><strong>External contact object</strong>: <code>name</code>, <code>organization</code>, <code>email</code>, <code>phone</code>, <code>role</code> (enum), <code>is_primary_gc</code> (boolean, only one true per project).</li>
+            <li><strong>Project ID</strong> remains required at the database level but UI-optional during creation. Backend can auto-assign a placeholder (e.g. "DRAFT-XXX") until the real Jonas number is added.</li>
+          </ul>
+
+          <h4>Out of scope</h4>
+          <ul>
+            <li>Importing contacts from a company-wide directory (v1 keeps contacts project-scoped per spec section 6.6.9)</li>
+            <li>Duplicate detection across projects ("This contact also exists on Project X")</li>
+            <li>Sending welcome emails to newly-added team members or contacts</li>
+            <li>Project templates ("Create new from previous project") parked for v2</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

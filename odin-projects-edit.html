@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Projects · Edit Project</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --grey:       #b7b9bc;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.4; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+  .sidebar { background: white; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .sidebar-logo { height: 64px; display: flex; align-items: center; padding: 0 22px; }
+  .sidebar-logo svg { height: 28px; width: auto; display: block; }
+  .sidebar-nav { padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 4px; color: var(--ink); font-size: 14px; cursor: pointer; }
+  .nav-item:hover { background: var(--bg-2); }
+  .nav-item.active { background: var(--bg); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+  .nav-chevron { margin-left: auto; opacity: 0.5; }
+  .sidebar-footer { padding: 18px 26px; font-size: 13px; color: var(--muted); }
+  .sidebar-footer div { padding: 5px 0; cursor: pointer; }
+
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #555; }
+
+  .main { padding: 22px 28px 60px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; gap: 18px; flex-wrap: wrap; }
+  .page-title-block h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
+  .page-title-block .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: var(--bg); color: var(--ink-light); font-family: 'IBM Plex Mono', Menlo, monospace; }
+  .page-title-block .pill.active { background: var(--green-soft); color: var(--green); font-family: 'Inter', sans-serif; }
+  .page-title-block .pill.active::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .page-title-block .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); }
+  .btn-danger-soft { background: white; color: var(--red); border: 1px solid #f4c5c8; }
+  .btn-danger-soft:hover { background: var(--red-soft); }
+  .btn-large { padding: 11px 26px; font-size: 14px; }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* Edit layout */
+  .edit-container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+
+  /* Section anchor nav on the left */
+  .section-nav { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 14px; position: sticky; top: 22px; }
+  .section-nav-head { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); padding: 4px 10px 10px; }
+  .section-nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 13px; color: var(--ink-light); cursor: pointer; margin-bottom: 2px; }
+  .section-nav-item:hover { background: var(--bg-2); color: var(--ink); }
+  .section-nav-item.active { background: var(--blue-soft); color: var(--blue-dark); font-weight: 600; }
+  .section-nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); flex-shrink: 0; }
+  .section-nav-item.active .dot { background: var(--blue); }
+  .section-nav-item .count { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .section-nav-divider { height: 1px; background: var(--line-2); margin: 8px 4px; }
+  .section-nav-danger { color: var(--red); }
+  .section-nav-danger:hover { background: var(--red-soft); color: var(--red); }
+
+  /* Right column: stacked section cards */
+  .edit-sections { display: flex; flex-direction: column; gap: 20px; }
+  .edit-section { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 26px 30px; }
+  .edit-section-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--line-2); }
+  .edit-section-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .edit-section-icon svg { width: 18px; height: 18px; }
+  .edit-section-head .text { flex: 1; }
+  .edit-section-head h2 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .edit-section-head .sub { font-size: 12.5px; color: var(--muted); }
+  .edit-section-head .status { font-size: 11px; color: var(--muted); padding: 4px 10px; background: var(--bg-2); border-radius: 999px; border: 1px solid var(--line); }
+  .edit-section-head .status.ok { background: var(--green-soft); color: var(--green); border-color: #b8e3c4; }
+  .edit-section-head .status.warn { background: var(--amber-soft); color: var(--amber); border-color: #f0d690; }
+
+  .form-row { display: grid; gap: 16px; margin-bottom: 14px; grid-template-columns: 1fr; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row:last-child { margin-bottom: 0; }
+
+  .field label { font-size: 12px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 5px; }
+  .field label .req { color: var(--red); }
+  .field label .hint { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .field input[type=text], .field input[type=number], .field input[type=date], .field input[type=email], .field input[type=tel], .field textarea, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 13.5px; font-family: inherit; color: var(--ink); background: white; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+  .field .help-text { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .field .help-text strong { color: var(--ink-light); font-weight: 600; }
+
+  .input-with-action { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .input-with-action button { padding: 10px 14px; background: var(--ink); color: white; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; }
+  .input-with-action button:hover { background: var(--ink-light); }
+  .input-with-action button svg { width: 12px; height: 12px; }
+
+  .access-radios { display: flex; gap: 12px; align-items: flex-start; }
+  .access-radio { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; flex: 1; }
+  .access-radio.selected { border-color: var(--blue); background: var(--blue-soft); }
+  .access-radio .radio-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted-2); flex-shrink: 0; margin-top: 2px; position: relative; }
+  .access-radio.selected .radio-dot { border-color: var(--blue); }
+  .access-radio.selected .radio-dot::after { content: ''; position: absolute; top: 2px; left: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .access-radio .ar-body { flex: 1; }
+  .access-radio .ar-title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .access-radio .ar-desc { font-size: 12px; color: var(--ink-light); line-height: 1.45; }
+
+  /* Labor budget callout */
+  .budget-callout { background: var(--blue-soft); border: 1px solid #c5d8f0; border-radius: 8px; padding: 16px 18px; margin-top: 6px; }
+  .budget-callout-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--blue-dark); margin-bottom: 12px; }
+  .labor-helper { display: flex; gap: 10px; padding: 10px 12px; background: white; border-radius: 6px; margin-top: 8px; font-size: 11.5px; color: var(--ink-light); line-height: 1.5; }
+  .labor-helper svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+  .labor-helper strong { color: var(--ink); font-weight: 600; }
+  .labor-helper a { color: var(--blue); text-decoration: none; font-weight: 500; }
+  .labor-helper a:hover { text-decoration: underline; }
+
+  /* Team list */
+  .team-add-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 18px; align-items: end; }
+  .team-add-row button { padding: 10px 18px; background: var(--blue); color: white; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; }
+  .team-add-row button:hover { background: var(--blue-dark); }
+  .team-add-row button svg { width: 12px; height: 12px; }
+
+  .team-list-head { font-size: 12px; font-weight: 600; color: var(--ink-light); margin-bottom: 8px; }
+  .team-member-row { display: grid; grid-template-columns: 34px 1fr 140px 80px; gap: 12px; align-items: center; padding: 12px 14px; background: var(--bg-2); border-radius: 8px; margin-bottom: 6px; }
+  .tm-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; }
+  .tm-avatar.kt { background: #2f8a6a; }
+  .tm-avatar.ac { background: #4a90e2; }
+  .tm-avatar.mp { background: #c95a5a; }
+  .tm-avatar.sp { background: #9b59b6; }
+  .tm-body .name { font-size: 13px; font-weight: 600; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .tm-default-pill { display: inline-block; padding: 1px 7px; background: var(--green-soft); color: var(--green); font-size: 9.5px; font-weight: 700; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .tm-body .meta { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .tm-role { font-size: 12px; color: var(--ink-light); }
+  .tm-remove { font-size: 12px; color: var(--muted); cursor: pointer; text-align: right; }
+  .tm-remove:hover { color: var(--red); }
+
+  /* External contacts */
+  .contact-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+  .contact-card.primary { background: linear-gradient(to right, var(--blue-soft), white 60%); border-color: #c5d8f0; }
+  .contact-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .contact-role-chip { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .contact-card.primary .contact-role-chip { background: var(--blue); color: white; border-color: var(--blue); }
+  .primary-star { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--amber); font-weight: 600; }
+  .primary-star svg { width: 12px; height: 12px; fill: var(--amber); }
+  .contact-remove { margin-left: auto; color: var(--muted); cursor: pointer; padding: 4px; }
+  .contact-remove:hover { color: var(--red); }
+  .contact-remove svg { width: 14px; height: 14px; }
+  .contact-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .contact-fields .field-pair-full { grid-column: 1 / -1; }
+  .set-primary-link { display: inline-block; margin-top: 8px; font-size: 11.5px; color: var(--blue); cursor: pointer; font-weight: 500; }
+  .set-primary-link:hover { text-decoration: underline; }
+  .add-contact-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: white; color: var(--blue); border: 1px dashed var(--blue); border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .add-contact-btn:hover { background: var(--blue-soft); }
+  .add-contact-btn svg { width: 13px; height: 13px; }
+
+  /* Danger zone */
+  .danger-zone { background: white; border: 1px solid #f4c5c8; border-radius: 12px; padding: 22px 26px; }
+  .danger-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+  .danger-head-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--red-soft); color: var(--red); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .danger-head-icon svg { width: 18px; height: 18px; }
+  .danger-head h2 { font-size: 16px; font-weight: 600; color: var(--red); margin-bottom: 2px; }
+  .danger-head .sub { font-size: 12.5px; color: var(--muted); }
+  .danger-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .danger-action-card { flex: 1; min-width: 240px; padding: 14px 16px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; }
+  .danger-action-card h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .danger-action-card .ad-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+
+  /* Sticky save bar */
+  .save-bar { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; bottom: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); margin-top: 4px; }
+  .save-bar-status { font-size: 12px; color: var(--muted); }
+  .save-bar-status strong { color: var(--ink); }
+  .save-bar-right { margin-left: auto; display: flex; gap: 10px; }
+  .unsaved-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); margin-right: 6px; vertical-align: middle; }
+
+  /* Annotations */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations h4 { font-size: 12px; font-weight: 700; color: #7a6620; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations code { background: white; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'IBM Plex Mono', Menlo, monospace; color: #4a3d10; }
+
+  /* Project Actions: three-tier pattern */
+  .actions-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .action-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; }
+  .action-card.tier-1 { border-color: var(--line); }
+  .action-card.tier-2 { border-color: var(--line); }
+  .action-card.tier-3 { border-color: #f4c5c8; background: #fffafa; }
+  .action-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .action-icon { width: 32px; height: 32px; border-radius: 8px; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--ink-light); flex-shrink: 0; }
+  .action-icon svg { width: 16px; height: 16px; }
+  .action-icon.danger { background: var(--red-soft); border-color: #f4c5c8; color: var(--red); }
+  .action-card-head h4 { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .action-meta { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .action-meta.danger { color: var(--red); font-weight: 600; }
+  .action-desc { font-size: 12.5px; color: var(--ink-light); line-height: 1.5; margin-bottom: 14px; flex: 1; }
+  .action-desc strong { color: var(--ink); font-weight: 600; }
+  .action-card button { align-self: flex-start; }
+  .confirm-note { margin-top: 12px; padding: 8px 10px; background: white; border-radius: 6px; font-size: 11px; color: var(--muted); display: flex; align-items: flex-start; gap: 6px; line-height: 1.45; border: 1px solid var(--line); }
+  .confirm-note svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 1px; color: var(--muted-2); }
+  .action-card.tier-3 .confirm-note svg { color: var(--red); }
+  .btn-danger-firm { background: var(--red); color: white; padding: 10px 22px; font-size: 13px; font-weight: 600; border: none; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; font-family: inherit; }
+  .btn-danger-firm:hover { background: #b41721; }
+
+  /* Cancel modal preview */
+  .action-modal-preview { margin-top: 24px; padding: 18px; background: var(--bg-2); border: 1px dashed var(--muted-2); border-radius: 12px; }
+  .amp-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; padding-left: 4px; }
+  .action-modal { background: white; border-radius: 10px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16); max-width: 540px; margin: 0 auto; overflow: hidden; }
+  .action-modal-head { padding: 22px 24px 16px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid var(--line-2); }
+  .amh-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--red-soft); color: var(--red); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .amh-icon svg { width: 18px; height: 18px; }
+  .action-modal-head h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .amh-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .action-modal-body { padding: 18px 24px; }
+  .action-modal-body p { font-size: 13px; color: var(--ink); line-height: 1.5; margin-bottom: 12px; }
+  .warn-block { background: var(--red-soft); border: 1px solid #f4c5c8; border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+  .warn-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #a01620; margin-bottom: 8px; }
+  .warn-head svg { width: 14px; height: 14px; }
+  .warn-head strong { color: #2a0708; font-weight: 600; }
+  .warn-block ul { list-style: none; padding-left: 4px; font-size: 12px; color: #4a0d11; }
+  .warn-block li { padding: 3px 0 3px 14px; position: relative; line-height: 1.45; }
+  .warn-block li::before { content: '•'; position: absolute; left: 4px; color: var(--red); }
+  .typed-confirm { margin-top: 16px; padding: 14px 16px; background: var(--bg-2); border-radius: 8px; border: 1px solid var(--line); }
+  .typed-confirm label { font-size: 12px; color: var(--ink); margin-bottom: 8px; display: block; }
+  .typed-confirm label code { background: white; padding: 2px 7px; border-radius: 3px; font-size: 11.5px; font-family: 'IBM Plex Mono', Menlo, monospace; color: var(--red); font-weight: 600; }
+  .typed-confirm input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--green); border-radius: 6px; font-size: 13px; font-family: 'IBM Plex Mono', Menlo, monospace; color: var(--ink); background: white; }
+  .typed-confirm-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; }
+  .typed-confirm-status.valid { color: var(--green); }
+  .typed-confirm-status.valid svg { width: 13px; height: 13px; }
+  .typed-confirm-status.invalid { color: var(--muted); }
+  .action-modal-foot { padding: 14px 24px; background: var(--bg-2); border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 15 140 42" aria-label="odin">
+        <path d="M38.28288,20.3674c-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.8939,0,17.93868-8.07663,17.93868-18.00244,0-9.8939-8.04478-17.93868-17.93868-17.93868ZM38.28288,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <path d="M92.09011,15.7127v9.39445c-3.30504-3.02878-7.67285-4.73974-12.15749-4.73974-9.92581,0-18.00244,8.04478-18.00244,17.93868,0,9.92581,8.07663,18.00244,18.00244,18.00244,9.88326,0,17.93868-8.07663,17.93868-18.00244V15.7127h-5.78119ZM79.93262,50.52733c-6.73766,0-12.22125-5.48359-12.22125-12.22125,0-6.70574,5.48359-12.15749,12.22125-12.15749,6.70574,0,12.15749,5.45175,12.15749,12.15749,0,6.73766-5.45175,12.22125-12.15749,12.22125Z" fill="#58595b"/>
+        <rect x="106.84936" y="26.65952" width="5.78119" height="29.33019" fill="#58595b"/>
+        <path d="M159.71956,38.4336v17.55611h-5.78112v-17.55611c0-6.73759-5.46238-12.22125-12.15749-12.22125-6.70574,0-12.15749,5.48366-12.15749,12.22125v17.55611h-5.78119v-17.68363c0-9.86198,8.04478-17.87492,17.93868-17.87492,9.88326,0,17.93861,8.07669,17.93861,18.00244Z" fill="#58595b"/>
+        <path d="M113.91646,19.92108c0,2.33799-1.90224,4.24023-4.24023,4.24023-2.32735,0-4.22959-1.90224-4.22959-4.24023s1.90224-4.22959,4.22959-4.22959c2.33799,0,4.24023,1.8916,4.24023,4.22959Z" fill="#ed1c24"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 4l9 8M5 10v10h14V10"/></svg>Home</div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>Employees<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-3 3-5 6-5"/></svg>Clients / Users<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timesheets<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M9 21V12h6v9"/></svg>Service<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Projects<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>MAP<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin<svg class="nav-chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+      <div class="nav-item" style="margin-top: 6px;"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Report Bug</div>
+      <div>Privacy Policy</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="topbar">
+      <div class="topbar-crumbs">
+        <a href="#">Projects</a><span class="crumb-sep">/</span><a href="#">Fairmont Hotel Renovation</a><span class="crumb-sep">/</span>Edit
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+        <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <div style="max-width: 1100px; margin: 0 auto;">
+        <div class="page-head">
+          <div class="page-title-block">
+            <h1>Edit Project <span class="pill">9059</span> <span class="pill active">Active</span></h1>
+            <div class="sub">Fairmont Hotel Renovation · Edit any section below. Save Changes commits everything at once.</div>
+          </div>
+          <div>
+            <button class="btn btn-secondary">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              Back to Project
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-container">
+
+        <!-- Section anchor nav -->
+        <div class="section-nav">
+          <div class="section-nav-head">Sections</div>
+          <div class="section-nav-item active"><div class="dot"></div>Project basics</div>
+          <div class="section-nav-item"><div class="dot"></div>Clients &amp; Manager</div>
+          <div class="section-nav-item"><div class="dot"></div>Dates &amp; Labor budget</div>
+          <div class="section-nav-item"><div class="dot"></div>Team <span class="count">3</span></div>
+          <div class="section-nav-item"><div class="dot"></div>External contacts <span class="count">2</span></div>
+          <div class="section-nav-divider"></div>
+          <div class="section-nav-item"><div class="dot"></div>Project actions</div>
+        </div>
+
+        <!-- Right column: sectioned form -->
+        <div class="edit-sections">
+
+          <!-- Section 1: Project basics -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="text">
+                <h2>Project basics</h2>
+                <div class="sub">Name, ID, and description. Project ID can be empty if Jonas hasn't assigned one yet.</div>
+              </div>
+              <div class="status ok">All required fields filled</div>
+            </div>
+
+            <div class="form-row cols-2">
+              <div class="field">
+                <label>Name of project <span class="req">*</span></label>
+                <input type="text" value="Fairmont Hotel Renovation">
+                <div class="help-text">Usually the building name or short project descriptor.</div>
+              </div>
+              <div class="field">
+                <label>Project ID <span class="hint">assigned in Jonas</span></label>
+                <input type="text" value="9059">
+                <div class="help-text">From accounting. Can be empty until Jonas assigns one.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label>Project description</label>
+                <textarea>Full plumbing and HVAC renovation across 4 guest floors and ground-floor F&amp;B. Includes underground drainage replacement, water line upgrades for new fixtures, venting overhaul, and gas piping for kitchen expansion.</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Clients & Manager -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <div class="text">
+                <h2>Clients &amp; Manager</h2>
+                <div class="sub">Who's paying, who owns the relationship from Thor's side.</div>
+              </div>
+              <div class="status ok">Configured</div>
+            </div>
+
+            <div class="form-row cols-2">
+              <div class="field">
+                <label>Primary client <span class="req">*</span></label>
+                <div class="input-with-action">
+                  <select>
+                    <option selected>Fairmont Construction Group</option>
+                    <option>Hyatt Properties Ltd.</option>
+                  </select>
+                  <button><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Client</button>
+                </div>
+                <div class="help-text">General Contractor or client paying the invoice.</div>
+              </div>
+              <div class="field">
+                <label>Secondary client <span class="hint">optional</span></label>
+                <div class="input-with-action">
+                  <select>
+                    <option>Select…</option>
+                    <option selected>Fairmont Hotels &amp; Resorts (Building Owner)</option>
+                  </select>
+                  <button><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Client</button>
+                </div>
+                <div class="help-text">End customer or owner, if different from the paying client.</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label>Project manager <span class="req">*</span></label>
+                <select>
+                  <option selected>Adam Coey</option>
+                  <option>Justin Thorsteinson</option>
+                  <option>Kyle Steele</option>
+                </select>
+                <div class="help-text">The person responsible for the project's success.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Dates & Labor budget -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div>
+              <div class="text">
+                <h2>Dates &amp; Labor budget</h2>
+                <div class="sub">When the project runs, and how many hours of labor are budgeted overall.</div>
+              </div>
+              <div class="status warn">687 of 1,000 hrs logged</div>
+            </div>
+
+            <div class="form-row cols-2">
+              <div class="field">
+                <label>Start date <span class="req">*</span></label>
+                <input type="date" value="2026-03-24">
+                <div class="help-text">When crews started on site.</div>
+              </div>
+              <div class="field">
+                <label>End date <span class="req">*</span></label>
+                <input type="date" value="2026-06-30">
+                <div class="help-text">Expected commissioning or handover.</div>
+              </div>
+            </div>
+
+            <div class="budget-callout">
+              <div class="budget-callout-label">Total labor budget</div>
+              <div class="form-row">
+                <div class="field">
+                  <label>Estimate <span class="hint">hours</span></label>
+                  <input type="number" value="1000">
+                  <div class="help-text">Overall labor budget for the whole project. Tasks roll up against this number on the Tasks tab.</div>
+                </div>
+              </div>
+              <div class="labor-helper">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                <div>
+                  <strong>Live status:</strong> 1,002 hrs of tasks defined · 687 hrs logged · 315 hrs remaining · 0.2% over estimate (on track).
+                  <a href="#">View Tasks tab to manage breakdown →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Team -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 4-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <div class="text">
+                <h2>Team</h2>
+                <div class="sub">Thor employees working on this project. All employees can see all projects regardless of this list; it's used for dashboards, notifications, and mobile "Projects" widgets.</div>
+              </div>
+              <div class="status ok">4 members</div>
+            </div>
+
+            <div class="team-add-row">
+              <div class="field">
+                <label>Add team member</label>
+                <input type="text" placeholder="Search by name…">
+              </div>
+              <div class="field">
+                <label>Role</label>
+                <select>
+                  <option>Select role…</option>
+                  <option>Project Manager</option>
+                  <option>Supervisor</option>
+                  <option>Foreman</option>
+                  <option>Technician</option>
+                </select>
+              </div>
+              <button><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+            </div>
+
+            <div class="team-list-head">Current team (4)</div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar ac">AC</div>
+              <div class="tm-body">
+                <div class="name">Adam Coey <span class="tm-default-pill">Default</span></div>
+                <div class="meta">adam.coey@thorplumbing.ca · Added 24 Mar 2026</div>
+              </div>
+              <div class="tm-role">Project Manager</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar kt">KT</div>
+              <div class="tm-body">
+                <div class="name">Kyle Steele <span class="tm-default-pill">Default</span></div>
+                <div class="meta">kyle.steele@thorplumbing.ca · Added 24 Mar 2026</div>
+              </div>
+              <div class="tm-role">Supervisor</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar mp">MP</div>
+              <div class="tm-body">
+                <div class="name">Mark Panteluk</div>
+                <div class="meta">mark.panteluk@thorplumbing.ca · Added 02 Apr 2026</div>
+              </div>
+              <div class="tm-role">Technician</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+
+            <div class="team-member-row">
+              <div class="tm-avatar sp">SP</div>
+              <div class="tm-body">
+                <div class="name">Sam Paterson</div>
+                <div class="meta">sam.paterson@thorplumbing.ca · Added 14 May 2026</div>
+              </div>
+              <div class="tm-role">Technician</div>
+              <div class="tm-remove">Remove</div>
+            </div>
+          </div>
+
+          <!-- Section 5: External contacts -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              </div>
+              <div class="text">
+                <h2>External contacts</h2>
+                <div class="sub">People outside Thor on this project. Used by the RFI compose flow to auto-suggest recipients. One contact should be marked Primary GC.</div>
+              </div>
+              <div class="status ok">Primary GC set</div>
+            </div>
+
+            <!-- Primary GC contact -->
+            <div class="contact-card primary">
+              <div class="contact-card-head">
+                <span class="contact-role-chip">General Contractor</span>
+                <span class="primary-star">
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Primary GC
+                </span>
+                <div class="contact-remove" title="Remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="contact-fields">
+                <div class="field">
+                  <label>Name <span class="req">*</span></label>
+                  <input type="text" value="Brett Hartnell">
+                </div>
+                <div class="field">
+                  <label>Organization <span class="req">*</span></label>
+                  <input type="text" value="Fairmont Construction Group">
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="email" value="brett@fairmontconstructors.com">
+                </div>
+                <div class="field">
+                  <label>Phone <span class="hint">optional</span></label>
+                  <input type="tel" value="(403) 555-0142">
+                </div>
+                <div class="field field-pair-full">
+                  <label>Role on this project</label>
+                  <select>
+                    <option selected>General Contractor</option>
+                    <option>Engineer of Record</option>
+                    <option>Architect</option>
+                    <option>Owner / Building Representative</option>
+                    <option>Subtrade Lead</option>
+                    <option>Inspector / AHJ</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Engineer contact -->
+            <div class="contact-card">
+              <div class="contact-card-head">
+                <span class="contact-role-chip">Engineer of Record</span>
+                <div class="contact-remove" title="Remove">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </div>
+              </div>
+              <div class="contact-fields">
+                <div class="field">
+                  <label>Name <span class="req">*</span></label>
+                  <input type="text" value="Mark Donaldson, P.Eng.">
+                </div>
+                <div class="field">
+                  <label>Organization <span class="req">*</span></label>
+                  <input type="text" value="Donaldson Engineering">
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="email" value="mark@donaldsoneng.ca">
+                </div>
+                <div class="field">
+                  <label>Phone <span class="hint">optional</span></label>
+                  <input type="tel" value="">
+                </div>
+                <div class="field field-pair-full">
+                  <label>Role on this project</label>
+                  <select>
+                    <option>General Contractor</option>
+                    <option selected>Engineer of Record</option>
+                    <option>Architect</option>
+                    <option>Owner / Building Representative</option>
+                    <option>Subtrade Lead</option>
+                    <option>Inspector / AHJ</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="set-primary-link">★ Set as Primary GC</div>
+            </div>
+
+            <button class="add-contact-btn">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Add another contact
+            </button>
+          </div>
+
+          <!-- Project Actions -->
+          <div class="edit-section">
+            <div class="edit-section-head">
+              <div class="edit-section-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4M12 16h.01"/></svg>
+              </div>
+              <div class="text">
+                <h2>Project actions</h2>
+                <div class="sub">Take action on this project. Each action has a different level of consequence; the dialog you see reflects that.</div>
+              </div>
+              <div class="status ok">Status: Active</div>
+            </div>
+
+            <div class="actions-grid">
+
+              <!-- Tier 1: On Hold (no confirm, toast with undo) -->
+              <div class="action-card tier-1">
+                <div class="action-card-head">
+                  <div class="action-icon">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  </div>
+                  <div>
+                    <h4>Mark On Hold</h4>
+                    <div class="action-meta">Reversible · No confirm dialog</div>
+                  </div>
+                </div>
+                <div class="action-desc">Pauses time tracking and notifications. Tasks remain visible but go dormant. Resume any time from the Project List view.</div>
+                <button class="btn btn-secondary">Mark On Hold</button>
+                <div class="confirm-note">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  Action takes effect immediately. A toast appears with an Undo button for 10 seconds.
+                </div>
+              </div>
+
+              <!-- Tier 2: Mark Complete (simple confirm dialog) -->
+              <div class="action-card tier-2">
+                <div class="action-card-head">
+                  <div class="action-icon">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div>
+                    <h4>Mark Complete</h4>
+                    <div class="action-meta">Reversible · Simple confirm</div>
+                  </div>
+                </div>
+                <div class="action-desc">Closes out the project. Tasks and timesheets archived. Reports remain accessible. You can reactivate from the Project List view if needed.</div>
+                <button class="btn btn-secondary">Mark Complete</button>
+                <div class="confirm-note">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  Opens a simple "Are you sure?" dialog. No typed confirmation required because completion is reversible.
+                </div>
+              </div>
+
+              <!-- Tier 3: Cancel (typed confirmation modal) -->
+              <div class="action-card tier-3">
+                <div class="action-card-head">
+                  <div class="action-icon danger">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </div>
+                  <div>
+                    <h4>Cancel Project</h4>
+                    <div class="action-meta danger">Destructive · Typed confirmation</div>
+                  </div>
+                </div>
+                <div class="action-desc">Use only if the project was never properly started. Active projects with logged hours should be <strong>Mark Complete</strong> instead.</div>
+                <button class="btn btn-danger-soft">Cancel Project</button>
+                <div class="confirm-note">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Opens a typed-confirmation modal: PM must type the project name in all caps to confirm. See below for the modal mockup.
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Mockup of the Cancel typed-confirmation modal -->
+          <div class="action-modal-preview">
+            <div class="amp-label">Below: Cancel Project typed-confirmation modal (preview only; in production this appears as an overlay)</div>
+            <div class="action-modal">
+              <div class="action-modal-head">
+                <div class="amh-icon">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                  <h3>Cancel this project?</h3>
+                  <div class="amh-sub">Cancellation is a hard transition used only for projects that were never properly started.</div>
+                </div>
+              </div>
+
+              <div class="action-modal-body">
+                <p>You are about to cancel <strong>Fairmont Hotel Renovation</strong> (Project 9059).</p>
+
+                <div class="warn-block">
+                  <div class="warn-head">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    <strong>Cancellation cannot be undone from the UI.</strong>
+                  </div>
+                  <ul>
+                    <li>The project disappears from active project lists (only visible via filters).</li>
+                    <li>All tasks transition to Cancelled status. Hours already logged remain on timesheets for audit purposes.</li>
+                    <li>Open RFIs and PCNs remain in the register but the project is closed to new activity.</li>
+                    <li>To restore later, an admin must intervene at the database level.</li>
+                  </ul>
+                </div>
+
+                <p style="margin-top: 16px;"><strong>Use <em>Mark Complete</em> instead</strong> if any work was actually done on this project. Mark Complete is the right choice for finished projects; Cancel is for projects that should never have existed.</p>
+
+                <div class="typed-confirm">
+                  <label>To confirm, type <code>FAIRMONT HOTEL RENOVATION</code> below:</label>
+                  <input type="text" placeholder="Type the project name in all caps" value="FAIRMONT HOTEL RENOVATION">
+                  <div class="typed-confirm-status valid">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    Match confirmed. Cancel button enabled.
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-modal-foot">
+                <button class="btn btn-secondary">Keep Project</button>
+                <button class="btn btn-danger-firm">Cancel Project</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticky save bar -->
+          <div class="save-bar">
+            <div class="save-bar-status">
+              <span class="unsaved-dot"></span><strong>Unsaved changes</strong> · Last saved 4 minutes ago by Adam Coey
+            </div>
+            <div class="save-bar-right">
+              <button class="btn btn-secondary">Discard changes</button>
+              <button class="btn btn-primary btn-large">Save Changes</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ANNOTATIONS -->
+      <div class="annotations">
+        <h3>Edit Project notes</h3>
+        <ul>
+          <li><strong>Single-page sectioned form, no stepper.</strong> Edit Project assumes the user already knows what they want to change and wants to jump straight to it, not get walked through 3 steps. Different mental model than the wizard.</li>
+          <li><strong>Same data model as the New Project Wizard,</strong> just rendered as a flat scrollable form with section anchor navigation on the left. Sections can be deep-linked (e.g., <code>?section=external-contacts</code>) so the RFI compose flow can link directly to the contacts section when no Primary GC is set.</li>
+          <li><strong>Pre-populated with realistic Fairmont Hotel project data.</strong> Empty fields would obviously be empty.</li>
+        </ul>
+
+        <h4>Left-rail section navigation</h4>
+        <ul>
+          <li><strong>Sticky as the user scrolls.</strong> Active section auto-highlights based on scroll position; click to jump.</li>
+          <li><strong>Counts on Team and External contacts.</strong> Lets the PM see at a glance how many people are on the team and how many external contacts are configured without scrolling.</li>
+          <li><strong>Danger zone is visually separated</strong> with a red dot and red text on hover. Belongs in the same panel rather than a separate modal because status changes are still routine project management, not destructive operations.</li>
+        </ul>
+
+        <h4>Section-level status indicators</h4>
+        <ul>
+          <li><strong>Each section header carries a status pill</strong> showing whether the section is properly filled. Green "All required fields filled" for sections that are healthy; amber for sections that need attention.</li>
+          <li><strong>Dates &amp; Labor budget shows "687 of 1,000 hrs logged"</strong> as the status pill. Surfaces the budget health right next to the labor estimate field, so editing the estimate is informed by current consumption.</li>
+          <li><strong>Section icons match the visual language elsewhere in the app.</strong> Document icon for basics, calendar/clock for dates, people icon for team and clients, address-book icon for external contacts.</li>
+        </ul>
+
+        <h4>Labor budget section gets live status</h4>
+        <ul>
+          <li><strong>Blue-tinted callout</strong> contains the estimate field plus a live status line: tasks defined, hours logged, hours remaining, variance vs. estimate. With link to jump to the Tasks tab.</li>
+          <li><strong>Editing the estimate is informed,</strong> not blind. PM can see "I'm at 687 of 1,000 already, should I bump this to 1,100?" instead of guessing.</li>
+        </ul>
+
+        <h4>External contacts section</h4>
+        <ul>
+          <li><strong>Same repeating-card pattern as in the wizard step 3.</strong> Primary GC card has blue-tinted background and amber star treatment.</li>
+          <li><strong>This is where most external contacts get added</strong> in practice. The wizard step 3 is skip-able, so the typical flow is: wizard runs, project gets created without contacts, RFI compose flow tries to auto-suggest and finds nothing, PM gets prompted to come fill in contacts here. Edit Project is the workhorse surface for this data.</li>
+          <li><strong>Section can be deep-linked.</strong> The RFI compose panel's empty contacts state will link directly here.</li>
+        </ul>
+
+        <h4>Project Actions (the three-tier confirmation pattern)</h4>
+        <ul>
+          <li><strong>Renamed from "Danger zone"</strong> per Mike's May 28 feedback. Most of these are routine status transitions, not destructive operations; "Danger zone" was the wrong frame and diluted the warning when you got to the one that actually was destructive.</li>
+          <li><strong>Three tiers of confirmation matching three levels of consequence:</strong>
+            <br><strong>Tier 1 (Mark On Hold)</strong>: no confirm dialog. Click applies immediately and surfaces an Undo toast for 10 seconds. Right pattern for genuinely reversible, low-stakes actions.
+            <br><strong>Tier 2 (Mark Complete)</strong>: simple "Are you sure?" confirm dialog. Two buttons (Cancel, Mark Complete). Dialog explains that completion is reversible from the Project List view. No typed confirmation; the dialog itself is enough friction.
+            <br><strong>Tier 3 (Cancel Project)</strong>: typed-confirmation modal. User must type the project name in ALL CAPS to enable the confirm button. Modal explains exactly what cancellation means and steers PMs toward Mark Complete instead for any project that had real work done.</li>
+          <li><strong>The typed-confirmation pattern is reserved for the destructive action only.</strong> If we required typed confirmation on every action, PMs would train themselves to type past warnings on routine status changes, which defeats the purpose. Keeping the typed confirm narrow keeps it meaningful.</li>
+          <li><strong>Visual hierarchy reinforces the tiers.</strong> Tier 1 and 2 cards have standard grey borders and white-with-grey-border action buttons. Tier 3 card has a soft red border, red-tinted background, and a soft-red action button. The status pill in the section header shows "Status: Active" so PMs see what they're acting on.</li>
+          <li><strong>Status changes emit Activity events</strong> (<code>PROJECT_STATUS_CHANGED</code>) and surface in the project's Activity tab and the Overview tab's status pill.</li>
+          <li><strong>The Cancel typed-confirmation modal is mocked as a separate state</strong> below the Project Actions section, showing the typed input in a valid (matching) state with the green checkmark status line. In production this appears as an overlay modal on click.</li>
+          <li><strong>Delete is not supported in v1.</strong> Cancelled or Completed projects stay in the database with their full history. Per Justin's reporting needs.</li>
+        </ul>
+
+        <h4>Public/Private cut from the wizard and Edit Project</h4>
+        <ul>
+          <li><strong>Removed entirely per Mike's May 28 confirmation.</strong> Per Justin's open-access culture, all Thor projects are public. The toggle was paying rent for a case that almost never happens.</li>
+          <li><strong>Database can retain a visibility column</strong> for future flexibility; UI doesn't expose it in v1. If Thor ever needs project-level privacy (acquisition project, sensitive client, internal R&amp;D), that's a v2 addition.</li>
+        </ul>
+
+        <h4>Sticky save bar at bottom</h4>
+        <ul>
+          <li><strong>Always visible while scrolling.</strong> Shows unsaved-state indicator plus the timestamp of the last save. Bumped above the page fold via sticky positioning so the PM doesn't have to scroll to find Save.</li>
+          <li><strong>One save commits all sections.</strong> No per-section save buttons. Reduces cognitive load and prevents the "did I save?" anxiety.</li>
+          <li><strong>"Discard changes" reverts to last-saved state.</strong> No partial revert per section in v1.</li>
+        </ul>
+
+        <h4>Out of scope</h4>
+        <ul>
+          <li>Per-field change tracking ("Bob changed start date from May 1 to May 8 on Tuesday")</li>
+          <li>Permissioned section editing (e.g., only PMs can edit Team)</li>
+          <li>Project template cloning ("Create new project based on this one")</li>
+          <li>Project archiving as separate from Cancel/Complete</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

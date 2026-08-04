@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Project Log Detail · Fairmont Hotel Renovation</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #2d2e30;
+    --muted:      #58595b;
+    --muted-2:    #828487;
+    --muted-3:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --topbar-bg:  #1c1d1f;
+    --topbar-fg:  #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+
+  /* Topbar */
+  .topbar { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 28px; gap: 18px; color: var(--topbar-fg); }
+  .topbar-crumbs { font-weight: 500; font-size: 14px; }
+  .topbar-crumbs a { color: var(--topbar-fg); text-decoration: underline; opacity: 0.85; }
+  .topbar-crumbs .crumb-sep { opacity: 0.5; margin: 0 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 13px; }
+  .topbar-help { display: flex; align-items: center; gap: 6px; cursor: pointer; opacity: 0.9; }
+  .topbar-help u { text-decoration: underline; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #5b8def, #7a6cd9); }
+
+  /* Container */
+  .main { max-width: 1200px; margin: 0 auto; padding: 24px 28px 60px; }
+
+  /* Back link */
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--blue); text-decoration: none; margin-bottom: 14px; font-weight: 500; }
+  .back-link:hover { text-decoration: underline; }
+  .back-link svg { width: 14px; height: 14px; }
+
+  /* State header (only for THIS demo file: separates the three rendered states) */
+  .state-banner { background: white; border: 1px dashed var(--muted-3); border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+  .state-banner .state-num { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; font-weight: 700; padding: 2px 8px; background: var(--ink); color: white; border-radius: 4px; }
+  .state-banner .state-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .state-banner .state-note { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* Detail card */
+  .detail-card { background: white; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 32px; overflow: hidden; }
+  .detail-head { padding: 22px 26px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 14px; }
+  .detail-head-info { flex: 1; min-width: 0; }
+  .detail-title { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 6px; line-height: 1.25; }
+  .detail-subtitle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+  .detail-subtitle .author-av { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 700; }
+  .detail-subtitle .av-tech { background: #c97a4a; }
+  .detail-subtitle .av-foreman { background: #7a6cd9; }
+  .detail-subtitle .av-supervisor { background: #4a8a5e; }
+  .detail-subtitle .dot { color: var(--muted-3); }
+
+  .report-type-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .report-type-badge.tech { background: var(--blue-soft); color: var(--blue-dark); }
+  .report-type-badge.foreman { background: var(--purple-soft); color: var(--purple); }
+  .report-type-badge.supervisor { background: var(--amber-soft); color: var(--amber); }
+  .report-type-badge svg { width: 11px; height: 11px; }
+
+  .head-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+  .btn-secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover { background: var(--bg-2); border-color: var(--muted-2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  .detail-body { padding: 22px 26px 26px; }
+
+  /* Section blocks within the detail body */
+  .ds { margin-bottom: 22px; }
+  .ds:last-child { margin-bottom: 0; }
+  .ds-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 8px; }
+  .ds-body { font-size: 14px; color: var(--ink); line-height: 1.55; }
+  .ds-body p { margin-bottom: 8px; }
+  .ds-body p:last-child { margin-bottom: 0; }
+
+  /* Two-column rows */
+  .ds-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* Confidential block treatment */
+  .confidential-block { background: var(--amber-soft); border: 1px solid #f0d597; border-radius: 8px; padding: 16px 18px; margin-top: 14px; position: relative; }
+  .confidential-block .conf-label { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; background: #b87a0f; color: white; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 3px; margin-bottom: 10px; }
+  .confidential-block .conf-label svg { width: 10px; height: 10px; }
+  .confidential-block .conf-note { font-size: 11px; color: #7a4e08; margin-bottom: 10px; line-height: 1.4; }
+  .confidential-block .ds-label { color: #7a4e08; }
+
+  /* Photo gallery */
+  .photo-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .gallery-photo { width: 100%; aspect-ratio: 1; background: var(--bg-2); border-radius: 6px; overflow: hidden; position: relative; }
+  .gallery-photo .scene { width: 100%; height: 100%; display: block; }
+  .gallery-photo .cam-badge { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; background: rgba(0,0,0,0.55); color: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .gallery-photo .cam-badge svg { width: 10px; height: 10px; }
+
+  /* Hours / metadata pills */
+  .meta-chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .meta-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .meta-chip svg { width: 12px; height: 12px; color: var(--muted); }
+  .meta-chip strong { font-weight: 700; }
+
+  /* Linked task list */
+  .task-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; margin-bottom: 6px; text-decoration: none; color: inherit; }
+  .task-link:hover { background: var(--blue-soft); border-color: var(--blue); }
+  .task-link:last-child { margin-bottom: 0; }
+  .task-link svg { width: 14px; height: 14px; color: var(--green); flex-shrink: 0; }
+  .task-link .tl-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .task-link .tl-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .task-link .tl-status.in-progress { background: var(--blue-soft); color: var(--blue-dark); }
+  .task-link .tl-status.complete { background: var(--green-soft); color: var(--green); }
+
+  /* Location chip */
+  .location-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); }
+  .location-chip svg { width: 13px; height: 13px; color: var(--muted); }
+
+  /* Health pill */
+  .health-pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+  .health-pill .hp-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .health-pill.green { background: var(--green-soft); color: var(--green); }
+  .health-pill.green .hp-dot { background: var(--green); }
+  .health-pill.amber { background: var(--amber-soft); color: var(--amber); }
+  .health-pill.amber .hp-dot { background: var(--amber); }
+  .health-pill.red { background: var(--red-soft); color: var(--red); }
+  .health-pill.red .hp-dot { background: var(--red); }
+
+  /* Thor Standards / Audit rows */
+  .audit-list { display: flex; flex-direction: column; gap: 4px; background: var(--bg-2); border-radius: 6px; padding: 6px 14px; }
+  .audit-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
+  .audit-row:last-child { border-bottom: none; }
+  .audit-name { font-size: 13px; font-weight: 500; }
+  .audit-lights { display: inline-flex; gap: 5px; }
+  .sl { width: 14px; height: 14px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: transparent; }
+  .sl .inner { width: 8px; height: 8px; border-radius: 50%; opacity: 0.25; }
+  .sl.g .inner { background: var(--green); }
+  .sl.y .inner { background: var(--amber); }
+  .sl.r .inner { background: var(--red); }
+  .sl.selected { border: 1.5px solid currentColor; }
+  .sl.selected.g { color: var(--green); }
+  .sl.selected.y { color: var(--amber); }
+  .sl.selected.r { color: var(--red); }
+  .sl.selected .inner { opacity: 1; }
+
+  /* Subtrade status grid */
+  .subtrade-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .subtrade-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-2); border-radius: 6px; }
+  .subtrade-name { font-size: 12.5px; font-weight: 500; }
+  .subtrade-status { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; padding: 2px 7px; border-radius: 3px; }
+  .subtrade-status.g { background: var(--green-soft); color: var(--green); }
+  .subtrade-status.y { background: var(--amber-soft); color: var(--amber); }
+  .subtrade-status.r { background: var(--red-soft); color: var(--red); }
+  .subtrade-status.n { background: var(--bg); color: var(--muted); }
+  .subtrade-status.a { background: var(--blue-soft); color: var(--blue-dark); }
+
+  /* Rating slider read-only */
+  .rating-readonly { display: flex; align-items: center; gap: 14px; }
+  .rating-readonly-track { flex: 1; height: 6px; background: linear-gradient(to right, var(--red), var(--amber), var(--green)); border-radius: 999px; position: relative; }
+  .rating-readonly-thumb { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border-radius: 50%; background: white; border: 2px solid var(--ink); }
+  .rating-readonly-val { font-size: 14px; font-weight: 700; color: var(--ink); font-feature-settings: 'tnum'; min-width: 50px; text-align: right; }
+  .rating-readonly-val .max { color: var(--muted); font-size: 11px; font-weight: 500; }
+
+  /* Risk list */
+  .risk-list { display: flex; flex-direction: column; gap: 8px; }
+  .risk-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: var(--bg-2); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; }
+  .risk-item .risk-num { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; font-weight: 700; padding: 2px 7px; background: var(--red); color: white; border-radius: 3px; flex-shrink: 0; line-height: 1.4; }
+  .risk-item .risk-body { flex: 1; font-size: 13px; color: var(--ink); line-height: 1.5; }
+
+  /* Performance rating display */
+  .perf-display { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .perf-display.strong { background: var(--green-soft); color: var(--green); }
+  .perf-display.adequate { background: var(--amber-soft); color: var(--amber); }
+  .perf-display.needs-help { background: var(--red-soft); color: var(--red); }
+  .perf-display svg { width: 13px; height: 13px; }
+
+  /* Verification readout */
+  .verif-display { font-size: 13px; }
+  .verif-display .verif-tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+  .verif-display .verif-tag.confirmed { background: var(--green-soft); color: var(--green); }
+  .verif-display .verif-tag.mostly { background: var(--amber-soft); color: var(--amber); }
+  .verif-display .verif-tag.no { background: var(--red-soft); color: var(--red); }
+
+  /* Annotations (page-level, demo callout) */
+  .annotations { margin-top: 30px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 22px 26px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 4px 0 4px 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-crumbs">
+    <a href="odin-projects-list.html">Projects</a><span class="crumb-sep">/</span><a href="odin-overview-current-brand.html">Fairmont Hotel Renovation</a><span class="crumb-sep">/</span><a href="odin-project-logs.html">Project Logs</a><span class="crumb-sep">/</span>Log detail
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-help"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg><u>Help</u></div>
+    <div class="topbar-user"><span>Super Admin · Justin Thorsteinson</span><div class="topbar-avatar"></div></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <a href="odin-project-logs.html" class="back-link">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Project Logs
+  </a>
+
+  <!-- ============================================================ -->
+  <!-- STATE 1: Daily Tech Log detail                                     -->
+  <!-- ============================================================ -->
+  <div class="state-banner">
+    <span class="state-num">State 1 of 3</span>
+    <span class="state-title">Daily Tech Log detail</span>
+    <span class="state-note">Same component, lightweight content. No confidential fields.</span>
+  </div>
+
+  <div class="detail-card">
+    <div class="detail-head">
+      <div class="detail-head-info">
+        <div class="detail-title">West wall rough-in complete</div>
+        <div class="detail-subtitle">
+          <span class="report-type-badge tech">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+            Daily Tech Log
+          </span>
+          <span class="author-av av-tech">MP</span>
+          <span>Mark Panteluk · Technician</span>
+          <span class="dot">·</span>
+          <span>Wed, May 20, 2026 · 4:18 PM</span>
+        </div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export PDF</button>
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+      </div>
+    </div>
+    <div class="detail-body">
+
+      <div class="ds">
+        <div class="ds-label">Summary</div>
+        <div class="ds-body">
+          <p>Completed rough-in on west wall. Pressure tested supply lines at 60 PSI, held for 30 min with no drop. Capped all open ends for drywall crew tomorrow. Found one stub at the wrong height, corrected and re-pressure-tested.</p>
+          <p>Coordination with electrical crew went smoothly. They marked their box locations before we ran the supplies, so no conflicts.</p>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Photos</div>
+        <div class="photo-gallery">
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#cfd5db"/>
+              <rect y="32" width="48" height="16" fill="#a89580"/>
+              <rect x="8" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="20" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="32" y="6" width="3" height="32" fill="#c98551"/>
+              <rect x="6" y="14" width="32" height="3" fill="#c98551"/>
+              <rect x="6" y="26" width="32" height="3" fill="#c98551"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#3a4148"/>
+              <circle cx="24" cy="22" r="14" fill="#e8e4dc" stroke="#1a1d20" stroke-width="2"/>
+              <circle cx="24" cy="22" r="11" fill="#fff"/>
+              <text x="24" y="20" text-anchor="middle" font-family="Arial" font-size="4" font-weight="bold" fill="#222">PSI</text>
+              <line x1="24" y1="22" x2="32" y2="16" stroke="#c92020" stroke-width="2"/>
+              <circle cx="24" cy="22" r="1.5" fill="#222"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#5a6068"/>
+              <rect y="32" width="48" height="16" fill="#3a3f45"/>
+              <g transform="translate(8 14) rotate(15 16 12)">
+                <rect x="0" y="9" width="22" height="6" rx="1" fill="#b8b8b8"/>
+              </g>
+              <rect x="6" y="34" width="36" height="3" fill="#c98551"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#c4ccd4"/>
+              <rect x="6" y="6" width="36" height="36" fill="#7c8590" rx="2"/>
+              <rect x="12" y="14" width="24" height="3" fill="#3a3f45"/>
+              <rect x="12" y="22" width="24" height="3" fill="#3a3f45"/>
+              <rect x="12" y="30" width="24" height="3" fill="#3a3f45"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Hours</div>
+          <div class="meta-chip-row">
+            <span class="meta-chip"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><strong>6.5 hrs</strong> · Billable · 8:30 AM – 3:00 PM</span>
+          </div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Location</div>
+          <span class="location-chip">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Fairmont Hotel · 3rd Floor West Wing
+          </span>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Tasks referenced</div>
+        <a href="#" class="task-link">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span class="tl-name">Water lines · West wall rough-in</span>
+          <span class="tl-status in-progress">In progress</span>
+        </a>
+        <a href="#" class="task-link">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span class="tl-name">Pressure test certification</span>
+          <span class="tl-status complete">Complete</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STATE 2: Foreman Report detail                               -->
+  <!-- ============================================================ -->
+  <div class="state-banner">
+    <span class="state-num">State 2 of 3</span>
+    <span class="state-title">Foreman Report detail</span>
+    <span class="state-note">Weekly report. Richer field set. No confidential fields (all foreman content publishes).</span>
+  </div>
+
+  <div class="detail-card">
+    <div class="detail-head">
+      <div class="detail-head-info">
+        <div class="detail-title">Foreman Report · Week of May 18 – 22</div>
+        <div class="detail-subtitle">
+          <span class="report-type-badge foreman">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Foreman Report
+          </span>
+          <span class="author-av av-foreman">RK</span>
+          <span>Robbie Kreviazuk · Foreman</span>
+          <span class="dot">·</span>
+          <span>Fri, May 22, 2026 · 5:42 PM</span>
+        </div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export PDF</button>
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+      </div>
+    </div>
+    <div class="detail-body">
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Project Health (Foreman's view)</div>
+          <div class="health-pill green"><span class="hp-dot"></span>Green · On track</div>
+          <div style="font-size: 12.5px; color: var(--muted); margin-top: 6px;">"Schedule and budget both in good shape. Weather forecast looks fine for next week's exterior work."</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Manpower this week</div>
+          <div style="font-size: 14px;"><strong>5 crew on site</strong> · Mark P (lead), Travis H, Sam P, Daniel R, James L</div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Accomplishments this week</div>
+        <div class="ds-body">
+          <p>West wall rough-in is complete and pressure tested. East wall is 60% complete; expecting to finish Monday or Tuesday. Drywall crew started Tuesday and is staying ahead of us, which is helping flow.</p>
+          <p>Met with the GC on Wednesday to walk the mechanical room. Identified two more conflicts at high coordination points; will document via RFI next week.</p>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Goals for next week</div>
+        <div class="ds-body">
+          <p>Finish east wall rough-in by EOD Tuesday. Begin venting installation on 3rd floor. Coordinate with electrical for ceiling space scheduling on 4th floor. Submit RFIs on the two coordination conflicts identified.</p>
+        </div>
+      </div>
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Schedule status</div>
+          <div class="health-pill green"><span class="hp-dot"></span>On schedule</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Outstanding RFIs (auto-pulled)</div>
+          <div style="font-size: 13px;"><strong>2 open</strong> · <a href="odin-change-notices-rfi-detail.html" style="color: var(--blue);">RFI-007</a>, <a href="odin-change-notices-rfi-detail.html" style="color: var(--blue);">RFI-009</a></div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Subtrade status</div>
+        <div class="subtrade-grid">
+          <div class="subtrade-row"><span class="subtrade-name">Drywall</span><span class="subtrade-status g">Green</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">Electrical</span><span class="subtrade-status g">Green</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">HVAC</span><span class="subtrade-status y">Yellow</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">Sprinkler</span><span class="subtrade-status n">N/A this wk</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">Insulation</span><span class="subtrade-status a">Arriving Mon</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">Sheet metal</span><span class="subtrade-status g">Green</span></div>
+          <div class="subtrade-row"><span class="subtrade-name">Painting</span><span class="subtrade-status n">N/A this wk</span></div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Materials concerns</div>
+        <div class="ds-body">
+          <p>Backflow preventer lead time is 14 weeks (RFI-007 in flight on substitution). Everything else is on track. Insulation arriving Monday, will not block start of venting.</p>
+        </div>
+      </div>
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Safety</div>
+          <div style="font-size: 13px;"><strong>No incidents this week.</strong> Weekly toolbox talk completed Monday (ladder safety). All PPE compliance observed.</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Ratings</div>
+          <div style="background: var(--bg-2); border-radius: 6px; padding: 12px 14px;">
+            <div style="font-size: 11px; color: var(--muted-2); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 4px;">Housekeeping</div>
+            <div class="rating-readonly">
+              <div class="rating-readonly-track"><div class="rating-readonly-thumb" style="left: 80%;"></div></div>
+              <div class="rating-readonly-val">8<span class="max"> / 10</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--muted-2); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; margin: 10px 0 4px;">Project confidence</div>
+            <div class="rating-readonly">
+              <div class="rating-readonly-track"><div class="rating-readonly-thumb" style="left: 80%;"></div></div>
+              <div class="rating-readonly-val">8<span class="max"> / 10</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--muted-2); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; margin: 10px 0 4px;">Customer relationship</div>
+            <div class="rating-readonly">
+              <div class="rating-readonly-track"><div class="rating-readonly-thumb" style="left: 90%;"></div></div>
+              <div class="rating-readonly-val">9<span class="max"> / 10</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Photos · Progress and problem areas</div>
+        <div class="photo-gallery">
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#cfd5db"/>
+              <rect y="34" width="48" height="14" fill="#a89580"/>
+              <rect x="6" y="8" width="3" height="32" fill="#c98551"/>
+              <rect x="18" y="8" width="3" height="32" fill="#c98551"/>
+              <rect x="30" y="8" width="3" height="32" fill="#c98551"/>
+              <rect x="6" y="16" width="30" height="3" fill="#c98551"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#b8b6b0"/>
+              <rect y="32" width="48" height="16" fill="#8d8b85"/>
+              <rect x="10" y="10" width="28" height="22" fill="#a59f95" rx="2"/>
+              <rect x="14" y="14" width="20" height="2" fill="#5a5853"/>
+              <rect x="14" y="20" width="20" height="2" fill="#5a5853"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#3f4750"/>
+              <g transform="translate(8 14)">
+                <rect x="0" y="0" width="32" height="20" fill="#5d6a76" rx="2"/>
+                <rect x="3" y="3" width="26" height="14" fill="#7c8993" rx="1"/>
+              </g>
+              <rect y="36" width="48" height="12" fill="#2a2f35"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+          <div class="gallery-photo">
+            <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#cfd5db"/>
+              <circle cx="24" cy="20" r="8" fill="#e0a020"/>
+              <path d="M24 14 v12 M18 20 h12" stroke="#5a4708" stroke-width="2"/>
+              <rect y="34" width="48" height="14" fill="#a89580"/>
+            </svg>
+            <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Additional comments</div>
+        <div class="ds-body">
+          <p>Coordination with drywall crew has been excellent this week. Their lead foreman has been proactive about checking with us before closing up walls. Worth noting and continuing.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STATE 3: Supervisor Report detail                            -->
+  <!-- ============================================================ -->
+  <div class="state-banner">
+    <span class="state-num">State 3 of 3</span>
+    <span class="state-title">Supervisor Report detail</span>
+    <span class="state-note">Includes two confidential fields visible only to PM + Supervisor + admin/super-admin (D-026).</span>
+  </div>
+
+  <div class="detail-card">
+    <div class="detail-head">
+      <div class="detail-head-info">
+        <div class="detail-title">Supervisor Report · Site visit May 21</div>
+        <div class="detail-subtitle">
+          <span class="report-type-badge supervisor">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Supervisor Report
+          </span>
+          <span class="author-av av-supervisor">RA</span>
+          <span>Rob Altvater · Supervisor</span>
+          <span class="dot">·</span>
+          <span>Thu, May 21, 2026 · 6:08 PM</span>
+        </div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export PDF</button>
+        <button class="btn btn-secondary"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+      </div>
+    </div>
+    <div class="detail-body">
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Site visit info</div>
+          <div style="font-size: 13px;"><strong>Site visited:</strong> Thu, May 21 · 10:30 AM – 12:45 PM<br/><strong>Visit duration:</strong> 2 hr 15 min</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Project Health (Supervisor's assessment)</div>
+          <div class="health-pill amber"><span class="hp-dot"></span>Yellow · Watch closely</div>
+          <div style="font-size: 12.5px; color: var(--muted); margin-top: 6px;">"Backflow preventer lead time is a real risk to the schedule. RFI-007 substitution path needs to land within 2 weeks or we hit the gas/plumbing milestone."</div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Thor Standards</div>
+        <div class="audit-list">
+          <div class="audit-row">
+            <div class="audit-name">Workmanship</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Site cleanliness</div>
+            <div class="audit-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y selected"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Productivity</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Customer relationship</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Safety concerns</div>
+          <div style="font-size: 13px;">PPE compliance good. Fall protection setup correct around roof openings. One ladder noted not tied off, corrected on site. Hot work permit current and visible.</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Schedule (Supervisor's read)</div>
+          <div class="health-pill amber"><span class="hp-dot"></span>Marginal</div>
+          <div style="font-size: 12.5px; color: var(--muted); margin-top: 6px;">Behind by ~3 working days at current pace. Recoverable if backflow substitution lands and weather holds.</div>
+        </div>
+      </div>
+
+      <div class="ds">
+        <div class="ds-label">Top 3 risks</div>
+        <div class="risk-list">
+          <div class="risk-item">
+            <span class="risk-num">1</span>
+            <div class="risk-body"><strong>Backflow preventer lead time.</strong> 14 weeks on the spec'd unit. RFI-007 substitution decision is the critical path; if it slips past June 5 the gas/plumbing milestone will move.</div>
+          </div>
+          <div class="risk-item">
+            <span class="risk-num">2</span>
+            <div class="risk-body"><strong>4th floor electrical coordination.</strong> Foreman flagged ceiling-space conflicts identified during GC walk. Two RFIs incoming next week. Could compress mechanical schedule if not resolved fast.</div>
+          </div>
+          <div class="risk-item">
+            <span class="risk-num">3</span>
+            <div class="risk-body"><strong>Crew size risk.</strong> Sam P is starting Costco maintenance project Monday. Crew drops from 5 to 4 starting next week. Foreman is aware but it may show up as productivity drag.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-row2">
+        <div class="ds">
+          <div class="ds-label">Support requested</div>
+          <div style="font-size: 13px;">PM-level conversation with GC about backflow substitution timeline. Need to formally bound the answer-by date so we can plan around it.</div>
+        </div>
+        <div class="ds">
+          <div class="ds-label">Photos</div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+            <div class="gallery-photo">
+              <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" fill="#5a6068"/>
+                <rect y="32" width="48" height="16" fill="#3a3f45"/>
+                <rect x="10" y="10" width="28" height="22" fill="#888" rx="1"/>
+              </svg>
+              <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+            </div>
+            <div class="gallery-photo">
+              <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" fill="#cfd5db"/>
+                <rect x="6" y="6" width="36" height="36" fill="#a09a90"/>
+              </svg>
+              <div class="cam-badge"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CONFIDENTIAL BLOCK ============ -->
+      <div class="confidential-block">
+        <div class="conf-label">
+          <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Confidential · PM + Supervisor + Admin only
+        </div>
+        <div class="conf-note">The following two fields are restricted per D-026. They render here for users with permission (Super Admin in this preview). They do NOT appear on the public detail view rendered for techs, foremen, or other team members.</div>
+
+        <div class="ds-row2">
+          <div class="ds" style="margin-bottom: 0;">
+            <div class="ds-label">Foreman Performance</div>
+            <div class="perf-display strong">
+              <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+              Strong
+            </div>
+            <div style="font-size: 12.5px; color: var(--ink-light); margin-top: 8px; line-height: 1.5;">Robbie is on top of the schedule and proactive about coordination. Subtrade communication is excellent. Backflow risk was identified early. Confident in his ability to deliver this project.</div>
+          </div>
+          <div class="ds" style="margin-bottom: 0;">
+            <div class="ds-label">Verification of Foreman Report</div>
+            <div class="verif-display">
+              <span class="verif-tag mostly">Mostly accurate</span>
+              <div style="margin-top: 6px; color: var(--ink-light); line-height: 1.5;">Crew reported as 5 on Tuesday but observed 4 (one tech off-site for material run). Subtrade status for sheet metal listed as green; observed minor delays waiting on AHU placement, would call yellow.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds" style="margin-top: 22px;">
+        <div class="ds-label">Additional comments</div>
+        <div class="ds-body">
+          <p>Site visit went well. Foreman demonstrated good control of the crew and a clear view of risks. Recommend the PM has a direct conversation with the GC this week to bound the backflow substitution timeline.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Annotations                                                  -->
+  <!-- ============================================================ -->
+  <div class="annotations">
+    <h3>Project Log Detail · D-028 implementation notes</h3>
+    <ul>
+      <li><strong>One file, three states.</strong> Mandeep builds one route (<code>/projects/[id]/logs/[logId]</code>) with three template variants based on the log's <code>type</code> field. This single mockup file shows all three states stacked for visual reference; in production users see only the one detail page they navigated to.</li>
+      <li><strong>Daily Tech Log detail (State 1).</strong> Light field set: summary text, photos, hours, location, tasks referenced. No confidential treatment needed.</li>
+      <li><strong>Foreman Report detail (State 2).</strong> Richer weekly-report content: project health from foreman's view, accomplishments, next week goals, schedule status, manpower, subtrade status (7 hardcoded subtrades), materials concerns, safety, three 1-10 ratings (Housekeeping / Project confidence / Customer relationship per Jun 9 Justin add), photos, free-form comments. All visible to the team.</li>
+      <li><strong>Supervisor Report detail (State 3).</strong> Audit-style content: site visit info, supervisor's own health assessment, Thor Standards (now 4 categories: Workmanship / Site cleanliness / Productivity / Customer relationship), safety, schedule, Top 3 risks, support requested, photos. Plus the confidential block.</li>
+      <li><strong>Confidential block (D-026).</strong> Two fields stay restricted: Foreman Performance rating, and Verification of Foreman Report accuracy. Rendered in an amber-tinted block with a "Confidential" label so the audience-restricted nature is visible. The block renders only for users where <code>canViewSupervisorAuditContent(user, project) = true</code> (PM, Supervisor on this project, global admin, global super-admin). For other users the entire block is omitted from the page.</li>
+      <li><strong>Customer Relationship is NOT confidential</strong> (Jun 9 clarification). It appears in Thor Standards as a 4th row on Supervisor Report and as a 3rd 1-10 slider on Foreman Report. Visible to the team.</li>
+      <li><strong>Header actions.</strong> Export PDF and Edit. No "Mark Reviewed" anywhere (no approval workflow per D-018). Delete lives in the row's context menu on the list view, not on the detail page (intentional friction).</li>
+      <li><strong>Back link</strong> top-left returns to the Project Logs list. Standard breadcrumb pattern in the top bar also navigates back.</li>
+      <li><strong>Page chrome</strong> matches the rest of the admin Project Module (same topbar, same project breadcrumb pattern). The detail page is part of the same module, not a separate route.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

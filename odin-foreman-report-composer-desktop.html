@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Foreman Report Composer (desktop, v1 preview)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; min-height: 100vh; padding: 40px 20px; }
+
+  /* Page chrome simulation (dimmed) */
+  .page-chrome { max-width: 1280px; margin: 0 auto 0; background: white; border-radius: 12px; padding: 28px; opacity: 0.4; pointer-events: none; min-height: 200px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .page-chrome .top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .page-chrome .title { font-size: 20px; font-weight: 600; color: var(--ink); }
+  .page-chrome .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .page-chrome .tabs-strip { display: flex; gap: 4px; padding: 4px; background: var(--bg-2); border-radius: 6px; }
+  .page-chrome .tab-pill { padding: 7px 14px; font-size: 12.5px; color: var(--ink-light); font-weight: 500; }
+  .page-chrome .tab-pill.active { background: var(--ink); color: white; border-radius: 4px; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(28, 29, 31, 0.55); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 60px 20px 40px; overflow-y: auto; }
+  .modal { background: white; border-radius: 12px; width: 100%; max-width: 760px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; }
+
+  /* Modal head */
+  .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .modal-head .icon { width: 32px; height: 32px; border-radius: 8px; background: var(--purple-soft); color: var(--purple); display: flex; align-items: center; justify-content: center; }
+  .modal-head .icon svg { width: 16px; height: 16px; }
+  .modal-head .title { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .modal-head .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .modal-head .close { margin-left: auto; cursor: pointer; color: var(--muted); padding: 4px; }
+  .modal-head .close svg { width: 16px; height: 16px; }
+
+  /* Modal body */
+  .modal-body { padding: 20px 24px; max-height: calc(100vh - 240px); overflow-y: auto; }
+  .modal-foot { padding: 14px 24px; border-top: 1px solid var(--line); background: var(--bg-2); display: flex; justify-content: flex-end; gap: 10px; }
+  .modal-foot .btn { padding: 9px 16px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .modal-foot .btn-cancel { background: white; border: 1px solid var(--line); color: var(--ink); }
+  .modal-foot .btn-draft { background: white; border: 1px solid var(--line); color: var(--ink); }
+  .modal-foot .btn-submit { background: var(--blue); color: white; }
+
+  /* Form sections */
+  .form-section { margin-bottom: 18px; }
+  .form-section:last-child { margin-bottom: 0; }
+  .form-section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px; }
+  .form-section-label .req { color: var(--red); margin-left: 2px; }
+  .form-section-label .hint { color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; margin-left: 6px; }
+
+  /* Two-column grid */
+  .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* Input */
+  .form-input { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 13.5px; color: var(--ink); font-family: inherit; outline: none; }
+  .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .form-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 13.5px; color: var(--ink); font-family: inherit; resize: vertical; min-height: 80px; outline: none; }
+  .form-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  /* Health row */
+  .health-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .health-btn { padding: 10px 12px; border-radius: 6px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-light); }
+  .health-btn .dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .health-btn.green .dot { background: var(--green); }
+  .health-btn.yellow .dot { background: var(--amber); }
+  .health-btn.red .dot { background: var(--red); }
+  .health-btn.selected.green { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  .health-btn.selected.yellow { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
+  .health-btn.selected.red { border-color: var(--red); background: var(--red-soft); color: var(--red); }
+
+  /* Pill row */
+  .pill-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .pill-btn { padding: 8px 10px; border-radius: 6px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-light); text-align: center; }
+  .pill-btn.selected { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Subtrades grid */
+  .subtrades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+  .subtrade-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line-2); }
+  .subtrade-name { font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .subtrade-lights { display: flex; gap: 3px; }
+  .subtrade-lights .sl { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .subtrade-lights .sl .inner { width: 8px; height: 8px; border-radius: 50%; opacity: 0.35; }
+  .subtrade-lights .sl.g .inner { background: var(--green); }
+  .subtrade-lights .sl.y .inner { background: var(--amber); }
+  .subtrade-lights .sl.r .inner { background: var(--red); }
+  .subtrade-lights .sl.na .inner { background: var(--muted-2); width: 8px; height: 1.5px; border-radius: 0; }
+  .subtrade-lights .sl.selected { border-color: currentColor; background: white; }
+  .subtrade-lights .sl.g.selected { color: var(--green); }
+  .subtrade-lights .sl.y.selected { color: var(--amber); }
+  .subtrade-lights .sl.r.selected { color: var(--red); }
+  .subtrade-lights .sl.na.selected { color: var(--muted); }
+  .subtrade-lights .sl.selected .inner { opacity: 1; }
+
+  /* RFI list */
+  .rfi-link-list .rfi-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
+  .rfi-link-list .rfi-row:last-child { border-bottom: none; }
+  .rfi-id-pill { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: var(--blue-soft); color: var(--blue-dark); }
+  .rfi-subject { flex: 1; font-size: 12.5px; color: var(--ink); }
+  .rfi-age { font-size: 11px; color: var(--amber); font-weight: 600; }
+
+  /* Rating row */
+  .rating-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+  .rating-track { flex: 1; height: 6px; background: linear-gradient(to right, var(--red) 0%, var(--amber) 50%, var(--green) 100%); border-radius: 999px; position: relative; }
+  .rating-thumb { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: white; border: 2px solid var(--ink); transform: translate(-50%, -50%); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+  .rating-val { font-size: 16px; font-weight: 700; color: var(--ink); min-width: 50px; text-align: right; }
+  .rating-val .max { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  /* Photo placeholder */
+  .photo-strip { display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: center; background: var(--bg-2); border: 1px dashed var(--line); border-radius: 6px; padding: 14px; }
+  .photo-strip .upload-btn { background: var(--ink); color: white; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .photo-strip .upload-btn svg { width: 12px; height: 12px; }
+  .photo-strip .helper { font-size: 12px; color: var(--muted); }
+
+  /* Annotations */
+  .annotations { max-width: 760px; margin: 30px auto 0; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+
+<!-- Dimmed page chrome behind the modal -->
+<div class="page-chrome">
+  <div class="top">
+    <div>
+      <div class="title">Project Logs</div>
+      <div class="sub">Field-submitted reports for Thor Construction (Job 9084)</div>
+    </div>
+    <div class="tabs-strip">
+      <div class="tab-pill active">All</div>
+      <div class="tab-pill">Daily Tech Logs</div>
+      <div class="tab-pill">Foreman Reports</div>
+      <div class="tab-pill">Supervisor Reports</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal overlay with composer -->
+<div class="modal-overlay">
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <div class="title">Weekly Foreman Report</div>
+        <div class="sub">Thor Construction (Job 9084) · Week of May 25 – 29, 2026 · Robbie Kreviazuk</div>
+      </div>
+      <div class="close">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Overall health + reason inline -->
+      <div class="form-section">
+        <div class="form-section-label">Overall project health <span class="req">*</span></div>
+        <div class="row-2col">
+          <div class="health-row">
+            <div class="health-btn green selected">
+              <div class="dot"></div> Green
+            </div>
+            <div class="health-btn yellow">
+              <div class="dot"></div> Yellow
+            </div>
+            <div class="health-btn red">
+              <div class="dot"></div> Red
+            </div>
+          </div>
+          <input type="text" class="form-input" placeholder="One-line reason (optional)" value="Schedule holding; minor RFI hold on insulation start.">
+        </div>
+      </div>
+
+      <!-- This week / Next week -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">This week's accomplishments <span class="req">*</span></div>
+          <textarea class="form-textarea">- Heating mains complete, branch lines running where access allows
+- Underground rough-in finished (Tue)
+- Walls started going up Tue afternoon
+- Bathroom rough-in 60% complete
+- Heating shutdown completed successfully Monday</textarea>
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Next week's goals <span class="req">*</span></div>
+          <textarea class="form-textarea">- Finish bathroom branch piping
+- Complete Level 2 fixture rough-in
+- Begin hydronic testing on south zone
+- Coordinate with Ainsworth on controls install
+- Insulators starting end of week if scope holds</textarea>
+        </div>
+      </div>
+
+      <!-- Schedule + Manpower in row -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Schedule status <span class="req">*</span></div>
+          <div class="pill-row" style="margin-bottom: 8px;">
+            <div class="pill-btn">Ahead</div>
+            <div class="pill-btn selected">On schedule</div>
+            <div class="pill-btn">Behind</div>
+          </div>
+          <input type="text" class="form-input" placeholder="One-line note" value="On track for end-of-June handover.">
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Manpower</div>
+          <div class="row-3col" style="gap: 8px; align-items: center; margin-bottom: 8px;">
+            <div>
+              <div style="font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">Crew now</div>
+              <input type="number" class="form-input" value="5">
+            </div>
+            <div>
+              <div style="font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">Next week</div>
+              <input type="number" class="form-input" value="6">
+            </div>
+            <div>
+              <div style="font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">Status</div>
+              <select class="form-input">
+                <option>Properly staffed</option>
+                <option>Need more</option>
+                <option>Overstaffed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outstanding RFIs (auto-linked) + Materials concerns -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Outstanding RFIs <span class="hint">pulled from project RFIs</span></div>
+          <div class="rfi-link-list" style="background: var(--bg-2); border-radius: 6px; padding: 8px 12px;">
+            <div class="rfi-row">
+              <span class="rfi-id-pill">RFI-007</span>
+              <div class="rfi-subject">Hot water recirc loop spec clarification</div>
+              <div class="rfi-age">11 days</div>
+            </div>
+            <div class="rfi-row">
+              <span class="rfi-id-pill">RFI-008</span>
+              <div class="rfi-subject">Backflow preventer substitute approval</div>
+              <div class="rfi-age">8 days</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Materials concerns <span class="hint">optional</span></div>
+          <textarea class="form-textarea" style="min-height: 70px;">Backflow preventer (Watts 909) still on 14-wk lead time. RFI-008 covers substitute. Insulation order confirmed for May 30.</textarea>
+        </div>
+      </div>
+
+      <!-- Subtrade status -->
+      <div class="form-section">
+        <div class="form-section-label">Subtrade status <span class="hint">G / Y / R / N/A</span></div>
+        <div class="subtrades-grid">
+          <div class="subtrade-row">
+            <div class="subtrade-name">Ventilation</div>
+            <div class="subtrade-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Controls</div>
+            <div class="subtrade-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Insulation</div>
+            <div class="subtrade-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y selected"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Firestopping</div>
+            <div class="subtrade-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na selected"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Air balance</div>
+            <div class="subtrade-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na selected"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Electrical</div>
+            <div class="subtrade-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="subtrade-row">
+            <div class="subtrade-name">Sprinkler</div>
+            <div class="subtrade-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+              <div class="sl na selected"><div class="inner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safety + Ratings -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Safety this week <span class="req">*</span></div>
+          <div class="pill-row" style="margin-bottom: 8px;">
+            <div class="pill-btn selected">No incidents</div>
+            <div class="pill-btn">Near miss</div>
+            <div class="pill-btn">Injury</div>
+          </div>
+          <input type="text" class="form-input" placeholder="Explain if not 'No incidents'" disabled style="opacity: 0.5;">
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Ratings <span class="hint">1-10</span></div>
+          <div style="background: var(--bg-2); border-radius: 6px; padding: 10px 14px;">
+            <div style="font-size: 11px; color: var(--ink-light); margin-bottom: 4px; font-weight: 600;">Housekeeping</div>
+            <div class="rating-row">
+              <div class="rating-track">
+                <div class="rating-thumb" style="left: 80%;"></div>
+              </div>
+              <div class="rating-val">8<span class="max"> / 10</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--ink-light); margin: 8px 0 4px; font-weight: 600;">Project confidence</div>
+            <div class="rating-row">
+              <div class="rating-track">
+                <div class="rating-thumb" style="left: 80%;"></div>
+              </div>
+              <div class="rating-val">8<span class="max"> / 10</span></div>
+            </div>
+            <div style="font-size: 11px; color: var(--ink-light); margin: 8px 0 4px; font-weight: 600;">Customer relationship</div>
+            <div class="rating-row">
+              <div class="rating-track">
+                <div class="rating-thumb" style="left: 90%;"></div>
+              </div>
+              <div class="rating-val">9<span class="max"> / 10</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div class="form-section">
+        <div class="form-section-label">Photos</div>
+        <div class="photo-strip">
+          <div class="upload-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Upload
+          </div>
+          <div class="helper">6 photos attached · drag and drop, or click Upload. JPEG, PNG, HEIC supported.</div>
+        </div>
+      </div>
+
+      <!-- Additional comments -->
+      <div class="form-section">
+        <div class="form-section-label">Additional comments <span class="hint">optional</span></div>
+        <textarea class="form-textarea" style="min-height: 60px;">Ainsworth coming back Tuesday for controls walkthrough. Owner mentioned wanting walkthrough on bathroom rough-in by mid-June.</textarea>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-cancel">Cancel</button>
+      <button class="btn btn-draft">Save draft</button>
+      <button class="btn btn-submit">Submit report</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="annotations">
+  <h3>Foreman Report composer (desktop · v1 modal)</h3>
+  <ul>
+    <li><strong>Same fields as the mobile composer, laid out wider.</strong> Two-column rows where it makes sense (this week / next week side-by-side; schedule + manpower; RFIs + materials concerns; safety + ratings). Saves vertical scroll.</li>
+    <li><strong>Modal overlay on top of the Project Logs page.</strong> Page chrome dimmed behind. Modal width 760px, scrolls internally if content exceeds viewport.</li>
+    <li><strong>Triggered by "Compose Report ▾" dropdown</strong> at the top of the Project Logs page. The dropdown shows: Tech Log, Foreman Report, Supervisor Report. Each opens its own composer.</li>
+    <li><strong>Field-level controls match mobile</strong> (health traffic-light, schedule pill row, subtrade traffic lights, RFI auto-list, 1-10 rating sliders).</li>
+    <li><strong>Three footer actions:</strong> Cancel, Save draft, Submit report.</li>
+    <li><strong>Photos use simple upload pattern</strong> on desktop, not a camera-first capture pattern (since desktop entry won't typically have a camera in hand). Drag-and-drop supported.</li>
+    <li><strong>Desktop entry is the fallback path.</strong> Most foreman reports are submitted from mobile after walking the site. Desktop is for catching up later or for foremen who prefer keyboard entry.</li>
+  </ul>
+</div>
+
+</body>
+</html>

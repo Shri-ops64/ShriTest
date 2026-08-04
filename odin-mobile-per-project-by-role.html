@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Per-project view by role (mobile, v1 preview)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 20px; min-height: 100vh; }
+
+  .preview-page-title { max-width: 1280px; margin: 0 auto 26px; text-align: center; color: var(--ink); }
+  .preview-page-title h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .preview-page-title p { font-size: 13px; color: var(--ink-light); }
+
+  .frames-row { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+
+  .frame-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .frame-label { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .frame-label.tech { background: var(--blue-soft); color: var(--blue-dark); }
+  .frame-label.foreman { background: var(--purple-soft); color: var(--purple); }
+  .frame-label.supervisor { background: var(--amber-soft); color: var(--amber); }
+
+  .device-frame { width: 390px; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  /* App bar */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .role-pill { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); color: var(--ink-light); font-weight: 600; }
+
+  /* Title block */
+  .title-block { padding: 6px 22px 18px; }
+  .title-block h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .title-block .meta-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .title-block .meta-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 11.5px; color: var(--ink); }
+  .title-block .meta-chip strong { font-weight: 600; }
+
+  /* Primary actions */
+  .primary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 10px; }
+  .primary-actions.one { grid-template-columns: 1fr; }
+  .primary-actions.single { grid-template-columns: 1fr; }
+  .primary-actions.single .pa-card { flex-direction: row; align-items: center; min-height: 0; padding: 16px 18px; gap: 14px; }
+  .pa-text { display: flex; flex-direction: column; gap: 2px; }
+  .pa-card { background: white; border-radius: 12px; padding: 16px 16px 18px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; min-height: 110px; }
+  .pa-card:hover { background: var(--bg-2); }
+  .pa-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+  .pa-icon.time { background: linear-gradient(135deg, #59c876, #1f9e4a); }
+  .pa-icon.log { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); }
+  .pa-icon.foreman { background: linear-gradient(135deg, #a685e6, var(--purple)); }
+  .pa-icon.supervisor { background: linear-gradient(135deg, #ebb050, var(--amber)); }
+  .pa-icon svg { width: 16px; height: 16px; }
+  .pa-label { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+  .pa-sub { font-size: 11.5px; color: var(--muted); }
+
+  /* Secondary action (Raise RFI) */
+  .secondary-actions { margin: 0 16px 12px; }
+  .sa-card { background: white; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .sa-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; }
+  .sa-icon svg { width: 14px; height: 14px; }
+  .sa-label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .sa-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .sa-chev { margin-left: auto; color: var(--muted); }
+  .sa-chev svg { width: 13px; height: 13px; }
+
+  /* Section divider */
+  .section-divider { padding: 14px 22px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); }
+
+  /* Recent activity */
+  .activity-card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 10px 0; }
+  .activity-item { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 8px 14px; align-items: flex-start; border-bottom: 1px solid var(--line-2); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .activity-icon.task { background: var(--green-soft); color: var(--green); }
+  .activity-icon.rfi { background: var(--blue-soft); color: var(--blue); }
+  .activity-icon.log { background: var(--amber-soft); color: var(--amber); }
+  .activity-icon svg { width: 11px; height: 11px; }
+  .activity-text { font-size: 12px; color: var(--ink-light); line-height: 1.4; }
+  .activity-text strong { color: var(--ink); font-weight: 600; }
+  .activity-text .id-pill { display: inline-block; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 10px; padding: 1px 5px; border-radius: 3px; background: var(--blue-soft); color: var(--blue-dark); margin-right: 4px; }
+  .activity-time { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Annotations */
+  .annotations-wrap { max-width: 900px; margin: 40px auto 0; }
+  .annotations { background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="preview-page-title">
+  <h2>Per-project mobile view: role-based affordances</h2>
+  <p>Same project (Thor Construction · Job 9084), three different views depending on who is signed in. Each role sees only the actions they're meant to perform.</p>
+</div>
+
+<div class="frames-row">
+
+  <!-- ============ TECH ============ -->
+  <div class="frame-col">
+    <div class="frame-label tech">Tech (Mark Panteluk)</div>
+    <div class="device-frame">
+      <div class="app-bar">
+        <div class="back-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Projects
+        </div>
+        <span class="role-pill">Tech</span>
+      </div>
+      <div class="title-block">
+        <h1>Thor Construction</h1>
+        <div class="meta-row">
+          <div class="meta-chip"><strong>Job 9084</strong></div>
+          <div class="meta-chip">Active</div>
+        </div>
+      </div>
+
+      <div class="primary-actions single">
+        <a href="odin-tech-log-composer.html" class="pa-card" style="text-decoration:none;color:inherit;">
+          <div class="pa-icon log">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <div class="pa-text">
+            <div class="pa-label">Write Daily Tech Log</div>
+            <div class="pa-sub">logs your time, photos and notes for today</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="secondary-actions">
+        <div class="sa-card">
+          <div class="sa-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="sa-label">Raise RFI</div>
+            <div class="sa-sub">Flag a question for the PM</div>
+          </div>
+          <div class="sa-chev">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">Recent project activity</div>
+      <div class="activity-card">
+        <div class="activity-item">
+          <div class="activity-icon log">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><strong>Robbie Kreviazuk</strong> submitted weekly Foreman Report</div>
+            <div class="activity-time">Yesterday, 4:42 PM</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon task">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><strong>You</strong> marked Underground rough-in complete</div>
+            <div class="activity-time">Tuesday, 11:18 AM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FOREMAN ============ -->
+  <div class="frame-col">
+    <div class="frame-label foreman">Foreman (Robbie Kreviazuk)</div>
+    <div class="device-frame">
+      <div class="app-bar">
+        <div class="back-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Projects
+        </div>
+        <span class="role-pill">Foreman</span>
+      </div>
+      <div class="title-block">
+        <h1>Thor Construction</h1>
+        <div class="meta-row">
+          <div class="meta-chip"><strong>Job 9084</strong></div>
+          <div class="meta-chip">Active</div>
+        </div>
+      </div>
+
+      <div class="primary-actions">
+        <a href="odin-tech-time-submit.html" class="pa-card" style="text-decoration:none;color:inherit;">
+          <div class="pa-icon time">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="pa-label">Submit Time</div>
+          <div class="pa-sub">to this project</div>
+        </a>
+        <a href="odin-foreman-report-composer-mobile.html" class="pa-card" style="text-decoration:none;color:inherit;">
+          <div class="pa-icon foreman">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="pa-label">Foreman Report</div>
+          <div class="pa-sub">weekly · due Friday</div>
+        </a>
+      </div>
+
+      <div class="secondary-actions">
+        <div class="sa-card">
+          <div class="sa-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="sa-label">Raise RFI</div>
+            <div class="sa-sub">Flag a question for the PM</div>
+          </div>
+          <div class="sa-chev">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">Recent project activity</div>
+      <div class="activity-card">
+        <div class="activity-item">
+          <div class="activity-icon log">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><strong>Mark Panteluk</strong> submitted daily log · 6.5 hrs</div>
+            <div class="activity-time">Today, 4:18 PM</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon rfi">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><span class="id-pill">RFI-008</span>Adam responded re: backflow preventer</div>
+            <div class="activity-time">Today, 1:30 PM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SUPERVISOR ============ -->
+  <div class="frame-col">
+    <div class="frame-label supervisor">Supervisor (Rob Altvater)</div>
+    <div class="device-frame">
+      <div class="app-bar">
+        <div class="back-btn">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          Projects
+        </div>
+        <span class="role-pill">Supervisor</span>
+      </div>
+      <div class="title-block">
+        <h1>Thor Construction</h1>
+        <div class="meta-row">
+          <div class="meta-chip"><strong>Job 9084</strong></div>
+          <div class="meta-chip">Active</div>
+        </div>
+      </div>
+
+      <div class="primary-actions">
+        <a href="odin-tech-time-submit.html" class="pa-card" style="text-decoration:none;color:inherit;">
+          <div class="pa-icon time">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="pa-label">Submit Time</div>
+          <div class="pa-sub">to this project</div>
+        </a>
+        <a href="odin-supervisor-report-composer-mobile.html" class="pa-card" style="text-decoration:none;color:inherit;">
+          <div class="pa-icon supervisor">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <div class="pa-label">Supervisor Report</div>
+          <div class="pa-sub">weekly · after site visit</div>
+        </a>
+      </div>
+
+      <div class="secondary-actions">
+        <div class="sa-card">
+          <div class="sa-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+          </div>
+          <div>
+            <div class="sa-label">Raise RFI</div>
+            <div class="sa-sub">Flag a question for the PM</div>
+          </div>
+          <div class="sa-chev">
+            <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">Recent project activity</div>
+      <div class="activity-card">
+        <div class="activity-item">
+          <div class="activity-icon log">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><strong>Robbie Kreviazuk</strong> submitted weekly Foreman Report</div>
+            <div class="activity-time">Yesterday, 4:42 PM</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon log">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+          </div>
+          <div>
+            <div class="activity-text"><strong>Mark Panteluk</strong> submitted daily log · 6.5 hrs</div>
+            <div class="activity-time">Today, 4:18 PM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="annotations-wrap">
+  <div class="annotations">
+    <h3>Mobile per-project view by role (v1)</h3>
+    <ul>
+      <li><strong>Role-based affordance visibility.</strong> Each role sees only the actions they're meant to perform. Keeps each role's home screen focused.</li>
+      <li><strong>Tech:</strong> one full-width primary, Write Daily Tech Log, plus Raise RFI (secondary). Submit Time was removed for techs (D-040): time is captured inside the Daily Tech Log, so a separate Submit Time would be a redundant second entry for the same hours.</li>
+      <li><strong>Foreman:</strong> Submit Time + Foreman Report (two tiles) + Raise RFI. Submit Time is a real time entry here (time blocks + hours-to-task allocation, same as the log), because foremen file a weekly report rather than a Daily Tech Log but still bill project hours. The Foreman Report card shows "weekly · due Friday".</li>
+      <li><strong>Supervisor:</strong> Submit Time + Supervisor Report (two tiles) + Raise RFI. Same reasoning: supervisors are Thor employees billing hours on the projects they audit, with no daily log, so Submit Time is their standalone time entry.</li>
+      <li><strong>Recent project activity</strong> stays the same shape across all roles. The activity is project-scoped, not role-scoped; everyone sees what happened on the project regardless of role. Per the "everyone sees everything" v1 visibility decision.</li>
+      <li><strong>Role pill in the app bar.</strong> Small "Tech / Foreman / Supervisor" indicator in the top-right of the app bar. Mostly for the v1 demo so it's obvious which role we're showing. Could be removed in production or kept as a quiet signal.</li>
+    </ul>
+
+    <h4>Action color coding</h4>
+    <ul>
+      <li><strong>Submit Time</strong> stays green gradient (existing pattern, ties to TimeTracker).</li>
+      <li><strong>Daily Tech Log</strong> stays pink-red gradient (existing pattern).</li>
+      <li><strong>Foreman Report</strong> uses purple gradient. Distinct from Daily Tech Log so foremen don't confuse the two when scanning.</li>
+      <li><strong>Supervisor Report</strong> uses amber gradient. Matches the "audit / oversight" feel and the badge color used elsewhere.</li>
+      <li><strong>Raise RFI</strong> stays blue (existing pattern, RFI module convention).</li>
+    </ul>
+
+    <h4>Out of scope / TBD</h4>
+    <ul>
+      <li>Multi-role users (PM who is also occasionally a Foreman, etc.). v1 assumes one primary role per user. v2 may need role-switching UI.</li>
+      <li>Push notifications reminding the foreman to submit on Friday. Useful but not in v1.</li>
+      <li>"Save as draft" for partially-completed reports across sessions. Drafts are in the v1 design; cross-device draft sync is v2.</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

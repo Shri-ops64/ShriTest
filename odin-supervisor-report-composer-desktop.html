@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Supervisor Report Composer (desktop, v1 preview)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; min-height: 100vh; padding: 40px 20px; }
+
+  .page-chrome { max-width: 1280px; margin: 0 auto 0; background: white; border-radius: 12px; padding: 28px; opacity: 0.4; pointer-events: none; min-height: 200px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .page-chrome .top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .page-chrome .title { font-size: 20px; font-weight: 600; color: var(--ink); }
+  .page-chrome .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .page-chrome .tabs-strip { display: flex; gap: 4px; padding: 4px; background: var(--bg-2); border-radius: 6px; }
+  .page-chrome .tab-pill { padding: 7px 14px; font-size: 12.5px; color: var(--ink-light); font-weight: 500; }
+  .page-chrome .tab-pill.active { background: var(--ink); color: white; border-radius: 4px; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(28, 29, 31, 0.55); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 60px 20px 40px; overflow-y: auto; }
+  .modal { background: white; border-radius: 12px; width: 100%; max-width: 760px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; }
+
+  .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .modal-head .icon { width: 32px; height: 32px; border-radius: 8px; background: var(--amber-soft); color: var(--amber); display: flex; align-items: center; justify-content: center; }
+  .modal-head .icon svg { width: 16px; height: 16px; }
+  .modal-head .title { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .modal-head .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .modal-head .close { margin-left: auto; cursor: pointer; color: var(--muted); padding: 4px; }
+  .modal-head .close svg { width: 16px; height: 16px; }
+
+  .modal-body { padding: 20px 24px; max-height: calc(100vh - 240px); overflow-y: auto; }
+  .modal-foot { padding: 14px 24px; border-top: 1px solid var(--line); background: var(--bg-2); display: flex; justify-content: flex-end; gap: 10px; }
+  .modal-foot .btn { padding: 9px 16px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .modal-foot .btn-cancel { background: white; border: 1px solid var(--line); color: var(--ink); }
+  .modal-foot .btn-draft { background: white; border: 1px solid var(--line); color: var(--ink); }
+  .modal-foot .btn-submit { background: var(--blue); color: white; }
+
+  .form-section { margin-bottom: 18px; }
+  .form-section:last-child { margin-bottom: 0; }
+  .form-section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px; }
+  .form-section-label .req { color: var(--red); margin-left: 2px; }
+  .form-section-label .hint { color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; margin-left: 6px; }
+
+  .row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .form-input { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 13.5px; color: var(--ink); font-family: inherit; outline: none; }
+  .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+  .form-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; font-size: 13.5px; color: var(--ink); font-family: inherit; resize: vertical; min-height: 80px; outline: none; }
+  .form-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  .health-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .health-btn { padding: 6px 6px; height: 56px; box-sizing: border-box; white-space: nowrap; border-radius: 6px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11.5px; line-height: 1.2; font-weight: 600; color: var(--ink-light); text-align: center; }
+  .health-btn .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .health-btn.green .dot { background: var(--green); }
+  .health-btn.yellow .dot { background: var(--amber); }
+  .health-btn.red .dot { background: var(--red); }
+  .health-btn.selected.green { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  .health-btn.selected.yellow { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
+  .health-btn.selected.red { border-color: var(--red); background: var(--red-soft); color: var(--red); }
+
+  .pill-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .pill-btn { padding: 6px 6px; height: 56px; box-sizing: border-box; white-space: nowrap; border-radius: 6px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: var(--ink-light); text-align: center; }
+  .pill-btn.selected { background: var(--ink); color: white; border-color: var(--ink); }
+
+  .verification-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .verification-btn { padding: 6px 6px; height: 56px; box-sizing: border-box; white-space: nowrap; border-radius: 6px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: var(--ink-light); text-align: center; }
+  .verification-btn.selected.yes { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+  .verification-btn.selected.mostly { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
+  .verification-btn.selected.no { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+
+  /* Thor standards */
+  .audit-grid .audit-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
+  .audit-grid .audit-row:last-child { border-bottom: none; }
+  .audit-name { font-size: 13px; color: var(--ink); font-weight: 500; }
+  .audit-lights { display: flex; gap: 3px; }
+  .audit-lights .sl { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .audit-lights .sl .inner { width: 8px; height: 8px; border-radius: 50%; opacity: 0.35; }
+  .audit-lights .sl.g .inner { background: var(--green); }
+  .audit-lights .sl.y .inner { background: var(--amber); }
+  .audit-lights .sl.r .inner { background: var(--red); }
+  .audit-lights .sl.selected { border-color: currentColor; background: white; }
+  .audit-lights .sl.g.selected { color: var(--green); }
+  .audit-lights .sl.y.selected { color: var(--amber); }
+  .audit-lights .sl.r.selected { color: var(--red); }
+  .audit-lights .sl.selected .inner { opacity: 1; }
+
+  /* Top 3 risks */
+  .risk-block { background: var(--bg-2); border-radius: 6px; padding: 9px 12px; margin-bottom: 7px; border-left: 3px solid var(--amber); }
+  .risk-block:last-child { margin-bottom: 0; }
+  .risk-block .risk-label { font-size: 10.5px; color: var(--amber); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .risk-block input { width: 100%; border: none; background: transparent; font-size: 13px; color: var(--ink); outline: none; font-family: inherit; }
+  .risk-block input::placeholder { color: var(--muted-2); font-style: italic; }
+
+  /* Rating */
+  .rating-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+  .rating-track { flex: 1; height: 6px; background: linear-gradient(to right, var(--red) 0%, var(--amber) 50%, var(--green) 100%); border-radius: 999px; position: relative; }
+  .rating-thumb { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: white; border: 2px solid var(--ink); transform: translate(-50%, -50%); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+  .rating-val { font-size: 16px; font-weight: 700; color: var(--ink); min-width: 50px; text-align: right; }
+  .rating-val .max { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  /* Photo placeholder */
+  .photo-strip { display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: center; background: var(--bg-2); border: 1px dashed var(--line); border-radius: 6px; padding: 14px; }
+  .photo-strip .upload-btn { background: var(--ink); color: white; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .photo-strip .upload-btn svg { width: 12px; height: 12px; }
+  .photo-strip .helper { font-size: 12px; color: var(--muted); }
+
+  /* Visit info row */
+  .visit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .annotations { max-width: 760px; margin: 30px auto 0; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+</style>
+</head>
+<body>
+
+<!-- Dimmed page chrome behind the modal -->
+<div class="page-chrome">
+  <div class="top">
+    <div>
+      <div class="title">Project Logs</div>
+      <div class="sub">Field-submitted reports for APM RTU Replacement (Job 9075)</div>
+    </div>
+    <div class="tabs-strip">
+      <div class="tab-pill active">All</div>
+      <div class="tab-pill">Daily Tech Logs</div>
+      <div class="tab-pill">Foreman Reports</div>
+      <div class="tab-pill">Supervisor Reports</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal overlay with composer -->
+<div class="modal-overlay">
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </div>
+      <div>
+        <div class="title">Weekly Supervisor Report</div>
+        <div class="sub">APM RTU Replacement (Job 9075) · Site visit Jun 5, 2026 · Rob Altvater</div>
+      </div>
+      <div class="close">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Visit info -->
+      <div class="form-section">
+        <div class="form-section-label">Site visit</div>
+        <div class="visit-row">
+          <div>
+            <div style="font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">Date</div>
+            <input type="text" class="form-input" value="Jun 5, 2026">
+          </div>
+          <div>
+            <div style="font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">Time on site</div>
+            <input type="text" class="form-input" value="2.5 hrs">
+          </div>
+        </div>
+      </div>
+
+      <!-- Health + Confidence -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Project health <span class="hint">your assessment</span></div>
+          <div class="health-row">
+            <div class="health-btn green">
+              <div class="dot"></div> Green
+            </div>
+            <div class="health-btn yellow selected">
+              <div class="dot"></div> Yellow
+            </div>
+            <div class="health-btn red">
+              <div class="dot"></div> Red
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Confidence <span class="hint">1-10</span></div>
+          <div style="background: var(--bg-2); border-radius: 6px; padding: 12px 14px;">
+            <div class="rating-row">
+              <div class="rating-track">
+                <div class="rating-thumb" style="left: 70%;"></div>
+              </div>
+              <div class="rating-val">7<span class="max"> / 10</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <input type="text" class="form-input" placeholder="One-line reason for health rating" value="Schedule holding but site cleanliness and two open RFIs need attention.">
+      </div>
+
+      <!-- Foreman performance + Verification -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Foreman performance</div>
+          <div class="health-row">
+            <div class="health-btn green selected">
+              <div class="dot"></div> Strong
+            </div>
+            <div class="health-btn yellow">
+              <div class="dot"></div> Adequate
+            </div>
+            <div class="health-btn red">
+              <div class="dot"></div> Needs help
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Foreman report accurate?</div>
+          <div class="verification-row">
+            <div class="verification-btn yes">Yes</div>
+            <div class="verification-btn mostly selected">Mostly</div>
+            <div class="verification-btn no">No</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <textarea class="form-textarea" placeholder="Note any discrepancies (only if Mostly or No)" style="min-height: 60px;">Crew reported as 5 on Tuesday but observed 4. Subtrade status for sheet metal listed as green; would call yellow given delays waiting on AHU placement.</textarea>
+      </div>
+
+      <!-- Thor Standards (3 categories in v1) -->
+      <div class="form-section">
+        <div class="form-section-label">Thor standards <span class="hint">G / Y / R</span></div>
+        <div style="background: var(--bg-2); border-radius: 6px; padding: 4px 14px;" class="audit-grid">
+          <div class="audit-row">
+            <div class="audit-name">Workmanship</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Site cleanliness</div>
+            <div class="audit-lights">
+              <div class="sl g"><div class="inner"></div></div>
+              <div class="sl y selected"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Productivity</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-name">Customer relationship</div>
+            <div class="audit-lights">
+              <div class="sl g selected"><div class="inner"></div></div>
+              <div class="sl y"><div class="inner"></div></div>
+              <div class="sl r"><div class="inner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule + Safety -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Schedule (your assessment) <span class="req">*</span></div>
+          <div class="pill-row" style="margin-bottom: 8px;">
+            <div class="pill-btn">Ahead</div>
+            <div class="pill-btn selected">On schedule</div>
+            <div class="pill-btn">Behind</div>
+          </div>
+          <input type="text" class="form-input" placeholder="Risk level + note" value="Medium risk: weather contingency for AHU1 craning Tuesday Jun 9.">
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Safety concerns <span class="hint">free text</span></div>
+          <textarea class="form-textarea" style="min-height: 80px;">PPE compliance good. Fall protection correct around roof openings. One ladder noted not tied off, corrected on site. Hot work permit current.</textarea>
+        </div>
+      </div>
+
+      <!-- Top 3 risks -->
+      <div class="form-section">
+        <div class="form-section-label">Top 3 risks this week</div>
+        <div class="risk-block">
+          <div class="risk-label">Risk 1</div>
+          <input type="text" placeholder="Top concern this week...">
+        </div>
+        <div class="risk-block">
+          <div class="risk-label">Risk 2</div>
+          <input type="text" placeholder="Second concern...">
+        </div>
+        <div class="risk-block">
+          <div class="risk-label">Risk 3</div>
+          <input type="text" placeholder="Third concern...">
+        </div>
+      </div>
+
+      <!-- Support requested + Comments -->
+      <div class="row-2col">
+        <div class="form-section">
+          <div class="form-section-label">Support requested</div>
+          <textarea class="form-textarea" placeholder="What help does the foreman / PM need?">PM follow-up on RFI-007 and RFI-008 with engineer of record. Push for response by EOD Monday. Client-side touchpoint on cleanliness before walkthrough.</textarea>
+        </div>
+        <div class="form-section">
+          <div class="form-section-label">Additional comments <span class="hint">optional</span></div>
+          <textarea class="form-textarea">Met briefly with site contact, relationship strong. Owner asked about timeline for follow-up walkthrough; recommend scheduling June 17.</textarea>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div class="form-section">
+        <div class="form-section-label">Photos</div>
+        <div class="photo-strip">
+          <div class="upload-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            Upload
+          </div>
+          <div class="helper">8 photos attached · drag and drop, or click Upload.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-cancel">Cancel</button>
+      <button class="btn btn-draft">Save draft</button>
+      <button class="btn btn-submit">Submit report</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="annotations">
+  <h3>Supervisor Report composer (desktop · v1 modal)</h3>
+  <ul>
+    <li><strong>Same fields as the mobile composer, laid out wider.</strong> Two-column rows for visit info, health + confidence, foreman performance + verification, schedule + safety, support + comments.</li>
+    <li><strong>Modal overlay on top of the Project Logs page.</strong> Page chrome dimmed behind. Same modal pattern used by Foreman Report and Tech Log composers (consistency).</li>
+    <li><strong>Triggered by "Compose Report ▾" dropdown</strong> at the top of the Project Logs page.</li>
+    <li><strong>Health rating and Confidence sit side-by-side</strong> with the one-line reason as a full-width input below. Lets the supervisor capture the overall picture quickly.</li>
+    <li><strong>Foreman performance and Verification</strong> are side-by-side since they're both observations of the foreman. Discrepancies textarea below for the "Mostly" or "No" case.</li>
+    <li><strong>Three Top 3 risks as stacked input cards</strong> with amber left-border accent. Forces three distinct risk statements rather than a single dumping ground.</li>
+    <li><strong>Desktop entry is the fallback path.</strong> Most supervisor reports submitted from mobile during/after the site visit. Desktop is for catching up later.</li>
+  </ul>
+</div>
+
+</body>
+</html>

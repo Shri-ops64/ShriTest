@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odin · Foreman Report Composer (mobile, v1 preview)</title>
+<style>
+  :root {
+    --ink:        #1a1a1a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #eef1f5;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --purple:     #5d2a99;
+    --purple-soft:#ece7fa;
+    --pink-grad-1: #f86077;
+    --pink-grad-2: #ed1c24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #d4d7dc; color: var(--ink); font-size: 14px; line-height: 1.4; padding: 40px 0; min-height: 100vh; }
+
+  .device-frame { width: 390px; margin: 0 auto; background: var(--bg); border-radius: 30px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.18); border: 1px solid #c8cdd4; }
+
+  /* App bar */
+  .app-bar { background: var(--bg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .back-btn svg { width: 14px; height: 14px; }
+  .report-type-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--purple-soft); color: var(--purple); font-size: 11.5px; font-weight: 700; }
+  .report-type-pill svg { width: 11px; height: 11px; }
+
+  /* Title block */
+  .title-block { padding: 6px 22px 18px; }
+  .title-block h1 { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .title-block .project-context { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: white; border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+  .title-block .project-context svg { width: 11px; height: 11px; color: var(--blue); }
+  .title-block .project-context strong { font-weight: 600; }
+  .title-block .week { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* Card */
+  .card { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 16px 18px; }
+
+  /* Field label */
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .field-label .req { color: var(--red); margin-left: 2px; }
+  .field-label .hint { font-size: 10.5px; color: var(--muted-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+  /* Health traffic-light selector */
+  .health-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .health-btn { padding: 12px 10px; border-radius: 10px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .health-btn .dot { width: 18px; height: 18px; border-radius: 50%; }
+  .health-btn.green .dot { background: var(--green); }
+  .health-btn.yellow .dot { background: var(--amber); }
+  .health-btn.red .dot { background: var(--red); }
+  .health-btn .lbl { font-size: 12px; font-weight: 600; color: var(--ink-light); }
+  .health-btn.selected.green { border-color: var(--green); background: var(--green-soft); }
+  .health-btn.selected.green .lbl { color: var(--green); }
+  .health-btn.selected.yellow { border-color: var(--amber); background: var(--amber-soft); }
+  .health-btn.selected.yellow .lbl { color: var(--amber); }
+  .health-btn.selected.red { border-color: var(--red); background: var(--red-soft); }
+  .health-btn.selected.red .lbl { color: var(--red); }
+
+  /* Single-line input */
+  .form-input { width: 100%; padding: 10px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 14px; color: var(--ink); font-family: inherit; outline: none; }
+  .form-input:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  /* Text area */
+  .form-textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); font-size: 14px; color: var(--ink); font-family: inherit; resize: vertical; min-height: 90px; outline: none; }
+  .form-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(29, 98, 211, 0.12); }
+
+  /* Schedule pill row */
+  .pill-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .pill-btn { padding: 10px 8px; border-radius: 8px; background: var(--bg-2); border: 1.5px solid var(--line); cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-light); text-align: center; }
+  .pill-btn.selected { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* Manpower row */
+  .crew-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .crew-stat { background: var(--bg-2); border-radius: 8px; padding: 10px 12px; }
+  .crew-stat .lbl { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
+  .crew-stepper { display: flex; align-items: center; gap: 8px; }
+  .crew-stepper .stepper-btn { width: 26px; height: 26px; border-radius: 50%; background: white; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .crew-stepper .stepper-btn svg { width: 11px; height: 11px; color: var(--ink-light); }
+  .crew-stepper .val { flex: 1; text-align: center; font-size: 20px; font-weight: 700; color: var(--ink); }
+
+  /* Subtrade traffic light grid */
+  .subtrades-list .subtrade-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+  .subtrades-list .subtrade-row:last-child { border-bottom: none; }
+  .subtrade-name { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .subtrade-lights { display: flex; gap: 4px; }
+  .subtrade-lights .sl { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .subtrade-lights .sl .inner { width: 10px; height: 10px; border-radius: 50%; opacity: 0.35; }
+  .subtrade-lights .sl.g .inner { background: var(--green); }
+  .subtrade-lights .sl.y .inner { background: var(--amber); }
+  .subtrade-lights .sl.r .inner { background: var(--red); }
+  .subtrade-lights .sl.na .inner { background: var(--muted-2); width: 8px; height: 1.5px; border-radius: 0; }
+  .subtrade-lights .sl.selected { border-color: currentColor; background: white; }
+  .subtrade-lights .sl.g.selected { color: var(--green); }
+  .subtrade-lights .sl.y.selected { color: var(--amber); }
+  .subtrade-lights .sl.r.selected { color: var(--red); }
+  .subtrade-lights .sl.na.selected { color: var(--muted); }
+  .subtrade-lights .sl.selected .inner { opacity: 1; }
+
+  /* RFI link list (read-only display from RFI module) */
+  .rfi-link-list .rfi-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .rfi-link-list .rfi-row:last-child { border-bottom: none; }
+  .rfi-id-pill { font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: var(--blue-soft); color: var(--blue-dark); }
+  .rfi-subject { flex: 1; font-size: 12.5px; color: var(--ink); line-height: 1.35; }
+  .rfi-age { font-size: 11px; color: var(--amber); font-weight: 600; }
+  .rfi-empty-note { font-size: 12px; color: var(--muted); font-style: italic; padding: 4px 0; }
+  .rfi-raise-btn { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 12px; padding: 10px; border: 1.5px solid var(--blue); border-radius: 10px; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .rfi-raise-btn svg { width: 14px; height: 14px; }
+
+  /* Safety incident row */
+  .pill-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Rating 1-10 slider */
+  .rating-row { display: flex; align-items: center; gap: 12px; }
+  .rating-track { flex: 1; height: 8px; background: linear-gradient(to right, var(--red) 0%, var(--amber) 50%, var(--green) 100%); border-radius: 999px; position: relative; }
+  .rating-thumb { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: white; border: 2px solid var(--ink); transform: translate(-50%, -50%); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+  .rating-val { font-size: 18px; font-weight: 700; color: var(--ink); min-width: 28px; text-align: right; }
+  .rating-val .max { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Photo capture */
+  .photo-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .photo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .photo-action-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border-radius: 10px; border: 1.5px dashed var(--line); background: var(--bg-2); cursor: pointer; }
+  .photo-action-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+  .photo-action-btn.primary { border-color: var(--ink); background: var(--ink); color: white; border-style: solid; }
+  .photo-action-icon { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; }
+  .photo-action-btn:not(.primary) .photo-action-icon { background: white; border: 1px solid var(--line); }
+  .photo-action-icon svg { width: 16px; height: 16px; }
+  .photo-action-btn.primary .photo-action-icon svg { color: white; }
+  .photo-action-btn:not(.primary) .photo-action-icon svg { color: var(--ink-light); }
+  .photo-action-label { font-size: 12.5px; font-weight: 600; }
+  .photo-action-btn:not(.primary) .photo-action-label { color: var(--ink); }
+  .photo-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .photo-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); position: relative; background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--muted-2); }
+  .photo-thumb svg.scene { width: 100%; height: 100%; display: block; }
+  .photo-count-meta { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+
+  /* Footer */
+  .footer-actions { background: white; border-top: 1px solid var(--line); padding: 14px 18px 18px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+  .btn-pill { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 13px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+  .btn-pill.secondary { background: white; color: var(--ink-light); border: 1px solid var(--line); }
+  .btn-pill.primary { background: linear-gradient(135deg, var(--pink-grad-1), var(--pink-grad-2)); color: white; box-shadow: 0 3px 10px rgba(237, 28, 36, 0.25); }
+  .btn-pill svg { width: 13px; height: 13px; }
+
+  /* Annotations */
+  .container { display: flex; justify-content: center; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .annotations { width: 360px; background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 18px 22px; margin-top: 40px; }
+  .annotations h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .annotations ul { list-style: none; font-size: 13px; color: #4a3d10; }
+  .annotations li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .annotations li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .annotations li strong { color: #2a2208; }
+  .annotations h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-top: 14px; margin-bottom: 6px; }
+  /* Dictation mic (D-035): browser-native speech-to-text on long-form fields */
+  .ta-wrap { position: relative; }
+  .ta-wrap > textarea { padding-right: 44px; }
+  .mic-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); border: 1px solid #cfe0fa; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .mic-btn svg { width: 15px; height: 15px; color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="device-frame">
+
+    <!-- App bar -->
+    <div class="app-bar">
+      <div class="back-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Cancel
+      </div>
+      <span class="report-type-pill">
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Foreman Report
+      </span>
+    </div>
+
+    <!-- Title -->
+    <div class="title-block">
+      <h1>Weekly Foreman Report</h1>
+      <div class="project-context">
+        <svg fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <strong>Thor Construction (Job 9084)</strong>
+      </div>
+      <div class="week">Week of May 25 – 29, 2026 · Foreman: Robbie Kreviazuk</div>
+    </div>
+
+    <!-- 1. Health -->
+    <div class="card">
+      <div class="field-label">Overall project health <span class="req">*</span></div>
+      <div class="health-row">
+        <div class="health-btn green selected">
+          <div class="dot"></div>
+          <div class="lbl">Green</div>
+        </div>
+        <div class="health-btn yellow">
+          <div class="dot"></div>
+          <div class="lbl">Yellow</div>
+        </div>
+        <div class="health-btn red">
+          <div class="dot"></div>
+          <div class="lbl">Red</div>
+        </div>
+      </div>
+      <input type="text" class="form-input" placeholder="One-line reason (optional)" value="Schedule holding; minor RFI hold on insulation start.">
+    </div>
+
+    <!-- 2. This week's accomplishments -->
+    <div class="card">
+      <div class="field-label">This week's accomplishments <span class="req">*</span></div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="What major milestones did the crew complete this week?">- Heating mains complete, branch lines running where access allows
+- Underground rough-in finished (Tue)
+- Walls started going up Tue afternoon
+- Bathroom rough-in 60% complete
+- Heating shutdown completed successfully Monday
+- Pellars on site daily putting up ducts</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 3. Next week's goals -->
+    <div class="card">
+      <div class="field-label">Next week's goals <span class="req">*</span></div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Top priorities for next week">- Finish bathroom branch piping
+- Complete Level 2 fixture rough-in
+- Begin hydronic testing on south zone
+- Coordinate with Ainsworth on controls install (returning Tuesday)
+- Insulators starting end of week if scope holds</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 4. Schedule status -->
+    <div class="card">
+      <div class="field-label">Schedule status <span class="req">*</span></div>
+      <div class="pill-row">
+        <div class="pill-btn">Ahead</div>
+        <div class="pill-btn selected">On schedule</div>
+        <div class="pill-btn">Behind</div>
+      </div>
+      <input type="text" class="form-input" placeholder="One-line note" value="On track for end-of-June handover. No critical-path delays this week.">
+    </div>
+
+    <!-- 5. Manpower -->
+    <div class="card">
+      <div class="field-label">Manpower</div>
+      <div class="crew-row">
+        <div class="crew-stat">
+          <div class="lbl">Crew size now</div>
+          <div class="crew-stepper">
+            <div class="stepper-btn"><svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></div>
+            <div class="val">5</div>
+            <div class="stepper-btn"><svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+          </div>
+        </div>
+        <div class="crew-stat">
+          <div class="lbl">Need next week</div>
+          <div class="crew-stepper">
+            <div class="stepper-btn"><svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></div>
+            <div class="val">6</div>
+            <div class="stepper-btn"><svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="pill-row">
+        <div class="pill-btn">Need more</div>
+        <div class="pill-btn selected">Properly staffed</div>
+        <div class="pill-btn">Overstaffed</div>
+      </div>
+    </div>
+
+    <!-- 6. Outstanding RFIs (auto-linked from RFI module) -->
+    <div class="card">
+      <div class="field-label">
+        Outstanding RFIs
+        <span class="hint">All open, pulled automatically</span>
+      </div>
+      <div class="rfi-link-list">
+        <div class="rfi-row">
+          <span class="rfi-id-pill">RFI-007</span>
+          <div class="rfi-subject">Hot water recirc loop spec clarification (3/4" vs 1/2")</div>
+          <div class="rfi-age">11 days</div>
+        </div>
+        <div class="rfi-row">
+          <span class="rfi-id-pill">RFI-008</span>
+          <div class="rfi-subject">Backflow preventer substitute approval (Apollo 4ALF-LF)</div>
+          <div class="rfi-age">8 days</div>
+        </div>
+      </div>
+      <a href="odin-tech-rfi-composer.html" class="rfi-raise-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Raise RFI
+      </a>
+    </div>
+
+    <!-- 7. Materials concerns -->
+    <div class="card">
+      <div class="field-label">
+        Materials concerns
+        <span class="hint">optional</span>
+      </div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Anything delaying work? Long lead items?" style="min-height: 70px;">Backflow preventer (Watts 909) still on 14-wk lead time. RFI-008 covers substitute. Insulation order placed; delivery confirmed for May 30.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- 8. Subtrade status -->
+    <div class="card">
+      <div class="field-label">
+        Subtrade status
+        <span class="hint">Tap a circle</span>
+      </div>
+      <div class="subtrades-list">
+        <div class="subtrade-row">
+          <div class="subtrade-name">Ventilation</div>
+          <div class="subtrade-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Controls</div>
+          <div class="subtrade-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Insulation</div>
+          <div class="subtrade-lights">
+            <div class="sl g"><div class="inner"></div></div>
+            <div class="sl y selected"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Firestopping</div>
+          <div class="subtrade-lights">
+            <div class="sl g"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na selected"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Air balance</div>
+          <div class="subtrade-lights">
+            <div class="sl g"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na selected"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Electrical</div>
+          <div class="subtrade-lights">
+            <div class="sl g selected"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na"><div class="inner"></div></div>
+          </div>
+        </div>
+        <div class="subtrade-row">
+          <div class="subtrade-name">Sprinkler</div>
+          <div class="subtrade-lights">
+            <div class="sl g"><div class="inner"></div></div>
+            <div class="sl y"><div class="inner"></div></div>
+            <div class="sl r"><div class="inner"></div></div>
+            <div class="sl na selected"><div class="inner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Safety -->
+    <div class="card">
+      <div class="field-label">Safety this week <span class="req">*</span></div>
+      <div class="pill-row">
+        <div class="pill-btn selected">No incidents</div>
+        <div class="pill-btn">Near miss</div>
+        <div class="pill-btn">Injury</div>
+      </div>
+      <input type="text" class="form-input" placeholder="Explain if not 'No incidents'" value="" disabled style="opacity: 0.5;">
+    </div>
+
+    <!-- 10. Housekeeping rating -->
+    <div class="card">
+      <div class="field-label">Housekeeping <span class="hint">1 = poor, 10 = excellent</span></div>
+      <div class="rating-row">
+        <div class="rating-track">
+          <div class="rating-thumb" style="left: 80%;"></div>
+        </div>
+        <div class="rating-val">8<span class="max"> / 10</span></div>
+      </div>
+    </div>
+
+    <!-- 11. Confidence -->
+    <div class="card">
+      <div class="field-label">Project confidence <span class="hint">How confident this finishes successfully?</span></div>
+      <div class="rating-row">
+        <div class="rating-track">
+          <div class="rating-thumb" style="left: 80%;"></div>
+        </div>
+        <div class="rating-val">8<span class="max"> / 10</span></div>
+      </div>
+    </div>
+
+    <!-- 11a. Customer relationship -->
+    <div class="card">
+      <div class="field-label">Customer relationship <span class="hint">How healthy is the relationship with the client?</span></div>
+      <div class="rating-row">
+        <div class="rating-track">
+          <div class="rating-thumb" style="left: 90%;"></div>
+        </div>
+        <div class="rating-val">9<span class="max"> / 10</span></div>
+      </div>
+    </div>
+
+    <!-- 12. Photos -->
+    <div class="card">
+      <div class="photo-section-head">
+        <div class="field-label" style="margin: 0;">
+          Photos
+          <span class="hint">progress, problem areas</span>
+        </div>
+      </div>
+      <div class="photo-actions">
+        <div class="photo-action-btn primary">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="photo-action-label">Take photo</div>
+        </div>
+        <div class="photo-action-btn">
+          <div class="photo-action-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div class="photo-action-label">From library</div>
+        </div>
+      </div>
+      <div class="photo-thumbs">
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#aab3bd"/>
+            <rect x="4" y="20" width="40" height="6" fill="#5a6068"/>
+            <rect x="4" y="30" width="40" height="6" fill="#5a6068"/>
+            <rect x="10" y="14" width="3" height="20" fill="#c92020"/>
+            <rect x="22" y="14" width="3" height="22" fill="#c92020"/>
+            <rect x="34" y="14" width="3" height="20" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#cfd5db"/>
+            <rect x="4" y="32" width="40" height="14" fill="#a89580"/>
+            <rect x="14" y="6" width="20" height="26" fill="#888c92"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#7a8290"/>
+            <rect x="8" y="14" width="32" height="22" fill="#3a4148"/>
+            <rect x="12" y="18" width="24" height="14" fill="#aab3bd"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#5a6068"/>
+            <rect y="34" width="48" height="14" fill="#3a3f45"/>
+            <rect x="8" y="10" width="16" height="26" fill="#888c92"/>
+            <circle cx="16" cy="20" r="2" fill="#c92020"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#c0c5cc"/>
+            <rect x="4" y="20" width="40" height="8" fill="#888c92"/>
+            <rect x="10" y="28" width="4" height="14" fill="#c98551"/>
+            <rect x="22" y="28" width="4" height="14" fill="#c98551"/>
+          </svg>
+        </div>
+        <div class="photo-thumb">
+          <svg class="scene" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" fill="#d8c9b0"/>
+            <rect width="48" height="22" fill="#e8dcc4"/>
+            <rect x="6" y="28" width="3" height="20" fill="#888"/>
+            <rect x="20" y="28" width="3" height="20" fill="#888"/>
+          </svg>
+        </div>
+      </div>
+      <div class="photo-count-meta">6 photos attached</div>
+    </div>
+
+    <!-- 13. Additional comments -->
+    <div class="card">
+      <div class="field-label">
+        Additional comments
+        <span class="hint">optional</span>
+      </div>
+      <div class="ta-wrap"><textarea class="form-textarea" placeholder="Anything else worth flagging this week" style="min-height: 70px;">Ainsworth coming back Tuesday for controls walkthrough. Owner mentioned wanting walkthrough on bathroom rough-in by mid-June.</textarea><button class="mic-btn" title="Dictate" aria-label="Dictate"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-actions">
+      <button class="btn-pill secondary">Save draft</button>
+      <button class="btn-pill primary">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit Report
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Annotations -->
+  <div class="annotations">
+    <h3>Foreman Report composer (mobile · v1)</h3>
+    <ul>
+      <li><strong>Weekly cadence.</strong> Foreman submits this report once per week, typically end of day Friday or end of last shift on the project that week.</li>
+      <li><strong>Pre-filled where possible.</strong> Project context, foreman name, week dates, and outstanding RFIs auto-populate from the project record and the RFI module. Foreman doesn't re-type known information.</li>
+      <li><strong>Health is a single 🟢🟡🔴 traffic light</strong> (no scorecard, no scoring categories). Foreman picks one based on what they see. Optional one-line reason.</li>
+      <li><strong>This week / next week as free-text blocks.</strong> Matches the structure of the current Kairos foreman report. Bullets in the textarea are accepted style; no fancy editor.</li>
+      <li><strong>Subtrade traffic lights</strong> match the 7 subtrades from the existing Kairos report (Ventilation, Controls, Insulation, Firestopping, Air balance, Electrical, Sprinkler). Each gets G / Y / R / N/A.</li>
+      <li><strong>Outstanding RFIs are pulled from the RFI module</strong>, not re-entered. Read-only display with age in days. RFIs that age past 7 days render in amber.</li>
+      <li><strong>Two 1-10 ratings:</strong> Housekeeping and Project confidence. Slider control; no scorecard math behind it.</li>
+      <li><strong>Photos use the existing photo-capture pattern</strong> shared with daily logs and RFI composer.</li>
+    </ul>
+
+    <h4>What's NOT in v1 (parked, per scope conversation with Justin)</h4>
+    <ul>
+      <li>Per-category scorecards (8 rated categories with 1-10 scores). Parked for v2 once we have baseline data.</li>
+      <li>Automated job-health score computation. v1 health rating is the foreman's own assessment.</li>
+      <li>AI section (executive summary, top 3 risks/opportunities generated, "if you were PM what would you focus on next week"). Parked for v2.</li>
+      <li>Change order log inside the report (already lives on Change Notices tab; cross-link instead).</li>
+      <li>Financial risk tracking inside the report (out of scope; lives in Jonas).</li>
+      <li>Detailed labour-per-employee productivity ratings. Time tab already captures hours; aggregate is enough at the report level.</li>
+    </ul>
+
+    <h4>What feeds into rollup elsewhere in Odin</h4>
+    <ul>
+      <li><strong>Health rating</strong> → Overview tab "Project Health" indicator (manual assessment, foreman's voice).</li>
+      <li><strong>Schedule status</strong> → Activity feed event when status changes from prior week.</li>
+      <li><strong>Subtrade status</strong> → Activity feed when a subtrade moves to Red.</li>
+      <li><strong>Confidence rating trend</strong> → Project Logs tab can show the rolling 1-10 line over the last 8-12 weeks (separate widget, defer to spec for placement).</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

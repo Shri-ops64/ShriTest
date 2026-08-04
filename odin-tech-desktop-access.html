@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Odin · Tech access on desktop (reference)</title>
+<style>
+  :root {
+    --ink:        #2a2a2a;
+    --ink-light:  #58595b;
+    --muted:      #828487;
+    --muted-2:    #b0b2b5;
+    --line:       #e5e7eb;
+    --line-2:     #ececec;
+    --bg:         #f3f4f6;
+    --bg-2:       #f7f8fa;
+    --white:      #ffffff;
+    --blue:       #1d62d3;
+    --blue-dark:  #134298;
+    --blue-soft:  #e8f0fc;
+    --red:        #ed1c24;
+    --red-soft:   #fee9ea;
+    --green:      #1f9e4a;
+    --green-soft: #e6f5ec;
+    --amber:      #d99316;
+    --amber-soft: #fdf2dd;
+    --grey:       #b7b9bc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; padding: 40px 0 80px; }
+
+  .page { max-width: 980px; margin: 0 auto; padding: 0 30px; }
+
+  /* Page header */
+  .page-head { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 28px 32px; margin-bottom: 24px; }
+  .page-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue); margin-bottom: 8px; }
+  .page-title { font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .page-lead { font-size: 15px; color: var(--ink-light); line-height: 1.55; max-width: 740px; }
+  .page-lead strong { color: var(--ink); font-weight: 600; }
+
+  /* Principle callout */
+  .principle { background: var(--blue-soft); border-left: 4px solid var(--blue); border-radius: 0 10px 10px 0; padding: 18px 24px; margin-bottom: 28px; }
+  .principle-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--blue-dark); margin-bottom: 6px; }
+  .principle-text { font-size: 14.5px; color: var(--ink); line-height: 1.55; }
+  .principle-text strong { font-weight: 700; color: var(--blue-dark); }
+
+  /* Nav placement block */
+  .nav-block { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; margin-bottom: 28px; }
+  .nav-block h2 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+  .nav-mock { background: #1c1d1f; color: white; border-radius: 6px; padding: 14px 18px; display: flex; gap: 22px; align-items: center; font-size: 13px; margin-bottom: 12px; flex-wrap: wrap; }
+  .nav-mock .nav-item { font-weight: 500; opacity: 0.85; cursor: default; }
+  .nav-mock .nav-item.new { background: var(--blue); color: white; padding: 4px 10px; border-radius: 4px; opacity: 1; font-weight: 700; }
+  .nav-mock .nav-item.new::before { content: 'NEW '; font-size: 9px; background: white; color: var(--blue); padding: 1px 4px; border-radius: 2px; margin-right: 6px; font-weight: 700; letter-spacing: 0.5px; vertical-align: 1px; }
+  .nav-note { font-size: 13px; color: var(--ink-light); line-height: 1.55; }
+  .nav-note strong { color: var(--ink); font-weight: 600; }
+
+  /* Section header for surface list */
+  .section-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 36px 0 14px; }
+
+  /* Surface card */
+  .surface-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; margin-bottom: 14px; display: grid; grid-template-columns: 200px 1fr; gap: 26px; }
+  .surface-thumb { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-height: 130px; }
+  .surface-thumb .st-frame { background: white; border: 1px solid var(--line); border-radius: 4px; padding: 10px 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .surface-thumb .st-bar { height: 5px; background: var(--bg); border-radius: 2px; }
+  .surface-thumb .st-bar.tall { height: 8px; }
+  .surface-thumb .st-bar.short { width: 60%; }
+  .surface-thumb .st-bar.accent { background: var(--blue-soft); }
+  .surface-thumb .st-row { display: flex; gap: 4px; }
+  .surface-thumb .st-row .st-bar { flex: 1; }
+  .surface-thumb .st-file { font-size: 10px; font-family: 'IBM Plex Mono', Menlo, monospace; color: var(--muted); text-align: center; margin-top: 2px; }
+  .surface-body { display: flex; flex-direction: column; gap: 10px; }
+  .surface-name { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .surface-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .surface-summary { font-size: 13.5px; color: var(--ink); line-height: 1.55; }
+  .surface-summary strong { font-weight: 600; }
+  .surface-access { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 4px; }
+  .access-block h3 { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .access-block.can h3 { color: var(--green); }
+  .access-block.cannot h3 { color: var(--red); }
+  .access-block ul { list-style: none; font-size: 12.5px; color: var(--ink-light); line-height: 1.55; }
+  .access-block li { padding: 2px 0; padding-left: 16px; position: relative; }
+  .access-block.can li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+  .access-block.cannot li::before { content: '×'; position: absolute; left: 0; color: var(--red); font-weight: 700; font-size: 13px; line-height: 1.1; }
+
+  /* Hidden-surfaces block */
+  .hidden-block { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; margin-top: 14px; }
+  .hidden-block h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .hidden-block p { font-size: 13px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.55; }
+  .hidden-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; color: var(--ink-light); }
+  .hidden-list .hl-item { display: flex; gap: 8px; padding: 6px 0; }
+  .hidden-list .hl-item .hl-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--muted-2); }
+  .hidden-list .hl-item .hl-icon svg { width: 14px; height: 14px; }
+  .hidden-list .hl-item strong { color: var(--ink); font-weight: 600; }
+
+  /* Notes footer */
+  .closing-notes { background: #fffde8; border: 1px dashed #c4b04a; border-radius: 8px; padding: 22px 26px; margin-top: 32px; }
+  .closing-notes h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #7a6620; margin-bottom: 10px; }
+  .closing-notes ul { list-style: none; font-size: 13px; color: #4a3d10; line-height: 1.55; }
+  .closing-notes li { padding: 5px 0; padding-left: 22px; position: relative; }
+  .closing-notes li::before { content: '→'; position: absolute; left: 0; color: #8a7320; font-weight: 700; }
+  .closing-notes li strong { color: #2a2208; font-weight: 600; }
+  .closing-notes code { background: white; padding: 1px 6px; border-radius: 3px; font-family: 'IBM Plex Mono', Menlo, monospace; font-size: 12px; color: #4a3d10; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="page-eyebrow">Reference Page</div>
+    <div class="page-title">Tech access on desktop</div>
+    <div class="page-lead">When a tech logs into Odin on desktop and accesses project surfaces, they see <strong>the same screens as admin users</strong>. Differences are <strong>action-level only</strong> (permissions on what they can edit, delete, or approve). This page documents the access model in one place so the existing admin mockups can serve both audiences without duplicate designs.</div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-label">Architectural decision</div>
+    <div class="principle-text"><strong>One Project Module, role-scoped at the action layer.</strong> The split admin and tech interfaces elsewhere in Odin are a legacy architecture constraint we are not extending. The Project Module is a single set of screens; what a user can do on those screens is determined by their role, not by which interface they entered through. Per Justin: no information hiding for techs. They see everything; they just cannot edit what is not theirs.</div>
+  </div>
+
+  <div class="nav-block">
+    <h2>Tech desktop navigation</h2>
+    <div class="nav-mock">
+      <span class="nav-item">Home</span>
+      <span class="nav-item">Submit Timesheet</span>
+      <span class="nav-item">Daily Timesheets</span>
+      <span class="nav-item">Weekly Timesheets</span>
+      <span class="nav-item">Equipment</span>
+      <span class="nav-item">Profile</span>
+      <span class="nav-item">Team</span>
+      <span class="nav-item">Notes</span>
+      <span class="nav-item new">Projects</span>
+      <span class="nav-item">Admin</span>
+      <span class="nav-item">Log out</span>
+    </div>
+    <div class="nav-note"><strong>New top-nav item: Projects.</strong> Positioned between Notes and Admin. Visible to any user assigned to at least one project. Clicking lands on the Projects list, filtered to that user's assigned projects. From there, clicking a project opens the existing per-project Overview tab.</div>
+  </div>
+
+  <div class="nav-block">
+    <h2>Projects card on Tech Home (desktop)</h2>
+    <div class="nav-note" style="margin-bottom: 10px;">Mandeep's separate Tech Home V3 workstream (in active design as of May 28) reserves a slot in the bottom row of the desktop home for "Projects." Once V3 ships, that slot is populated with a <strong>Projects</strong> card matching the content of the mobile Projects card on the existing tech home mockup (<code>odin-tech-home.html</code>). Same rows: name, project ID, location, task count. Tapping opens the per-project view.</div>
+    <div class="nav-note"><strong>Seam between workstreams:</strong> Mandeep owns the desktop frame, this workstream owns the card content. No design coordination needed beyond confirming the slot's expected width and the row layout. At ship time the Projects card slots in.</div>
+  </div>
+
+  <div class="section-eyebrow">Per-surface access model</div>
+
+  <!-- Surface: Project list -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-bar tall accent"></div>
+        <div class="st-bar short"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-projects-list.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Projects list</div>
+        <div class="surface-sub">Landing screen when tech clicks "Projects" in top nav</div>
+      </div>
+      <div class="surface-summary">Same screen as admin sees, <strong>filtered to projects this tech is assigned to</strong>. Status column, code column, dates, PM column, search and filter chips all visible. Cancelled and Complete projects visible if the tech was assigned to them. Empty state if no assignments yet.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>Search and filter the list</li>
+            <li>Open any project they are assigned to</li>
+            <li>Sort by any column</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Click the "New Project" button (hidden for tech role)</li>
+            <li>Open projects they are not assigned to</li>
+            <li>Use bulk actions if any are added later</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Overview -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-row"><div class="st-bar tall accent"></div><div class="st-bar tall accent"></div></div>
+        <div class="st-row"><div class="st-bar"></div><div class="st-bar"></div><div class="st-bar"></div><div class="st-bar"></div></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-overview-current-brand.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Overview tab</div>
+        <div class="surface-sub">Default tab when entering a project</div>
+      </div>
+      <div class="surface-summary">Same screen as admin, all widgets visible per Justin's direction. Header Days Left pill + Foreman/Supervisor health chips, Milestones + Recent Activity in row 1, secondary KPI counts strip, then Latest Project Logs + Team + External Contacts in row 3. The "Edit Project" button in the header is hidden for tech.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View all widgets on the Overview tab</li>
+            <li>See the Days Left pill in the project header</li>
+            <li>View milestones with target dates and completion state</li>
+            <li>Read the Recent Activity feed (full project feed, no filtering)</li>
+            <li>See the counts strip (Active Tasks, Open Blockers, Open RFIs, Project Logs This Week)</li>
+            <li>Click activity preview rows to expand or jump to the Activity tab</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>See or click the "Edit Project" header button</li>
+            <li>Edit milestones (read-only checkboxes)</li>
+            <li>Add or remove team members</li>
+            <li>Manage External Contacts entries</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Tasks -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-bar tall accent"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-tasks.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Tasks tab</div>
+        <div class="surface-sub">Labor budgeting and tracking</div>
+      </div>
+      <div class="surface-summary">Same screen as admin. Tech sees the project estimate strip, Original Scope cluster, Approved PCN clusters, est-vs-act bars per task, and the Draft Tasks review inbox (filtered to drafts this tech created). All tasks visible regardless of assignment.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View all tasks and the project labor estimate</li>
+            <li>See est-vs-act bars at task, cluster, and project levels</li>
+            <li>Open their own drafts in the Draft Tasks inbox</li>
+            <li>Mark their assigned tasks as In Progress, Blocked, or Done</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Approve or reject drafts (PM-only action)</li>
+            <li>See other techs' drafts in the inbox (filtered)</li>
+            <li>Edit task estimates or due dates on tasks they do not own</li>
+            <li>Cancel tasks (PM-only action)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Time -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-row"><div class="st-bar tall"></div><div class="st-bar tall"></div><div class="st-bar tall"></div><div class="st-bar tall"></div></div>
+        <div class="st-bar accent"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-time.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Time tab</div>
+        <div class="surface-sub">Project-scoped timesheet log</div>
+      </div>
+      <div class="surface-summary">Same screen as admin. Per Justin's direction, no information hiding. Tech sees the full team's entries on this project, the overview cards (this week, last week, this month, last month) summing the whole project, and the filtered summary.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View all entries on this project, including other techs'</li>
+            <li>See the Project-to-date overview cards</li>
+            <li>Filter by date, type, employee, department, task, status</li>
+            <li>Edit or delete their own entries (Actions column)</li>
+            <li>Export entries (CSV)</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Edit or delete other techs' entries</li>
+            <li>Approve entries from Pending → Approved (admin action)</li>
+            <li>Use Export Payroll (admin-only, exposes pay calculations)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Project Logs -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-bar tall accent"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-project-logs.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Project Logs tab</div>
+        <div class="surface-sub">Tech logs + Foreman reports + Supervisor reports</div>
+      </div>
+      <div class="surface-summary">Same screen as admin. Tech sees the unified Project Logs surface with sub-tabs filtering by log type. Tech logs and foreman reports are fully visible; supervisor reports show with two fields restricted (Foreman Performance, Verification of Foreman Report accuracy) per D-026.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View all tech daily logs on this project</li>
+            <li>View all foreman weekly reports</li>
+            <li>View supervisor reports with the two confidential fields omitted</li>
+            <li>Open any log to read the full submission on the detail page</li>
+            <li>Edit or delete their own logs</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Compose Foreman or Supervisor Reports (project-role gated per D-026)</li>
+            <li>See the Foreman Performance rating on Supervisor Reports</li>
+            <li>See the Verification of Foreman Report field on Supervisor Reports</li>
+            <li>Edit or delete logs they did not author</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Activity -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-activity.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Activity tab</div>
+        <div class="surface-sub">Full project activity feed</div>
+      </div>
+      <div class="surface-summary">Same screen as admin. Full chronological feed of all events on the project: posts, task status changes, time submissions, daily logs, PCN approvals, RFI sends. Per Justin's direction, no dollar-amount filtering; tech sees PCN cost impact figures just as admin does.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View the full activity feed including PCN dollar amounts</li>
+            <li>Compose a new post (text comment, no system events)</li>
+            <li>Filter by event type</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Edit or delete events they did not create</li>
+            <li>Delete posts authored by other team members</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Assets -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-row"><div class="st-bar tall"></div><div class="st-bar tall"></div><div class="st-bar tall"></div></div>
+        <div class="st-row"><div class="st-bar tall"></div><div class="st-bar tall"></div><div class="st-bar tall"></div></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-assets-current-brand.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Assets tab</div>
+        <div class="surface-sub">Project DAM, folders and files</div>
+      </div>
+      <div class="surface-summary">Same screen as admin. Tech sees all folders, all files. Can upload files into folders (technicians submit site photos and documents). Cannot manage folder structure or perform destructive actions.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>Browse all folders and files</li>
+            <li>Download files</li>
+            <li>Upload new files into existing folders</li>
+            <li>Tag and describe files they upload</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Create or rename folders</li>
+            <li>Move files between folders</li>
+            <li>Delete files (move to Trash)</li>
+            <li>Access the Trash view or restore deleted files</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface: Change Notices -->
+  <div class="surface-card">
+    <div class="surface-thumb">
+      <div class="st-frame">
+        <div class="st-bar tall accent"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar"></div>
+        <div class="st-bar short"></div>
+      </div>
+      <div class="st-file">odin-change-notices-list.html</div>
+    </div>
+    <div class="surface-body">
+      <div>
+        <div class="surface-name">Change Notices tab</div>
+        <div class="surface-sub">PCN and RFI register</div>
+      </div>
+      <div class="surface-summary">Same screen as admin per Justin's direction. Tech sees the full register including PCNs (with approved cost impact dollar amounts) and RFIs. Cannot initiate intake of either, but can open existing records to read context.</div>
+      <div class="surface-access">
+        <div class="access-block can">
+          <h3>Tech CAN</h3>
+          <ul>
+            <li>View the full PCN/RFI register including cost impact</li>
+            <li>Open PCN detail panels to read context</li>
+            <li>Open RFI detail panels to read the question and response</li>
+            <li>Raise an RFI via the mobile composer (already in scope)</li>
+          </ul>
+        </div>
+        <div class="access-block cannot">
+          <h3>Tech CANNOT</h3>
+          <ul>
+            <li>Ingest a PCN (PM action only)</li>
+            <li>Compose and send an RFI to the GC (PM action only)</li>
+            <li>Approve or reject draft RFIs from techs (PM action only)</li>
+            <li>Close PCNs or RFIs (PM action only)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden-block">
+    <h2>Surfaces hidden from tech role entirely</h2>
+    <p>Two project surfaces are not visible to tech users on either the navigation or any direct link. Attempting to navigate to them yields a "Not available" message.</p>
+    <div class="hidden-list">
+      <div class="hl-item">
+        <div class="hl-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+        <div><strong>Client Reports tab.</strong> Generation and management of GC-facing project reports is a PM responsibility; the tech does not interact with this surface.</div>
+      </div>
+      <div class="hl-item">
+        <div class="hl-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+        <div><strong>Edit Project.</strong> The Edit Project surface (project basics, dates, team management, external contacts, Project Actions like Cancel) is admin-only. Tech users cannot access the editor.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="closing-notes">
+    <h3>Implementation notes for Mandeep</h3>
+    <ul>
+      <li><strong>One set of mockups, role-scoped at render time.</strong> The admin mockups in this deck are the canonical visuals. The tech variant is the same component tree with role-conditioned rendering for action buttons and editable controls. No duplicate templates.</li>
+      <li><strong>Permissions live at the action layer, not the view layer.</strong> A tech viewing the Tasks tab loads the same query as an admin (all project tasks). The Edit and Approve buttons on rows are conditionally hidden based on <code>currentUser.role</code> and ownership checks.</li>
+      <li><strong>Top-nav placement.</strong> Add a "Projects" item to the tech desktop nav between Notes and Admin. Visibility rule: any user with at least one entry in the project assignments table.</li>
+      <li><strong>Default landing on click of Projects nav item:</strong> the Projects list filtered to <code>project_assignments WHERE user_id = currentUser.id</code>. Same component as admin, different query scope.</li>
+      <li><strong>Hidden tabs (Client Reports) and hidden actions (Edit Project, Reject Draft, Approve Entry, etc.)</strong> render as null on the rendered tab strip and button group respectively. Tech does not see disabled greyed-out controls; they see nothing.</li>
+      <li><strong>Mobile and desktop access models are consistent.</strong> What a tech can do on mobile (Submit Time, Write Daily Tech Log, Raise RFI, Mark Task Done) is the same set of actions they can do on desktop. Desktop just gives them the broader read-view of the project alongside.</li>
+      <li><strong>Mandeep's Tech Home V3 dependency.</strong> The desktop Tech Home shipped by V3 reserves a "Projects" slot in its bottom row. That slot is populated with a Projects card matching the mobile pattern in <code>odin-tech-home.html</code>. No coordination needed beyond confirming slot width and row layout once V3 lands.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
